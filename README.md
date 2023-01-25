@@ -3,7 +3,9 @@
 Copyright (C) 2009-2023 
 
 **Author:** Mathieu Fortin, Canadian Forest Service (formerly LERFoB, AgroParisTech)
+
 **Email**: mathieu.fortin.re@gmail.com
+
 **License**: Lesser GPL-3.0 (http://www.gnu.org/copyleft/lesser.html)
 
 ## Dependencies
