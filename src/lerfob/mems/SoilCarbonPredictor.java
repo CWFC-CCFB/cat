@@ -196,6 +196,28 @@ public class SoilCarbonPredictor extends REpiceaPredictor {
 	 */
 	double parmK9 = 2.2E-5;
 	
+	/**
+	 * Taux de décomposition maximal des particules légères de matière organique du sol (C10)
+	 * Valeur par défaut : 2.96 × 10-5 / jour
+	 * Intervalle : 4 × 10-3 – 1 × 10-4 / jour
+	 * Références : Del Galdo et al. (2003) 
+	 */
+	double parmK10 = 2.96E-5;
+	
+	/**
+	 *Binding affinity for carbon in soil DOM (C8) sorption to mineral surfaces (C9) of soil layer L. 
+	 */
+	double L_k_lm = 0.25;
+	
+	/**
+	 * Taux spécifique maximal de lessivage pour représenter le transport vertical du carbone dans la MAOM 
+	 * à travers le profil du sol
+	 * Valeur par défaut : 0.00438 g C par jour
+	 * Intervalle : 1 × 10-5 – 0.02 g C par jour
+	 * Référence : Trumbore et al. (1992) 
+	 */
+	double DOC_lch = 0.00438;
+	
 	double C1;
 	double C2;
 	double C3;

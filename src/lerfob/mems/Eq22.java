@@ -6,14 +6,8 @@ import repicea.math.Matrix;
  * Equation 22 provides the proportion of leached carbon from DOM??? 
  * @author Mathieu Fortin - Feb 2023
  */
-class Eq22 extends Equation {
+class Eq22 {
 
-	final Eq16 eq16;
-	
-	Eq22(SoilCarbonPredictor carbonModel, Eq16 eq16) {
-		super(carbonModel);
-		this.eq16 = eq16;
-	}
 
 	//TODO check what that is?
 	/**
@@ -22,8 +16,8 @@ class Eq22 extends Equation {
 	 * @param N_lit the nitrogen content in the input material
 	 * @return
 	 */
-	double getLeachingLA4(Matrix compartments, double N_lit) {
-		return Math.min(carbonModel.E_smax - (carbonModel.E_smax - carbonModel.E_smin) / carbonModel.LCI_max * eq16.getLCI(compartments), 
+	static double getLeachingLA4(SoilCarbonPredictor carbonModel, Matrix compartments, double N_lit) {
+		return Math.min(carbonModel.E_smax - (carbonModel.E_smax - carbonModel.E_smin) / carbonModel.LCI_max * Eq16.getLCI(compartments), 
 				carbonModel.E_smax - (carbonModel.E_smax - carbonModel.E_smin) / carbonModel.N_max * N_lit);
 	}
 }

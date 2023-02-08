@@ -6,12 +6,8 @@ package lerfob.mems;
  * @author Mathieu Fortin - Feb 2023
  *
  */
-class Eq12 extends Equation {
-
-	Eq12(SoilCarbonPredictor carbonModel) {
-		super(carbonModel);
-	}
-
+class Eq12 {
+	
 	/**
 	 * Calculate the daily input in compartment C1.
 	 * 
@@ -19,7 +15,7 @@ class Eq12 extends Equation {
 	 * @param f_sol the extractible faction 
 	 * @return the input of hot-water extractible carbon in compartment C1
 	 */
-	double getDailyInputInC1(double CT_i, double f_sol) {
+	static double getDailyInputInC1(SoilCarbonPredictor carbonModel, double CT_i, double f_sol) {
 		return CT_i * f_sol * (1 - carbonModel.f_DOC);
 	}
 

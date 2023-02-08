@@ -6,16 +6,7 @@ import repicea.math.Matrix;
  * Equation 2 represents the daily change in C stock in compartment C2.
  * @author Mathieu Fortin - Feb 2023
  */
-public class Eq02 extends Equation {
-
-	final Eq13 eq13;
-	final Eq20 eq20;
-	
-	Eq02(SoilCarbonPredictor carbonModel, Eq13 eq13, Eq20 eq20) {
-		super(carbonModel);
-		this.eq13 = eq13;
-		this.eq20 = eq20;
-	}
+class Eq02 {
 
 	/**
 	 * Calculate the daily change in C stock in compartment C2.
@@ -26,13 +17,14 @@ public class Eq02 extends Equation {
 	 * @param N_lit
 	 * @return
 	 */
-	double getDailyChangeC2(Matrix compartment, 
+	static double getDailyChangeC2(SoilCarbonPredictor carbonModel,
+			Matrix compartment, 
 			double CT_i, 
 			double f_sol, 
 			double f_lig, 
 			double N_lit) {
-		return eq13.getDailyInputInC2(CT_i, f_sol, f_lig) - 
-				eq20.getModifier(compartment, N_lit) * carbonModel.C2 * carbonModel.parmK2 - 
+		return Eq13.getDailyInputInC2(CT_i, f_sol, f_lig) - 
+				Eq20.getModifier(carbonModel, compartment, N_lit) * carbonModel.C2 * carbonModel.parmK2 - 
 				carbonModel.C2 * carbonModel.LIT_frg;
 	}
 
