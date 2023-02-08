@@ -1,5 +1,7 @@
 package lerfob.mems;
 
+import repicea.math.Matrix;
+
 /**
  * Equation 38 provides the carbon emissions from compartment C1.
  * @author Mathieu Fortin - Feb 2023
@@ -17,9 +19,10 @@ class Eq38 extends Equation {
 		this.eq22 = eq22;
 	}
 
-	double getCarbonMigrationFromC1ToC7(double C1, double C2, double C3, double N_lit) { 
-		return (1 - eq19.calculate(N_lit,  C3,  C2) * carbonModel.parmB1) *
-				(1 - eq22.calculate(N_lit, C3, C2)) *
-				eq20.calculate(N_lit, C3, C2) * carbonModel.parmK1 * C1;
+	double getCarbonMigrationFromC1ToC7(Matrix compartments, double N_lit) { 
+		double C1 = compartments.getValueAt(0, 0);
+		return (1 - eq19.getModifier(compartments, N_lit) * carbonModel.parmB1) *
+				(1 - eq22.getLeachingLA4(compartments, N_lit)) *
+				eq20.getModifier(compartments, N_lit) * carbonModel.parmK1 * C1;
 	}
 }

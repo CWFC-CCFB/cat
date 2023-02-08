@@ -1,5 +1,7 @@
 package lerfob.mems;
 
+import repicea.math.Matrix;
+
 /**
  * Equation 28 provides the carbon stock transferred from compartment C1 
  * to compartment C6.
@@ -16,7 +18,10 @@ class Eq28 extends Equation {
 		this.eq22 = eq22;
 	}
 
-	double getCarbonMigrationFromC1(double C1, double N_lit, double C3, double C2) { 
-		return eq22.calculate(N_lit, C3, C2) * eq20.calculate(N_lit, C3, C2) * carbonModel.parmK1 * C1;
+	double getCarbonMigrationFromC1(Matrix compartments, double N_lit) { 
+		double C1 = compartments.getValueAt(0, 0);
+		return eq22.getLeachingLA4(compartments, N_lit) * 
+				eq20.getModifier(compartments, N_lit) * 
+				carbonModel.parmK1 * C1;
 	}
 }

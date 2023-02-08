@@ -1,5 +1,11 @@
 package lerfob.mems;
 
+import repicea.math.Matrix;
+
+/**
+ * Equation 1 represents the daily change in carbon in compartment C1.
+ * @author Mathieu Fortin - Feb 2023
+ */
 class Eq01 extends Equation {
 
 	final Eq12 eq12;
@@ -13,6 +19,7 @@ class Eq01 extends Equation {
 	
 	/**
 	 * Calculate the daily change in C stock in compartment C1.
+	 * @param compartments a Matrix instance with the initial stocks in each compartment
 	 * @param CT_i the daily input
 	 * @param f_sol
 	 * @param N_lit
@@ -20,8 +27,12 @@ class Eq01 extends Equation {
 	 * @param C2
 	 * @return
 	 */
-	double calculate(double CT_i, double f_sol, double N_lit, double C3, double C2) {
-		return eq12.calculate(CT_i, f_sol) - eq20.calculate(N_lit, C3, C2) * carbonModel.C1 * carbonModel.parmK1;
+	double getDailyChangeC1(Matrix compartments, 
+			double CT_i, 
+			double f_sol, 
+			double N_lit) {
+		return eq12.getDailyInputInC1(CT_i, f_sol) - 
+				eq20.getModifier(compartments, N_lit) * carbonModel.C1 * carbonModel.parmK1;
 	}
 
 }

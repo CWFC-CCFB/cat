@@ -1,5 +1,12 @@
 package lerfob.mems;
 
+import repicea.math.Matrix;
+
+/**
+ * Equation 19 provides the modifier for the chemical control of the litter over the 
+ * carbon use efficiency.
+ * @author Mathieu Fortin - Feb 2023
+ */
 class Eq19 extends Equation {
 
 	final Eq16 eq16;
@@ -10,17 +17,15 @@ class Eq19 extends Equation {
 	}
 
 	/**
-	 * Provide the "modificateur de taux pour représenter les contrôles chimiques 
-	 * de la litière (lignocellulose index [LCI] et la disponibilité en azote) sur 
-	 * l’efficacité d’utilisation microbienne (carbon use efficiency : CUE), pour le jour j" 
+	 * Provide the daily modifier for the chemical control of the litter over the 
+	 * carbon use efficiency.
+	 * @param compartments a Matrix instance with the initial stocks in each compartment
 	 * @param N_lit nitrogen concentration of the input material
-	 * @param C3
-	 * @param C2
 	 * @return
 	 */
-	double calculate(double N_lit, double C3, double C2) {
-		return Math.min(1d/(1+Math.exp(carbonModel.N_max)*(N_lit - carbonModel.N_mid)), 
-				1-Math.exp(-0.7*(Math.abs(eq16.calculate(C3, C2) - 0.7)*10)));
+	double getModifier(Matrix compartments, double N_lit) {
+		return Math.min(1d / (1 + Math.exp(carbonModel.N_max) * (N_lit - carbonModel.N_mid)), 
+				1 - Math.exp(-0.7 * (Math.abs(eq16.getLCI(compartments) - 0.7) * 10)));
 	}
 	
 }

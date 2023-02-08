@@ -1,8 +1,9 @@
 package lerfob.mems;
 
+import repicea.math.Matrix;
+
 /**
- * Equation 17 provides the fraction of C1 litter pool that 
- * is assimilated in the C4 pool through microbial activity.
+ * Equation 17 provides the input of C from compartment C1 to compartment C4 through microbial activity.
  * @author Mathieu Fortin - Feb 2023
  */
 class Eq17 extends Equation {
@@ -19,15 +20,13 @@ class Eq17 extends Equation {
 	}
 
 	/**
-	 * Return the fraction of C1 litter pool that is assimilated in the C4 (C4<sup>C1</sup><sub>ass</sub>)
+	 * Return the C stock of C1 assimilated in C4 (C4<sup>C1</sup><sub>ass</sub>)
+	 * @param compartments a Matrix instance with the initial stocks in each compartment
 	 * @param N_lit
-	 * @param C3
-	 * @param C2
-	 * @param LCI_lit
 	 * @return a double
 	 */
-	double calculate(double N_lit, double C3, double C2) {
-		return eq19.calculate(N_lit, C3, C2) * carbonModel.parmB1 * (1-eq22.calculate(N_lit, C3, C2)) * 
-				eq20.calculate(N_lit, C3, C2) * carbonModel.parmK1 * carbonModel.C1;
+	double getC1AssimilatedInC4(Matrix compartments, double N_lit) {
+		return eq19.getModifier(compartments, N_lit) * carbonModel.parmB1 * (1 - eq22.getLeachingLA4(compartments, N_lit)) * 
+				eq20.getModifier(compartments, N_lit) * carbonModel.parmK1 * carbonModel.C1;
 	}
 }

@@ -1,8 +1,10 @@
 package lerfob.mems;
 
+import repicea.math.Matrix;
+
+// TODO clarify the terminology here
 /**
- * Equation 21 provides an "estimation du carbone dans la génération de DOM 
- * par lessivage des bassins de litière en décomposition le jour j" 
+ * Equation 21 provides the leaching factor...  
  * @author Mathieu Fortin - Feb 2023
  */
 class Eq21 extends Equation {
@@ -15,14 +17,14 @@ class Eq21 extends Equation {
 	}
 
 	/**
-	 * 
+	 * Provide the leaching factor.
 	 * @param N_lit the nitrogen content of the input material
 	 * @param C3
 	 * @param C2
 	 * @return
 	 */
-	double calculate(double N_lit, double C3, double C2) {
-		return Math.min(carbonModel.E_Hmax - (carbonModel.E_Hmax - carbonModel.E_Hmin)/carbonModel.LCI_max * eq16.calculate(C3, C2), 
+	double getLeachingLA1(Matrix compartments, double N_lit) {
+		return Math.min(carbonModel.E_Hmax - (carbonModel.E_Hmax - carbonModel.E_Hmin)/carbonModel.LCI_max * eq16.getLCI(compartments), 
 				carbonModel.E_Hmax - (carbonModel.E_Hmax - carbonModel.E_Hmin) / carbonModel.N_max * N_lit);
 	}
 }

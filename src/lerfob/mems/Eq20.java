@@ -1,5 +1,6 @@
 package lerfob.mems;
 
+import repicea.math.Matrix;
 
 /**
  * Equation 20 provides a modifier that represents the chemical controls of
@@ -17,12 +18,13 @@ class Eq20 extends Equation {
 
 	/**
 	 * Calculate the modifier associated with chemical control.
+	 * @param compartments a Matrix instance with the initial stocks in each compartment
 	 * @param N_lit nitrogen concentration of input material
 	 * @return the modifier
 	 */
-	double calculate(double N_lit, double C3, double C2) {		
+	double getModifier(Matrix compartments, double N_lit) {		
 		return Math.min(1d / (1 + Math.exp(-carbonModel.N_max)*(N_lit - carbonModel.N_mid)), 
-				Math.exp(-3 * eq16.calculate(C3,C2)));
+				Math.exp(-3 * eq16.getLCI(compartments)));
 	}
 	
 }

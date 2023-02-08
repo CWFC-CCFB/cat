@@ -1,5 +1,7 @@
 package lerfob.mems;
 
+import repicea.math.Matrix;
+
 /**
  * Provide the daily change in compartment C7.
  * @author Mathieu Fortin - Feb 2023
@@ -39,24 +41,15 @@ class Eq07 extends Equation {
 	 * Provide the daily change in the C stock in compartment C6.
 	 * @return
 	 */
-	double getC7DailyChange(double CT_i, double f_sol, double C1, 
-			double C2, 
-			double C3, 
-			double C4, 
-			double C5, 
-			double C6, 
-			double C8,
-			double C9,
-			double C10,
-			double N_lit) {
-		return eq38.getCarbonMigrationFromC1ToC7(C1, C2, C3, N_lit) +
-				eq39.getCarbonMigrationFromC2ToC7(C2, C3, N_lit) +
-				eq40.getCarbonMigrationFromC3ToC7(C3) +
-				eq41.getCarbonMigrationFromC4ToC7(C4) +
-				eq42.getCarbonMigrationFromC5ToC7(C5) +
-				eq43.getCarbonMigrationFromC8ToC7(C8) + 
-				eq44.getCarbonMigrationFromC9ToC7(C9) +
-				eq45.getCarbonMigrationFromC10ToC7(C10);
+	double getC7DailyChange(Matrix compartments, double N_lit) {
+		return eq38.getCarbonMigrationFromC1ToC7(compartments, N_lit) +
+				eq39.getCarbonMigrationFromC2ToC7(compartments, N_lit) +
+				eq40.getCarbonMigrationFromC3ToC7(compartments) +
+				eq41.getCarbonMigrationFromC4ToC7(compartments) +
+				eq42.getCarbonMigrationFromC5ToC7(compartments) +
+				eq43.getCarbonMigrationFromC8ToC7(compartments) + 
+				eq44.getCarbonMigrationFromC9ToC7(compartments) +
+				eq45.getCarbonMigrationFromC10ToC7(compartments);
  	}
 	
 }

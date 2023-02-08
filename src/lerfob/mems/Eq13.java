@@ -1,7 +1,10 @@
 package lerfob.mems;
 
+/**
+ * Equation 13 provide the net daily input from external sources in compartment C2.
+ * @author Mathieu Fortin - Feb 2023
+ */
 class Eq13 extends Equation {
-
 	
 	Eq13(SoilCarbonPredictor carbonModel) {
 		super(carbonModel);
@@ -14,7 +17,7 @@ class Eq13 extends Equation {
 	 * @param f_lig fraction insoluble dans l'acide de l'apport de litière 
 	 * @return the daily input in compartment C2
 	 */
-	double calculate(double CT_i, double f_sol, double f_lig) {
+	double getDailyInputInC2(double CT_i, double f_sol, double f_lig) {
 		return CT_i - (CT_i * (f_sol + f_lig));
 	}
 }

@@ -1,5 +1,7 @@
 package lerfob.mems;
 
+import repicea.math.Matrix;
+
 /**
  * Provide the daily change in compartment C6.
  * @author Mathieu Fortin - Feb 2023
@@ -33,10 +35,13 @@ class Eq06 extends Equation {
 	 * Provide the daily change in the C stock in compartment C6.
 	 * @return
 	 */
-	double getC6DailyChange(double CT_i, double f_sol, double C1, double C2, double C3, double C4, double N_lit, double C6) {
+	double getC6DailyChange(Matrix compartments, double CT_i, double f_sol, double N_lit) {
+		double C3 = compartments.getValueAt(2, 0);
+		double C4 = compartments.getValueAt(3, 0);
+		double C6 = compartments.getValueAt(5, 0);
 		return eq15.calculate(CT_i, f_sol) +
-				eq28.getCarbonMigrationFromC1(C1,  N_lit,  C3,  C2) +
-				eq29.getCarbonMigrationFromC2(N_lit, C3, C2) + 
+				eq28.getCarbonMigrationFromC1(compartments,  N_lit) +
+				eq29.getCarbonMigrationFromC2(compartments, N_lit) + 
 				eq30.getCarbonMigrationFromC3(C3) + 
 				eq31.getCarbonMigrationFromC4(C4) -
 				eq33.getCarbonMigrationToC8(C6);

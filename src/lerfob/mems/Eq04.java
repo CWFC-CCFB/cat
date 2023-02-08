@@ -1,7 +1,9 @@
 package lerfob.mems;
 
+import repicea.math.Matrix;
+
 /**
- * Provide the daily change in compartment C4.
+ * Equation 4 provides the daily change in C stock in compartment C4.
  * @author Mathieu Fortin - Feb 2023
  */
 class Eq04 extends Equation {
@@ -23,8 +25,10 @@ class Eq04 extends Equation {
 	 * @param C4 Initial stock in compartment C4
 	 * @return
 	 */
-	double getDailyChange(double N_lit, double C3, double C2, double C4) {
-		return eq17.calculate(N_lit, C3, C2) + eq18.calculate(N_lit, C3, C2) -
+	double getDailyChange(Matrix compartments, double N_lit) {
+		double C4 = compartments.getValueAt(3, 0);
+		return eq17.getC1AssimilatedInC4(compartments, N_lit) + 
+				eq18.getC2AssimilatedInC4(compartments, N_lit) -
 				C4 * carbonModel.parmK4;
  	}
 	
