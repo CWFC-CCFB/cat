@@ -21,7 +21,7 @@ public class SoilCarbonPredictor extends REpiceaPredictor {
 	double parmK1 = 0.37; 
 	
 	/**
-	 * La fraction extractible � l'eau froide de l'apport de liti�re extractible � l'eau chaude 
+	 * La fraction extractible � l'eau froide de l'apport de liti�re extractible � l'eau chaude
 	 * (= fraction de liti�re soluble qui bypass les processus microbien et qui est imm�diatement 
 	 * rel�ch�e de la liti�re v�g�tale dans la pool de DOM par lixiviation).
 	 * Par defaut 0.15 (0.09-0.21)
@@ -241,14 +241,14 @@ public class SoilCarbonPredictor extends REpiceaPredictor {
 	}
 
 	public SoilCarbonPredictorCompartment predictCStockChanges(SoilCarbonPredictorCompartment compartments,
-								double N_lit,
-								double CT_i,	// pkoi est-ce un param d'entrée ?
-								double f_sol,
-								double f_lig,
-								double soil_pH,
-								double bulkDensity,
-								double sandProportion,
-								double rockProportion) {
+								double N_lit,			// teneur en azote du matériau d’entrée
+								double CT_i,			// apport quotidien total de carbone provenant de la source externe i le jour j
+								double f_sol,			// la fraction extractible à l'eau chaude de l'apport de litière
+								double f_lig,			// fraction insoluble dans l'acide de l'apport de litière
+								double soil_pH,			// pH du sol simulé
+								double bulkDensity,		// bulk density (densité volumétrique) du sol simulé
+								double sandProportion,	// contenu en sable (%) du sol simulé
+								double rockProportion) {// fraction de roches (%) du sol simulé
 
 		SoilCarbonPredictorCompartment pred = new SoilCarbonPredictorCompartment(compartments);
 
