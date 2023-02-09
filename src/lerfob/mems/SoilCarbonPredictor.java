@@ -240,28 +240,93 @@ public class SoilCarbonPredictor extends REpiceaPredictor {
 
 	}
 
-	public SoilCarbonPredictorCompartment predictCStockChanges(SoilCarbonPredictorCompartment compartments,
-								double N_lit,			// teneur en azote du matériau d’entrée
-								double CT_i,			// apport quotidien total de carbone provenant de la source externe i le jour j
-								double f_sol,			// la fraction extractible à l'eau chaude de l'apport de litière
-								double f_lig,			// fraction insoluble dans l'acide de l'apport de litière
-								double soil_pH,			// pH du sol simulé
-								double bulkDensity,		// bulk density (densité volumétrique) du sol simulé
-								double sandProportion,	// contenu en sable (%) du sol simulé
-								double rockProportion) {// fraction de roches (%) du sol simulé
+	public SoilCarbonPredictorCompartment predictCStockChanges(SoilCarbonPredictorCompartment compartments, SoilCarbonPredictorInput inputs) {
 
 		SoilCarbonPredictorCompartment pred = new SoilCarbonPredictorCompartment(compartments);
 
-		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C1, Eq01_getDailyChangeC1(this, compartments, CT_i, f_sol, N_lit));
-		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C2, Eq02_getDailyChangeC2(this, compartments, CT_i, f_sol, f_lig, N_lit));
-		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C3, Eq03_getDailyChangeC3(this, compartments, CT_i, f_lig));
-		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C4, Eq04_getDailyChangeC4(this, compartments, N_lit));
-		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C5, Eq05_getDailyChangeC5(this, compartments));
-		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C6, Eq06_getDailyChangeC6(this, compartments, CT_i, f_sol, N_lit));
-		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C7, Eq07_getDailyChangeC7(this, compartments, N_lit));
-		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C8, Eq08_getDailyChangeC8(this, compartments, N_lit, soil_pH, bulkDensity, sandProportion, rockProportion));
-		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C9, Eq09_getDailyChangeC9(this, compartments, N_lit, soil_pH, bulkDensity, sandProportion, rockProportion));
-		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C10, Eq10_getDailyChangeC10(this, compartments));
+		// local variables are computed here and passed on to the equations to avoid recomputing them multiple times (ex : uk)
+		// Eq01
+		double C1_i_in = Eq12_getDailyInputInC1(this, inputs);
+		double LCI_lit = Eq16_getLCI(compartments);
+		double uk = Eq20_getModifier(this, compartments, inputs.N_lit, LCI_lit);
+		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C1, Eq01_getDailyChangeC1(this, compartments, C1_i_in, uk));
+
+		// Eq02
+		double C2_i_in = Eq13_getDailyInputInC2(inputs.CT_i, inputs.f_sol, inputs.f_lig);
+		// double uk = Eq20_getModifier(this, compartments, N_lit, LCI_lit);
+		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C2, Eq02_getDailyChangeC2(this, compartments, C2_i_in, uk));
+
+		// Eq03
+		double C3_i_in = Eq14_getDailyInputInC3(inputs.CT_i, inputs.f_lig);
+		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C3, Eq03_getDailyChangeC3(this, compartments, C3_i_in));
+
+		// Eq04
+		double uB = Eq19_getModifier(this, compartments, inputs.N_lit);
+		double la_4 = Eq22_getLeachingLA4(this, compartments, inputs.N_lit);
+		//double uk = Eq20_getModifier(this, compartments, N_lit);
+		double C4_C1_ass = Eq17_getDailyCarbonStockTransferFromC1ToC4(this, compartments, uB, la_4, uk);
+		//double uB = Eq19_getModifier(this, compartments, N_lit);
+		double la_1 = Eq21_getLeachingLA1(this, compartments, inputs.N_lit);
+		//double uk = Eq20_getModifier(this, compartments, N_lit);
+		double C4_C2_ass = Eq18_getDailyCarbonStockTransferFromC2ToC4(this, compartments, uB, la_1, uk);
+		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C4, Eq04_getDailyChangeC4(this, compartments, C4_C1_ass, C4_C2_ass));
+
+		// Eq05
+		double C5_C4_gen = Eq23_getDailyCarbonStockTransferFromC4ToC5(this, compartments);
+		double C5_C2_frg = Eq24_getDailyCarbonStockTransferFromC2ToC5(this, compartments);
+		double C5_C3_frg = Eq25_getDailyCarbonStockTransferFromC3ToC5(this, compartments);
+		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C5, Eq05_getDailyChangeC5(this, compartments, C5_C4_gen, C5_C2_frg, C5_C3_frg));
+
+		// Eq06
+		double C6_i_in = Eq15_calculate(this, inputs.CT_i, inputs.f_sol);
+		//double la_4 = Eq22_getLeachingLA4(this, compartments, N_lit);
+		//double uk = Eq20_getModifier(this, compartments, N_lit);
+		double C6_C1_in = Eq28_getDailyCarbonStockTransferFromC1ToC6(this, compartments, la_4, uk);
+		//double la_1 = Eq21_getLeachingLA1(this, compartments, N_lit);
+		//double uk = Eq20_getModifier(this, compartments, N_lit);
+		double C6_C2_in = Eq29_getDailyCarbonStockTransferFromC2ToC6(this, compartments, la_1, uk);
+		double C6_C3_in = Eq30_getDailyCarbonStockTransferFromC3ToC6(this, compartments);
+		double C6_C4_in = Eq31_getDailyCarbonStockTransferFromC4ToC6(this, compartments);
+		double C8_C6_in = Eq33_getDailyCarbonStockTransferFromC6ToC8(this, compartments);
+		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C6, Eq06_getDailyChangeC6(this, compartments, C6_i_in, C6_C1_in, C6_C2_in, C6_C3_in, C6_C4_in, C8_C6_in));
+
+		// Eq07
+		//double uB = Eq19_getModifier(this, compartments, N_lit);
+		//double la_4 = Eq22_getLeachingLA4(this, compartments, N_lit);
+		//double uk = Eq20_getModifier(this, compartments, N_lit);
+		double C1_C02 = Eq38_getDailyCarbonStockTransferFromC1ToC7(this, compartments, uB, la_4, uk);
+		//double uB = Eq19_getModifier(this, compartments, N_lit);
+		//double la_1 = Eq21_getLeachingLA1(this, compartments, N_lit);
+		//double uk = Eq20_getModifier(this, compartments, N_lit);
+		double C2_C02 = Eq39_getDailyCarbonStockTransferFromC2ToC7(this, compartments, uB, la_1, uk);
+		double C3_C02 = Eq40_getDailyCarbonStockTransferFromC3ToC7(this, compartments);
+		double C4_C02 = Eq41_getDailyCarbonStockTransferFromC4ToC7(this, compartments);
+		double C5_C02 = Eq42_getDailyCarbonStockTransferFromC5ToC7(this, compartments);
+		double C8_C02 = Eq43_getDailyCarbonStockTransferFromC8ToC7(this, compartments);
+		double C9_C02 = Eq44_getDailyCarbonStockTransferFromC9ToC7(this, compartments);
+		double C10_C02 = Eq45_getDailyCarbonStockTransferFromC10ToC7(this, compartments);
+		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C7, Eq07_getDailyChangeC7(this, compartments, C1_C02, C2_C02, C3_C02, C4_C02, C5_C02, C8_C02, C9_C02, C10_C02));
+
+		// Eq08
+		double C8_C5_in = Eq32_getDailyCarbonStockTransferFromC5ToC8(this, compartments);
+		//double C8_C6_in = Eq33_getDailyCarbonStockTransferFromC6ToC8(this, compartments);
+		double C8_C10_in = Eq34_getDailyCarbonStockTransferFromC10ToC8(this, compartments);
+
+		double K_lm = Eq35_getBindingAffinityL_k_lm(inputs.soil_pH);
+		double Q_max = Eq36_getMaximumSorptionCapacityQ_max(inputs.bulkDensity, inputs.sandProportion, inputs.rockProportion);
+		double sorption = Eq37_getSorption(compartments, K_lm, Q_max);
+		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C8, Eq08_getDailyChangeC8(this, compartments, C8_C5_in, C8_C6_in, C8_C10_in, sorption));
+
+		// Eq09
+		//double sorption = Eq37_getSorption(compartments, soil_pH, bulkDensity, sandProportion, rockProportion);
+		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C9, Eq09_getDailyChangeC9(this, compartments, sorption));
+
+		// Eq10
+		double C10_C2_frg = Eq26_getDailyCarbonStockTransferFromC2ToC10(this, compartments);
+		double C10_C3_frg = Eq27_getDailyCarbonStockTransferFromC3ToC10(this, compartments);
+		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C10, Eq10_getDailyChangeC10(this, compartments, C10_C2_frg, C10_C3_frg));
+
+		// Eq11
 		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C11, Eq11_getDailyChangeC11(this, compartments));
 
 		return pred;

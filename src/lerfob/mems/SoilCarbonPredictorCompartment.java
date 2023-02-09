@@ -8,17 +8,17 @@ import java.security.InvalidParameterException;
 
 public class SoilCarbonPredictorCompartment implements MonteCarloSimulationCompliantObject {
     public static enum CompartmentID {
-        C1,
-        C2,
-        C3,
-        C4,
-        C5,
-        C6,
-        C7,
-        C8,
-        C9,
-        C10,
-        C11;
+        C1,     // Water soluble litter
+        C2,     // Acid-soluble litter
+        C3,     // Acid-insoluble litter
+        C4,     // Microbial biomass
+        C5,     // Coarse, heavy POM
+        C6,     // Litter layer DOM
+        C7,     // Emitted CO2
+        C8,     // Soil layer DOM
+        C9,     // Mineral-associated OM
+        C10,    // Light POM
+        C11;    // Leached DOM
     }
     Matrix compartments;
     private int realizationID;
