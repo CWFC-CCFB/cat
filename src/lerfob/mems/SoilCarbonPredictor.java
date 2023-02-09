@@ -1,7 +1,17 @@
 package lerfob.mems;
 
+import repicea.math.Matrix;
 import repicea.simulation.REpiceaPredictor;
 
+import static lerfob.mems.SoilCarbonPredictorEquation.*;
+
+/**
+* As described here, MEMS v1.0 currently only simulates a surface organic horizon
+* and a single mineral soil layer and does not yet differentiate
+* between above- and belowground litter input chemistry
+* to avoid requiring additional input parameters on root litter
+* chemistry.
+ */
 @SuppressWarnings("serial")
 public class SoilCarbonPredictor extends REpiceaPredictor {
 
@@ -11,196 +21,196 @@ public class SoilCarbonPredictor extends REpiceaPredictor {
 	double parmK1 = 0.37; 
 	
 	/**
-	 * La fraction extractible à l'eau froide de l'apport de litière extractible à l'eau chaude 
-	 * (= fraction de litière soluble qui bypass les processus microbien et qui est immédiatement 
-	 * relâchée de la litière végétale dans la pool de DOM par lixiviation).
+	 * La fraction extractible ï¿½ l'eau froide de l'apport de litiï¿½re extractible ï¿½ l'eau chaude 
+	 * (= fraction de litiï¿½re soluble qui bypass les processus microbien et qui est immï¿½diatement 
+	 * relï¿½chï¿½e de la litiï¿½re vï¿½gï¿½tale dans la pool de DOM par lixiviation).
 	 * Par defaut 0.15 (0.09-0.21)
 	 */
 	double f_DOC = 0.15; 
 	
 	/**
-	 * Teneur maximale en N qui influence les taux (au-delà, il n'y a pas de limite) 
-	 * de génération de DOM et d'assimilation microbienne du carbone
-	 * Valeur par défaut : 3 %
-	 * Référence : Sinsabaugh et al. (2013) 
+	 * Teneur maximale en N qui influence les taux (au-delï¿½, il n'y a pas de limite) 
+	 * de gï¿½nï¿½ration de DOM et d'assimilation microbienne du carbone
+	 * Valeur par dï¿½faut : 3 %
+	 * Rï¿½fï¿½rence : Sinsabaugh et al. (2013) 
 	 */
 	double N_max = 0.03; // TODO was specified at 3%: is it 3 or .03 that should be hard coded?
 	
 	/**
-	 * Point médian de la fonction logistique qui décrit la limitation de N
-	 * Valeur par défaut : 1.75 %
-	 * Références : Campbell et al. (2016); Soong et al. (2015) 
+	 * Point mï¿½dian de la fonction logistique qui dï¿½crit la limitation de N
+	 * Valeur par dï¿½faut : 1.75 %
+	 * Rï¿½fï¿½rences : Campbell et al. (2016); Soong et al. (2015) 
 	 */
 	double N_mid = 0.0175; // TODO was specified at 1.75%: is it 1.75 or .0175 that should be hard coded?
 			
 	/**
-	 * Taux de décomposition maximal du carbone de la litière soluble dans l’acide (C2)
-	 * Valeur par défaut : 0.009 / jour
-	 * Intervalle : 0.0011 – 0.0200 / jour
-	 * Référence : Campbell et al. (2016)
+	 * Taux de dï¿½composition maximal du carbone de la litiï¿½re soluble dans lï¿½acide (C2)
+	 * Valeur par dï¿½faut : 0.009 / jour
+	 * Intervalle : 0.0011 ï¿½ 0.0200 / jour
+	 * Rï¿½fï¿½rence : Campbell et al. (2016)
 	 */
 	double parmK2 = 0.009; 
 	
 	/**
-	 * Carbone dans les apports de litière structurelle (C2 et C3) transportés vers la matière 
-	 * organique particulaire du sol (C5 et C10) à chaque pas de temps
-	 * Valeur par défaut : 0.006 g C par g C décomposé
-	 * Intervalle : 1 × 10-5 – 2 × 10-3 g C par g C décomposé
-	 * Référence : MEMS v1.0
+	 * Carbone dans les apports de litiï¿½re structurelle (C2 et C3) transportï¿½s vers la matiï¿½re 
+	 * organique particulaire du sol (C5 et C10) ï¿½ chaque pas de temps
+	 * Valeur par dï¿½faut : 0.006 g C par g C dï¿½composï¿½
+	 * Intervalle : 1 ï¿½ 10-5 ï¿½ 2 ï¿½ 10-3 g C par g C dï¿½composï¿½
+	 * Rï¿½fï¿½rence : MEMS v1.0
 	 */
 	double LIT_frg = 0.006;
 	
 	/**
-	 * Taux de décomposition maximal du carbone de la litière insoluble dans l’acide (C3)
-	 * Valeur par défaut : 0.0002 / jour
-	 * Intervalle : 2 × 10-5 – 1 × 10-3 / jour
-	 * Référence : Moorhead et al. (2013) 
+	 * Taux de dï¿½composition maximal du carbone de la litiï¿½re insoluble dans lï¿½acide (C3)
+	 * Valeur par dï¿½faut : 0.0002 / jour
+	 * Intervalle : 2 ï¿½ 10-5 ï¿½ 1 ï¿½ 10-3 / jour
+	 * Rï¿½fï¿½rence : Moorhead et al. (2013) 
 	 */
 	double parmK3 = 0.0002;
 	
 	/**
-	 * Efficacité de croissance maximale de l'utilisation microbienne du carbone 
-	 * de la litière soluble dans l'eau (C1)
-	 * Valeur par défaut : 0.6 g C biomasse microbienne par g décomposé
-	 * Intervalle : 0.4 – 0.7 g C biomasse microbienne par g décomposé
-	 * Références : Sinsabaugh et al. (2013) 
+	 * Efficacitï¿½ de croissance maximale de l'utilisation microbienne du carbone 
+	 * de la litiï¿½re soluble dans l'eau (C1)
+	 * Valeur par dï¿½faut : 0.6 g C biomasse microbienne par g dï¿½composï¿½
+	 * Intervalle : 0.4 ï¿½ 0.7 g C biomasse microbienne par g dï¿½composï¿½
+	 * Rï¿½fï¿½rences : Sinsabaugh et al. (2013) 
 	 */
 	double parmB1 = 0.6;
 	
 	/**
-	 * Quantité maximale de carbone lixivié du carbone de la litière soluble 
-	 * dans l'eau décomposé (C1) vers la couche de litière DOM (C6)
-	 * Valeur par défaut : 0.15 g DOM-C par g C décomposé
-	 * Références : Campbell et al. (2016) 
+	 * Quantitï¿½ maximale de carbone lixiviï¿½ du carbone de la litiï¿½re soluble 
+	 * dans l'eau dï¿½composï¿½ (C1) vers la couche de litiï¿½re DOM (C6)
+	 * Valeur par dï¿½faut : 0.15 g DOM-C par g C dï¿½composï¿½
+	 * Rï¿½fï¿½rences : Campbell et al. (2016) 
 	 */
 	double E_smax = 0.15;
 	
 	/**
-	 * Quantité minimale de carbone lixivié du carbone de la litière soluble 
-	 * dans l'eau décomposé (C1) vers la couche de litière DOM (C6)
-	 * Valeur par défaut : 0.005 g DOM-C par g C décomposé
-	 * Références : Campbell et al. (2016) 
+	 * Quantitï¿½ minimale de carbone lixiviï¿½ du carbone de la litiï¿½re soluble 
+	 * dans l'eau dï¿½composï¿½ (C1) vers la couche de litiï¿½re DOM (C6)
+	 * Valeur par dï¿½faut : 0.005 g DOM-C par g C dï¿½composï¿½
+	 * Rï¿½fï¿½rences : Campbell et al. (2016) 
 	 */
 	double E_smin = 0.005;
 	
 	/**
-	 * Indice lignocellulosique maximal qui influence la génération de DOM à 
-	 * partir de la décomposition de la litière
-	 * Valeur par défaut : 0.51
-	 * Références : Campbell et al. (2016); Soong et al. (2015) 
+	 * Indice lignocellulosique maximal qui influence la gï¿½nï¿½ration de DOM ï¿½ 
+	 * partir de la dï¿½composition de la litiï¿½re
+	 * Valeur par dï¿½faut : 0.51
+	 * Rï¿½fï¿½rences : Campbell et al. (2016); Soong et al. (2015) 
 	 */
 	double LCI_max = 0.51;
 	
 	/**
-	 * Quantité maximale de carbone lixivié du carbone de la litière soluble 
-	 * dans l'acide décomposé (C2) vers la couche de litière DOM (C6)
-	 * Valeur par défaut : 0.15 g DOM-C par g C décomposé
-	 * Références : Campbell et al. (2016) 
+	 * Quantitï¿½ maximale de carbone lixiviï¿½ du carbone de la litiï¿½re soluble 
+	 * dans l'acide dï¿½composï¿½ (C2) vers la couche de litiï¿½re DOM (C6)
+	 * Valeur par dï¿½faut : 0.15 g DOM-C par g C dï¿½composï¿½
+	 * Rï¿½fï¿½rences : Campbell et al. (2016) 
 	 */
 	double E_Hmax = 0.15;
 	
 	/**
-	 * Quantité minimale de carbone lixivié du carbone de la litière soluble 
-	 * dans l'acide décomposé (C2) vers la couche de litière DOM (C6) 
-	 * Valeur par défaut : 0.005 g DOM-C par g C décomposé
-	 * Références : Campbell et al. (2016) 
+	 * Quantitï¿½ minimale de carbone lixiviï¿½ du carbone de la litiï¿½re soluble 
+	 * dans l'acide dï¿½composï¿½ (C2) vers la couche de litiï¿½re DOM (C6) 
+	 * Valeur par dï¿½faut : 0.005 g DOM-C par g C dï¿½composï¿½
+	 * Rï¿½fï¿½rences : Campbell et al. (2016) 
 	 */
 	double E_Hmin = 0.005;
 	
 	/**
-	 * Efficacité de croissance maximale de l'utilisation microbienne 
-	 * du carbone de litière structurelle soluble dans l'acide (C2)
-	 * Valeur par défaut : 0.5 g C biomasse microbienne par g décomposé
-	 * Intervalle : 0.3 – 0.6 g C biomasse microbienne par g décomposé
-	 * Références : Sinsabaugh et al. (2013) 
+	 * Efficacitï¿½ de croissance maximale de l'utilisation microbienne 
+	 * du carbone de litiï¿½re structurelle soluble dans l'acide (C2)
+	 * Valeur par dï¿½faut : 0.5 g C biomasse microbienne par g dï¿½composï¿½
+	 * Intervalle : 0.3 ï¿½ 0.6 g C biomasse microbienne par g dï¿½composï¿½
+	 * Rï¿½fï¿½rences : Sinsabaugh et al. (2013) 
 	 */
 	double parmB2 = 0.5;
 	
 	/**
-	 * Taux de décomposition maximal du carbone de la biomasse microbienne (C4)
-	 * Valeur par défaut : 0.57 / jour
-	 * Intervalle : 0.11 – 0.97 / jour
-	 * Références : Campbell et al. (2016)
+	 * Taux de dï¿½composition maximal du carbone de la biomasse microbienne (C4)
+	 * Valeur par dï¿½faut : 0.57 / jour
+	 * Intervalle : 0.11 ï¿½ 0.97 / jour
+	 * Rï¿½fï¿½rences : Campbell et al. (2016)
 	 */
 	double parmK4 = 0.57;
 
 	
 	/**
-	 * Production de matière organique particulaire lourde et grossière (C5) 
-	 * à partir de la décomposition du carbone de la biomasse microbienne (C4)
-	 * Valeur par défaut : 0.33 g C produits microbiens par g C décomposé
-	 * Intervalle : 0.028 – 0.79 g C produits microbiens par g C décomposé
-	 * Références : Campbell et al. (2016) 
+	 * Production de matiï¿½re organique particulaire lourde et grossiï¿½re (C5) 
+	 * ï¿½ partir de la dï¿½composition du carbone de la biomasse microbienne (C4)
+	 * Valeur par dï¿½faut : 0.33 g C produits microbiens par g C dï¿½composï¿½
+	 * Intervalle : 0.028 ï¿½ 0.79 g C produits microbiens par g C dï¿½composï¿½
+	 * Rï¿½fï¿½rences : Campbell et al. (2016) 
 	 */
 	double parmB3 = 0.33;
 
 	/**
-	 * Carbone lixivié du carbone de la biomasse microbienne en décomposition (C4)
-	 * Valeur par défaut : 0.19 g DOM-C par g C décomposé
-	 * Intervalle : 0.022 – 0.42 g DOM-C par g C décomposé
-	 * Références : Campbell et al. (2016) 
+	 * Carbone lixiviï¿½ du carbone de la biomasse microbienne en dï¿½composition (C4)
+	 * Valeur par dï¿½faut : 0.19 g DOM-C par g C dï¿½composï¿½
+	 * Intervalle : 0.022 ï¿½ 0.42 g DOM-C par g C dï¿½composï¿½
+	 * Rï¿½fï¿½rences : Campbell et al. (2016) 
 	 */
 	double la_2 = 0.19;
 	
 	/**
-	 * Fraction des apports de litière fragmentés qui forment de la matière organique particulaire (POM) lourde (C5) [échelle entre 0 et 1]
-	 * Valeur par défaut : 0.30
-	 * Intervalle : 0.07 – 0.83
-	 * Références : Poeplau and Don (2013); Soong et al. (2016)
+	 * Fraction des apports de litiï¿½re fragmentï¿½s qui forment de la matiï¿½re organique particulaire (POM) lourde (C5) [ï¿½chelle entre 0 et 1]
+	 * Valeur par dï¿½faut : 0.30
+	 * Intervalle : 0.07 ï¿½ 0.83
+	 * Rï¿½fï¿½rences : Poeplau and Don (2013); Soong et al. (2016)
 	 */
 	double POM_split = .3;
 	
 	/**
-	 * Taux de décomposition maximal des particules lourdes et 
-	 * grossières de matière organique du sol (C5)
-	 * Valeur par défaut : 0.0005 / jour
-	 * Intervalle : 6 × 10-5 – 1 × 10-3 / jour
-	 * Références : Campbell et al. (2016); Del Galdo et al. (2003) 
+	 * Taux de dï¿½composition maximal des particules lourdes et 
+	 * grossiï¿½res de matiï¿½re organique du sol (C5)
+	 * Valeur par dï¿½faut : 0.0005 / jour
+	 * Intervalle : 6 ï¿½ 10-5 ï¿½ 1 ï¿½ 10-3 / jour
+	 * Rï¿½fï¿½rences : Campbell et al. (2016); Del Galdo et al. (2003) 
 	 */
 	double parmK5 = 0.0005;
 	
 	
 	/**
-	 * Carbone lixivié du carbone de la litière insoluble 
-	 * dans l'acide et du carbone de la matière organique 
-	 * particulaire lourde et grossière (C3 et C5)
-	 * Valeur par défaut : 0.038 g C-DOM par g C décomposé
-	 * Intervalle : 0.014 – 0.050 g C-DOM par g C décomposé
-	 * Référence : Campbell et al. (2016); Soong et al. (2015) 
+	 * Carbone lixiviï¿½ du carbone de la litiï¿½re insoluble 
+	 * dans l'acide et du carbone de la matiï¿½re organique 
+	 * particulaire lourde et grossiï¿½re (C3 et C5)
+	 * Valeur par dï¿½faut : 0.038 g C-DOM par g C dï¿½composï¿½
+	 * Intervalle : 0.014 ï¿½ 0.050 g C-DOM par g C dï¿½composï¿½
+	 * Rï¿½fï¿½rence : Campbell et al. (2016); Soong et al. (2015) 
 	 */
 	double la_3 = 0.038; 
 	
 	/**
-	 * Carbone dans la couche de DOM de la litière (C6) 
-	 * transporté vers le DOM du sol (C8) à chaque pas de temps
-	 * Valeur par défaut : 0.8 g C-DOM par g C-DOM
-	 * Intervalle : 0.2 – 0.99 g C-DOM par g C-DOM
-	 * Références : MEMS v1.0
+	 * Carbone dans la couche de DOM de la litiï¿½re (C6) 
+	 * transportï¿½ vers le DOM du sol (C8) ï¿½ chaque pas de temps
+	 * Valeur par dï¿½faut : 0.8 g C-DOM par g C-DOM
+	 * Intervalle : 0.2 ï¿½ 0.99 g C-DOM par g C-DOM
+	 * Rï¿½fï¿½rences : MEMS v1.0
 	 */
 	double DOC_frg = 0.8;
 	
 	/**
-	 * Taux de décomposition maximal du carbone 
+	 * Taux de dï¿½composition maximal du carbone 
 	 * organique dissout (DOM) du sol (C8)
-	 * Valeur par défaut : 0.00144 / jour
-	 * Références : Kalbitz et al. (2005) 
+	 * Valeur par dï¿½faut : 0.00144 / jour
+	 * Rï¿½fï¿½rences : Kalbitz et al. (2005) 
 	 */
 	double parmK8 = 0.00144;
 	
 	/**
-	 * Taux de décomposition maximal de la matière organique 
-	 * du sol associée aux minéraux (C9)
-	 * Valeur par défaut : 2.2 × 10-5 / jour
-	 * Intervalle : 1 × 10-5 – 4 × 10-5 / jour
-	 * Références : Del Galdo et al. (2003) 
+	 * Taux de dï¿½composition maximal de la matiï¿½re organique 
+	 * du sol associï¿½e aux minï¿½raux (C9)
+	 * Valeur par dï¿½faut : 2.2 ï¿½ 10-5 / jour
+	 * Intervalle : 1 ï¿½ 10-5 ï¿½ 4 ï¿½ 10-5 / jour
+	 * Rï¿½fï¿½rences : Del Galdo et al. (2003) 
 	 */
 	double parmK9 = 2.2E-5;
 	
 	/**
-	 * Taux de décomposition maximal des particules légères de matière organique du sol (C10)
-	 * Valeur par défaut : 2.96 × 10-5 / jour
-	 * Intervalle : 4 × 10-3 – 1 × 10-4 / jour
-	 * Références : Del Galdo et al. (2003) 
+	 * Taux de dï¿½composition maximal des particules lï¿½gï¿½res de matiï¿½re organique du sol (C10)
+	 * Valeur par dï¿½faut : 2.96 ï¿½ 10-5 / jour
+	 * Intervalle : 4 ï¿½ 10-3 ï¿½ 1 ï¿½ 10-4 / jour
+	 * Rï¿½fï¿½rences : Del Galdo et al. (2003) 
 	 */
 	double parmK10 = 2.96E-5;
 	
@@ -210,27 +220,51 @@ public class SoilCarbonPredictor extends REpiceaPredictor {
 	double L_k_lm = 0.25;
 	
 	/**
-	 * Taux spécifique maximal de lessivage pour représenter le transport vertical du carbone dans la MAOM 
-	 * à travers le profil du sol
-	 * Valeur par défaut : 0.00438 g C par jour
-	 * Intervalle : 1 × 10-5 – 0.02 g C par jour
-	 * Référence : Trumbore et al. (1992) 
+	 * Taux spÃ©cifique maximal de lessivage pour reprï¿½senter le transport vertical du carbone dans la MAOM
+	 * ï¿½ travers le profil du sol
+	 * Valeur par dï¿½faut : 0.00438 g C par jour
+	 * Intervalle : 1 ï¿½ 10-5 ï¿½ 0.02 g C par jour
+	 * Rï¿½fï¿½rence : Trumbore et al. (1992) 
 	 */
 	double DOC_lch = 0.00438;
-	
-	double C1;
-	double C2;
-	double C3;
-	
+
 	public SoilCarbonPredictor(boolean isVariabilityEnabled) {
 		super(isVariabilityEnabled, isVariabilityEnabled, isVariabilityEnabled);
 		// TODO we normally call init here
+
 	}
 
 	@Override
 	protected void init() {
 		// TODO Auto-generated method stub
 
+	}
+
+	public SoilCarbonPredictorCompartment predictCStockChanges(SoilCarbonPredictorCompartment compartments,
+								double N_lit,
+								double CT_i,	// pkoi est-ce un param d'entrÃ©e ?
+								double f_sol,
+								double f_lig,
+								double soil_pH,
+								double bulkDensity,
+								double sandProportion,
+								double rockProportion) {
+
+		SoilCarbonPredictorCompartment pred = new SoilCarbonPredictorCompartment(compartments);
+
+		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C1, Eq01_getDailyChangeC1(this, compartments, CT_i, f_sol, N_lit));
+		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C2, Eq02_getDailyChangeC2(this, compartments, CT_i, f_sol, f_lig, N_lit));
+		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C3, Eq03_getDailyChangeC3(this, compartments, CT_i, f_lig));
+		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C4, Eq04_getDailyChangeC4(this, compartments, N_lit));
+		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C5, Eq05_getDailyChangeC5(this, compartments));
+		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C6, Eq06_getDailyChangeC6(this, compartments, CT_i, f_sol, N_lit));
+		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C7, Eq07_getDailyChangeC7(this, compartments, N_lit));
+		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C8, Eq08_getDailyChangeC8(this, compartments, N_lit, soil_pH, bulkDensity, sandProportion, rockProportion));
+		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C9, Eq09_getDailyChangeC9(this, compartments, N_lit, soil_pH, bulkDensity, sandProportion, rockProportion));
+		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C10, Eq10_getDailyChangeC10(this, compartments));
+		pred.setStock(SoilCarbonPredictorCompartment.CompartmentID.C11, Eq11_getDailyChangeC11(this, compartments));
+
+		return pred;
 	}
 
 }
