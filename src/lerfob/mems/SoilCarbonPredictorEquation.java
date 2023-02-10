@@ -21,7 +21,11 @@ import repicea.math.Matrix;
  */
 public class SoilCarbonPredictorEquation {
     /**
-     * Calculate the daily change in C stock in compartment C1.
+     * Calculate the daily change in C stock in compartment C1. <br>
+     * <br>
+     * La partie uB * B1 * (1 - la_4) * uk * C1 * parmK1 s'en va de C1 à C4
+     * La partie la_4 * uk * C1 * parmK1 s'en va de C1 à C6
+     * La partie (1 - uB * B1) * (1 - la_4) * uk * C1 * parmK1 s'en va de C1 à C7
      * @param compartments a Matrix instance with the initial stocks in each compartment
      * @param C1_i_in the daily input
      * @param uk
@@ -35,30 +39,38 @@ public class SoilCarbonPredictorEquation {
     }
 
     /**
-     * Calculate the daily change in C stock in compartment C2.
+     * Calculate the daily change in C stock in compartment C2. <br>
+     * <br>
+     * La partie uB * B2 * (1 - la_1) * uk * C2 * parmK2 s'en va de C2 à C4
+     * La partie la_1 * uk * C2 * parmK2 s'en va de C2 à C6
+     * La partie (1 - uB * B2) * (1 - la_1) * uk * C2 * parmK2 s'en va de C2 à C7
+     * La partie POM_split * C2 * LIT_frg s'en va de C2 à C5
+     * La partie (1 - POM_split) * C2 * LIT_frg s'en va de C2 à C10
      * @param compartments a Matrix instance with the initial stocks in each compartment
      * @param C2_i_in
      * @param uk
      * @return
      */
     static double Eq02_getDailyChangeC2(SoilCarbonPredictor carbonModel,
-                                   SoilCarbonPredictorCompartment compartments,
-                                   double C2_i_in,
-                                   double uk) {
+                                        SoilCarbonPredictorCompartment compartments,
+                                        double C2_i_in,
+                                        double uk) {
         double C2 = compartments.getStock(CompartmentID.C2);
-        return C2_i_in - uk * C2 * carbonModel.parmK2 -
-                C2 * carbonModel.LIT_frg;
+        return C2_i_in - uk * C2 * carbonModel.parmK2 - C2 * carbonModel.LIT_frg;
     }
 
     /**
-     * Provide the daily change in the C stock in compartment C3.
+     * Provide the daily change in the C stock in compartment C3. <br>
+     * <br>
+     * La partie C3 * LIT_frg s'en va à C5 et à C10
+     * La partie C3 * parmK3 s'en va à C6 et C7
      * @param compartments a Matrix instance with the initial stocks in each compartment
      * @param C3_i_in the daily input
      * @return
      */
     static double Eq03_getDailyChangeC3(SoilCarbonPredictor carbonModel,
-                                   SoilCarbonPredictorCompartment compartments,
-                                   double C3_i_in) {
+                                        SoilCarbonPredictorCompartment compartments,
+                                        double C3_i_in) {
 
         double C3 = compartments.getStock(CompartmentID.C3);
 
@@ -70,21 +82,28 @@ public class SoilCarbonPredictorEquation {
     }
 
     /**
-     * Provide the daily change in the C stock in compartment C4.
+     * Provide the daily change in the C stock in compartment C4. <br>
+     * <br>
+     * La partie B3 * (1 - la_2) * parmK4 * C4 s'en va de C4 à C5
+     * La partie la_2 * parmK4 * C4 s'en va de C4 à C6
+     * La partie (1 - B3) * (1 - la_2) * parmK4 * C4 s'en va de C4 à C7
      * @param compartments a Matrix instance with the initial stocks in each compartment
      * @param C4_C1_ass
      * @param C4_C2_ass
      * @return
      */
     static double Eq04_getDailyChangeC4(SoilCarbonPredictor carbonModel,
-                                   SoilCarbonPredictorCompartment compartments,
-                                   double C4_C1_ass,
-                                   double C4_C2_ass) {
+                                        SoilCarbonPredictorCompartment compartments,
+                                        double C4_C1_ass,
+                                        double C4_C2_ass) {
         return C4_C1_ass + C4_C2_ass - compartments.getStock(CompartmentID.C4) * carbonModel.parmK4;
     }
 
     /**
-     * Provide the daily change in the C stock in compartment C5.
+     * Provide the daily change in the C stock in compartment C5. <br>
+     * <br>
+     * La partie la_3 * parmK5 * C5 va de C5 à C8
+     * La partie (1 - la_3) * parmK5 * C5 va de C5 à C7
      * @param compartments a Matrix instance with the initial stocks in each compartment
      * @param C5_C4_gen
      * @param C5_C2_frg
@@ -100,7 +119,10 @@ public class SoilCarbonPredictorEquation {
     }
 
     /**
-     * Provide the daily change in the C stock in compartment C6.
+     * Provide the daily change in the C stock in compartment C6. <br>
+     * <br>
+     * La partie DOC_frg * C6 va de C6 à C8
+     *
      * @param compartments a Matrix instance with the initial stocks in each compartment
      * @param C6_i_in
      * @param C6_C1_in
@@ -148,7 +170,11 @@ public class SoilCarbonPredictorEquation {
     }
 
     /**
-     * Provide the daily change in the C stock in compartment C8.
+     * Provide the daily change in the C stock in compartment C8. <br>
+     * <br>
+     * La partie sorption va de C8 à C9
+     * La partie DOC_lch * C8 va de C8 à C11
+     * La partie parmK8 * C8 va de C8 à C7
      * @param compartments a Matrix instance with the initial stocks in each compartment
      * @param C8_C5_in
      * @param C8_C6_in
@@ -157,29 +183,34 @@ public class SoilCarbonPredictorEquation {
      * @return
      */
     static double Eq08_getDailyChangeC8(SoilCarbonPredictor carbonModel,
-                                   SoilCarbonPredictorCompartment compartments,
-                                   double C8_C5_in,
-                                   double C8_C6_in,
-                                   double C8_C10_in,
-                                   double sorption) {
+                                        SoilCarbonPredictorCompartment compartments,
+                                        double C8_C5_in,
+                                        double C8_C6_in,
+                                        double C8_C10_in,
+                                        double sorption) {
         double C8 = compartments.getStock(CompartmentID.C8);
         return C8_C5_in + C8_C6_in + C8_C10_in - sorption - C8 * carbonModel.DOC_lch - C8 * carbonModel.parmK8;
     }
 
     /**
-     * Provide the daily change in the C stock in compartment C9.
+     * Provide the daily change in the C stock in compartment C9. <br>
+     * <br>
+     * La partie C9 * parmK9 va de C9 à C7
      * @param compartments a Matrix instance with the initial stocks in each compartment
      * @param sorption
      * @return
      */
     static double Eq09_getDailyChangeC9(SoilCarbonPredictor carbonModel,
-                                   SoilCarbonPredictorCompartment compartments,
-                                   double sorption) {
+                                        SoilCarbonPredictorCompartment compartments,
+                                        double sorption) {
         return sorption - compartments.getStock(CompartmentID.C9) * carbonModel.parmK9;
     }
 
     /**
-     * Provide the daily change in the C stock in compartment C10.
+     * Provide the daily change in the C stock in compartment C10. <br>
+     * <br>
+     * La partie la_3 * C10 * parmK10 va de C10 à C8
+     *
      * @param compartments a Matrix instance with the initial stocks in each compartment
      * @param C10_C2_frg
      * @param C10_C3_frg
@@ -251,9 +282,7 @@ public class SoilCarbonPredictorEquation {
      * @param compartments a Matrix instance with the initial stocks in each compartment
      * @return
      */
-    static double Eq16_getLCI(SoilCarbonPredictorCompartment compartments) {	// TODO the definition of C3 is inconsistent with the information moreover, this is input whereas the symbol suggests the current stock in the pool
-//		 * @param C3 input total au pool C1 (C3?) de carbone de litière insoluble dans l’acide pour le jour j
-//		 * @param C2 input total au pool C2 de carbone de litière soluble dans l’acide pour le jour j
+    static double Eq16_getLCI(SoilCarbonPredictorCompartment compartments) {
         double C3 = compartments.getStock(CompartmentID.C3);
         return C3 / (compartments.getStock(CompartmentID.C2) + C3);
     }
@@ -287,7 +316,7 @@ public class SoilCarbonPredictorEquation {
                                                              double uB,
                                                              double la_1,
                                                              double uk) {
-        return uB * carbonModel.parmB2 * (1 - la_1) * uk * carbonModel.parmK1 * compartments.getStock(CompartmentID.C1);
+        return uB * carbonModel.parmB2 * (1 - la_1) * uk * carbonModel.parmK2 * compartments.getStock(CompartmentID.C2);
     }
 
     /**
@@ -298,10 +327,12 @@ public class SoilCarbonPredictorEquation {
      * @return
      */
     static double Eq19_getModifier(SoilCarbonPredictor carbonModel,
-                              SoilCarbonPredictorCompartment compartments,
-                              double N_lit) {
-        return Math.min(1d / (1 + Math.exp(carbonModel.N_max) * (N_lit - carbonModel.N_mid)),
-                1 - Math.exp(-0.7 * (Math.abs(Eq16_getLCI(compartments) - 0.7) * 10)));
+                                   SoilCarbonPredictorCompartment compartments,
+                                   double N_lit) {
+        double t1 = 1d / (1 + Math.exp(-carbonModel.N_max) * (N_lit - carbonModel.N_mid));
+        double t2 = 1 - Math.exp(-0.7 * (Math.abs(Eq16_getLCI(compartments) - 0.7) * 10));
+        return Math.min(1d / (1 + Math.exp(-carbonModel.N_max) * (N_lit - carbonModel.N_mid)),
+                1 - Math.exp(-0.7 * (Math.abs(Eq16_getLCI(compartments) - 0.7) * 10))); //TODO: fix call to param
     }
 
     /**
@@ -315,33 +346,31 @@ public class SoilCarbonPredictorEquation {
                                    SoilCarbonPredictorCompartment compartments,
                                    double N_lit,
                                    double LCI_lit) {
-        return Math.min(1d / (1 + Math.exp(-carbonModel.N_max)*(N_lit - carbonModel.N_mid)),
-                Math.exp(-3 * LCI_lit));
+        return Math.min(1d / (1 + Math.exp(-carbonModel.N_max)*(N_lit - carbonModel.N_mid)), Math.exp(-3 * LCI_lit));
     }
 
     /**
-     * Provide the leaching factor.
+     * Provides the proportion of C leached from the decomposition of C2.
      * @param compartments a Matrix instance with the initial stocks in each compartment
      * @param N_lit the nitrogen content of the input material
      * @return
      */
     static double Eq21_getLeachingLA1(SoilCarbonPredictor carbonModel,
-                                 SoilCarbonPredictorCompartment compartments,
-                                 double N_lit) {
+                                      SoilCarbonPredictorCompartment compartments,
+                                      double N_lit) {
         return Math.min(carbonModel.E_Hmax - (carbonModel.E_Hmax - carbonModel.E_Hmin)/carbonModel.LCI_max * Eq16_getLCI(compartments),
                 carbonModel.E_Hmax - (carbonModel.E_Hmax - carbonModel.E_Hmin) / carbonModel.N_max * N_lit);
     }
 
-    //TODO check what that is?
     /**
-     * Provide the leaching factor.
+     * Provides the proportion of C leached from the decomposition of C1.
      * @param compartments a Matrix instance with the initial stocks in each compartment
      * @param N_lit the nitrogen content in the input material
      * @return
      */
     static double Eq22_getLeachingLA4(SoilCarbonPredictor carbonModel,
-                                 SoilCarbonPredictorCompartment compartments,
-                                 double N_lit) {
+                                      SoilCarbonPredictorCompartment compartments,
+                                      double N_lit) {
         return Math.min(carbonModel.E_smax - (carbonModel.E_smax - carbonModel.E_smin) / carbonModel.LCI_max * Eq16_getLCI(compartments),
                 carbonModel.E_smax - (carbonModel.E_smax - carbonModel.E_smin) / carbonModel.N_max * N_lit);
     }
@@ -362,7 +391,7 @@ public class SoilCarbonPredictorEquation {
      * @param compartments a Matrix instance with the initial stocks in each compartment
      */
     static double Eq24_getDailyCarbonStockTransferFromC2ToC5(SoilCarbonPredictor carbonModel,
-                                                        SoilCarbonPredictorCompartment compartments) {
+                                                             SoilCarbonPredictorCompartment compartments) {
         return carbonModel.POM_split * carbonModel.LIT_frg * compartments.getStock(CompartmentID.C2);
     }
 
@@ -372,7 +401,7 @@ public class SoilCarbonPredictorEquation {
      * @param compartments a Matrix instance with the initial stocks in each compartment
      */
     static double Eq25_getDailyCarbonStockTransferFromC3ToC5(SoilCarbonPredictor carbonModel,
-                                                        SoilCarbonPredictorCompartment compartments) { // TODO definition of C3 must be clarified
+                                                             SoilCarbonPredictorCompartment compartments) { // TODO definition of C3 must be clarified
         return carbonModel.POM_split * carbonModel.LIT_frg * compartments.getStock(CompartmentID.C3);
     }
 
@@ -382,7 +411,7 @@ public class SoilCarbonPredictorEquation {
      * @param compartments a Matrix instance with the initial stocks in each compartment
      */
     static double Eq26_getDailyCarbonStockTransferFromC2ToC10(SoilCarbonPredictor carbonModel,
-                                                         SoilCarbonPredictorCompartment compartments) {
+                                                              SoilCarbonPredictorCompartment compartments) {
         return (1 - carbonModel.POM_split) * carbonModel.LIT_frg * compartments.getStock(CompartmentID.C2);
     }
 
@@ -392,7 +421,7 @@ public class SoilCarbonPredictorEquation {
      * @param compartments a Matrix instance with the initial stocks in each compartment
      */
     static double Eq27_getDailyCarbonStockTransferFromC3ToC10(SoilCarbonPredictor carbonModel,
-                                                         SoilCarbonPredictorCompartment compartments) {
+                                                              SoilCarbonPredictorCompartment compartments) {
         return (1 - carbonModel.POM_split) * carbonModel.LIT_frg * compartments.getStock(CompartmentID.C3);
     }
 
@@ -430,7 +459,7 @@ public class SoilCarbonPredictorEquation {
      * @param compartments a Matrix instance with the initial stocks in each compartment
      */
     static double Eq30_getDailyCarbonStockTransferFromC3ToC6(SoilCarbonPredictor carbonModel,
-                                                        SoilCarbonPredictorCompartment compartments) {
+                                                             SoilCarbonPredictorCompartment compartments) {
         return carbonModel.la_3 * carbonModel.parmK3 * compartments.getStock(CompartmentID.C3);
     }
 
@@ -440,7 +469,7 @@ public class SoilCarbonPredictorEquation {
      * @param compartments a Matrix instance with the initial stocks in each compartment
      */
     static double Eq31_getDailyCarbonStockTransferFromC4ToC6(SoilCarbonPredictor carbonModel,
-                                                        SoilCarbonPredictorCompartment compartments) {
+                                                             SoilCarbonPredictorCompartment compartments) {
         return carbonModel.la_2 * carbonModel.parmK4 * compartments.getStock(CompartmentID.C4);
     }
 
@@ -450,7 +479,7 @@ public class SoilCarbonPredictorEquation {
      * @return
      */
     static double Eq32_getDailyCarbonStockTransferFromC5ToC8(SoilCarbonPredictor carbonModel,
-                                                        SoilCarbonPredictorCompartment compartments) {
+                                                             SoilCarbonPredictorCompartment compartments) {
         return carbonModel.la_3 * carbonModel.parmK5 * compartments.getStock(CompartmentID.C5);
     }
 
@@ -460,7 +489,7 @@ public class SoilCarbonPredictorEquation {
      * @param compartments a Matrix instance with the initial stocks in each compartment
      */
     static double Eq33_getDailyCarbonStockTransferFromC6ToC8(SoilCarbonPredictor carbonModel,
-                                                        SoilCarbonPredictorCompartment compartments) {
+                                                             SoilCarbonPredictorCompartment compartments) {
         return carbonModel.DOC_frg * compartments.getStock(CompartmentID.C6);
     }
 
@@ -470,7 +499,7 @@ public class SoilCarbonPredictorEquation {
      * @param compartments a Matrix instance with the initial stocks in each compartment
      */
     static double Eq34_getDailyCarbonStockTransferFromC10ToC8(SoilCarbonPredictor carbonModel,
-                                                         SoilCarbonPredictorCompartment compartments) {
+                                                              SoilCarbonPredictorCompartment compartments) {
         return carbonModel.la_3 * carbonModel.parmK10 * compartments.getStock(CompartmentID.C10);
     }
 
@@ -479,6 +508,7 @@ public class SoilCarbonPredictorEquation {
      * @param soil_pH
      */
     static double Eq35_getBindingAffinityL_k_lm(double soil_pH) {
+        //TODO Value range [0.07, 0.02] is inconsistent with the default L_k_lm parameter (0.25 g C per day)
         return Math.pow(10, -0.186 * soil_pH - 0.216);
     }
 
@@ -492,8 +522,11 @@ public class SoilCarbonPredictorEquation {
      * @param sandProportion
      * @param rockProportion
      */
-    static double Eq36_getMaximumSorptionCapacityQ_max(double bulkDensity, double sandProportion, double rockProportion) {
-        return bulkDensity * (0.26126 * (100 - sandProportion) + 11.07820) * (1 - rockProportion); // TODO check if 100 should be replaced by 1 before sand proportion
+    static double Eq36_getMaximumSorptionCapacityQ_max(double bulkDensity,
+                                                       double sandProportion,
+                                                       double rockProportion) {
+        // (1 - rockProportion) has been changed to 100 - rockProportion after validating the equation in the paper
+        return bulkDensity * (0.26126 * (100 - sandProportion) + 11.07820) * (100 - rockProportion);
     }
 
     /**
@@ -547,9 +580,8 @@ public class SoilCarbonPredictorEquation {
      * @param compartments a Matrix instance with the initial stocks in each compartment
      */
     static double Eq40_getDailyCarbonStockTransferFromC3ToC7(SoilCarbonPredictor carbonModel,
-                                                        SoilCarbonPredictorCompartment compartments) {
-        return (1 - carbonModel.la_3) *
-                carbonModel.parmK3 * compartments.getStock(CompartmentID.C3);
+                                                             SoilCarbonPredictorCompartment compartments) {
+        return (1 - carbonModel.la_3) * carbonModel.parmK3 * compartments.getStock(CompartmentID.C3);
     }
 
     /**
@@ -557,10 +589,8 @@ public class SoilCarbonPredictorEquation {
      * @param compartments a Matrix instance with the initial stocks in each compartment
      */
     static double Eq41_getDailyCarbonStockTransferFromC4ToC7(SoilCarbonPredictor carbonModel,
-                                                        SoilCarbonPredictorCompartment compartments) {
-        return (1 - carbonModel.parmB3) *
-                (1 - carbonModel.la_2) *
-                carbonModel.parmK4 * compartments.getStock(CompartmentID.C4);
+                                                             SoilCarbonPredictorCompartment compartments) {
+        return (1 - carbonModel.parmB3) * (1 - carbonModel.la_2) * carbonModel.parmK4 * compartments.getStock(CompartmentID.C4);
     }
 
     /**
@@ -568,9 +598,8 @@ public class SoilCarbonPredictorEquation {
      * @param compartments a Matrix instance with the initial stocks in each compartment
      */
     static double Eq42_getDailyCarbonStockTransferFromC5ToC7(SoilCarbonPredictor carbonModel,
-                                                        SoilCarbonPredictorCompartment compartments) {
-        return (1 - carbonModel.la_3) *
-                carbonModel.parmK5 * compartments.getStock(CompartmentID.C5);
+                                                             SoilCarbonPredictorCompartment compartments) {
+        return (1 - carbonModel.la_3) * carbonModel.parmK5 * compartments.getStock(CompartmentID.C5);
     }
 
     /**
@@ -587,7 +616,7 @@ public class SoilCarbonPredictorEquation {
      * @param compartments a Matrix instance with the initial stocks in each compartment
      */
     static double Eq44_getDailyCarbonStockTransferFromC9ToC7(SoilCarbonPredictor carbonModel,
-                                                        SoilCarbonPredictorCompartment compartments) {
+                                                             SoilCarbonPredictorCompartment compartments) {
         return carbonModel.parmK9 * compartments.getStock(CompartmentID.C9);
     }
 
@@ -596,7 +625,8 @@ public class SoilCarbonPredictorEquation {
      * @param compartments a Matrix instance with the initial stocks in each compartment
      */
     static double Eq45_getDailyCarbonStockTransferFromC10ToC7(SoilCarbonPredictor carbonModel,
-                                                         SoilCarbonPredictorCompartment compartments) {
-        return (1 - carbonModel.la_3) * carbonModel.parmK3 * compartments.getStock(CompartmentID.C10);
+                                                              SoilCarbonPredictorCompartment compartments) {
+        // Note : parmK3 was changed to parmK10 so that the outputs balance properly
+        return (1 - carbonModel.la_3) * carbonModel.parmK10 * compartments.getStock(CompartmentID.C10);
     }
 }

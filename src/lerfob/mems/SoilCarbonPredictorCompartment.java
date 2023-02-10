@@ -28,10 +28,9 @@ public class SoilCarbonPredictorCompartment implements MonteCarloSimulationCompl
 
         compartments = initialStock;
     }
-    public SoilCarbonPredictorCompartment(SoilCarbonPredictorCompartment o) {
-        compartments = o.compartments.getDeepClone();
+    public SoilCarbonPredictorCompartment(double initialValue) {
+        compartments = new Matrix(11, 1, initialValue, 0d);
     }
-
 
     public double getStock(CompartmentID id) {
         return compartments.getValueAt(id.ordinal(), 0);
@@ -39,6 +38,14 @@ public class SoilCarbonPredictorCompartment implements MonteCarloSimulationCompl
 
     public void setStock(CompartmentID id, double value) {
         compartments.setValueAt(id.ordinal(), 0, value);
+    }
+
+    public double getSum() {
+        return compartments.getSumOfElements();
+    }
+
+    public void add(SoilCarbonPredictorCompartment o) {
+        compartments = compartments.add(o.compartments);
     }
 
     @Override

@@ -16,7 +16,7 @@ import static lerfob.mems.SoilCarbonPredictorEquation.*;
 public class SoilCarbonPredictor extends REpiceaPredictor {
 
 	/**
-	 * Maximum daily decomposition rate of water soluble carbon in litter deaful value 0.37 (0.16-0.70) Source: Campbell et al. 2016
+	 * Maximum daily decomposition rate of water soluble carbon in litter default value 0.37 (0.16-0.70) Source: Campbell et al. 2016
 	 */
 	double parmK1 = 0.37; 
 	
@@ -34,14 +34,14 @@ public class SoilCarbonPredictor extends REpiceaPredictor {
 	 * Valeur par d�faut : 3 %
 	 * R�f�rence : Sinsabaugh et al. (2013) 
 	 */
-	double N_max = 0.03; // TODO was specified at 3%: is it 3 or .03 that should be hard coded?
+	double N_max = 3; // Units are in percent in the [0-100] range
 	
 	/**
 	 * Point m�dian de la fonction logistique qui d�crit la limitation de N
 	 * Valeur par d�faut : 1.75 %
 	 * R�f�rences : Campbell et al. (2016); Soong et al. (2015) 
 	 */
-	double N_mid = 0.0175; // TODO was specified at 1.75%: is it 1.75 or .0175 that should be hard coded?
+	double N_mid = 1.75; // Units are in percent in the [0-100] range
 			
 	/**
 	 * Taux de d�composition maximal du carbone de la liti�re soluble dans l�acide (C2)
@@ -78,18 +78,18 @@ public class SoilCarbonPredictor extends REpiceaPredictor {
 	double parmB1 = 0.6;
 	
 	/**
-	 * Quantit� maximale de carbone lixivi� du carbone de la liti�re soluble 
-	 * dans l'eau d�compos� (C1) vers la couche de liti�re DOM (C6)
-	 * Valeur par d�faut : 0.15 g DOM-C par g C d�compos�
-	 * R�f�rences : Campbell et al. (2016) 
+	 * Proportion maximale de carbone lixivié du carbone de la litière soluble
+	 * dans l'eau décomposé (C1) vers la couche de litière DOM (C6)
+	 * Valeur par défaut : 0.15 g DOM-C par g C décomposé
+	 * Références : Campbell et al. (2016)
 	 */
 	double E_smax = 0.15;
 	
 	/**
-	 * Quantit� minimale de carbone lixivi� du carbone de la liti�re soluble 
-	 * dans l'eau d�compos� (C1) vers la couche de liti�re DOM (C6)
-	 * Valeur par d�faut : 0.005 g DOM-C par g C d�compos�
-	 * R�f�rences : Campbell et al. (2016) 
+	 * Proportion minimale de carbone lixivié du carbone de la litière soluble
+	 * dans l'eau décomposé (C1) vers la couche de litiére DOM (C6)
+	 * Valeur par défaut : 0.005 g DOM-C par g C décomposé
+	 * Références : Campbell et al. (2016)
 	 */
 	double E_smin = 0.005;
 	
@@ -145,15 +145,15 @@ public class SoilCarbonPredictor extends REpiceaPredictor {
 	double parmB3 = 0.33;
 
 	/**
-	 * Carbone lixivi� du carbone de la biomasse microbienne en d�composition (C4)
-	 * Valeur par d�faut : 0.19 g DOM-C par g C d�compos�
-	 * Intervalle : 0.022 � 0.42 g DOM-C par g C d�compos�
-	 * R�f�rences : Campbell et al. (2016) 
+	 * Proportion du carbone lixivié de la biomasse microbienne en décomposition de C4
+	 * Valeur par défaut : 0.19 g DOM-C par g C décomposé
+	 * Intervalle : 0.022 à 0.42 g DOM-C par g C décomposé
+	 * Références : Campbell et al. (2016)
 	 */
 	double la_2 = 0.19;
 	
 	/**
-	 * Fraction des apports de liti�re fragment�s qui forment de la mati�re organique particulaire (POM) lourde (C5) [�chelle entre 0 et 1]
+	 * Proportion des apports de liti�re fragment�s qui forment de la mati�re organique particulaire (POM) lourde (C5) [�chelle entre 0 et 1]
 	 * Valeur par d�faut : 0.30
 	 * Intervalle : 0.07 � 0.83
 	 * R�f�rences : Poeplau and Don (2013); Soong et al. (2016)
@@ -171,12 +171,12 @@ public class SoilCarbonPredictor extends REpiceaPredictor {
 	
 	
 	/**
-	 * Carbone lixivi� du carbone de la liti�re insoluble 
-	 * dans l'acide et du carbone de la mati�re organique 
-	 * particulaire lourde et grossi�re (C3 et C5)
-	 * Valeur par d�faut : 0.038 g C-DOM par g C d�compos�
-	 * Intervalle : 0.014 � 0.050 g C-DOM par g C d�compos�
-	 * R�f�rence : Campbell et al. (2016); Soong et al. (2015) 
+	 * Proportion de carbone lixivié de la litière insoluble
+	 * dans l'acide et du carbone de la matière organique
+	 * particulaire lourde et grossière (C3 et C5)
+	 * Valeur par défaut : 0.038 g C-DOM par g C décomposé
+	 * Intervalle : 0.014 à 0.050 g C-DOM par g C décomposé
+	 * Référence : Campbell et al. (2016); Soong et al. (2015)
 	 */
 	double la_3 = 0.038; 
 	
@@ -242,7 +242,7 @@ public class SoilCarbonPredictor extends REpiceaPredictor {
 
 	public SoilCarbonPredictorCompartment predictCStockChanges(SoilCarbonPredictorCompartment compartments, SoilCarbonPredictorInput inputs) {
 
-		SoilCarbonPredictorCompartment pred = new SoilCarbonPredictorCompartment(compartments);
+		SoilCarbonPredictorCompartment pred = new SoilCarbonPredictorCompartment(0d);
 
 		// local variables are computed here and passed on to the equations to avoid recomputing them multiple times (ex : uk)
 		// Eq01
