@@ -1,51 +1,46 @@
 package lerfob.mems;
 
-import repicea.math.Matrix;
 import repicea.simulation.HierarchicalLevel;
 import repicea.simulation.MonteCarloSimulationCompliantObject;
 
 import java.security.InvalidParameterException;
 
 public class SoilCarbonPredictorCompartment implements MonteCarloSimulationCompliantObject {
-    public static enum CompartmentID {
-        C1,     // Water soluble litter
-        C2,     // Acid-soluble litter
-        C3,     // Acid-insoluble litter
-        C4,     // Microbial biomass
-        C5,     // Coarse, heavy POM
-        C6,     // Litter layer DOM
-        C7,     // Emitted CO2
-        C8,     // Soil layer DOM
-        C9,     // Mineral-associated OM
-        C10,    // Light POM
-        C11;    // Leached DOM
-    }
-    Matrix compartments;
+    public static final int C1 = 0;     // Water soluble litter
+    public static final int C2 = 1;     // Acid-soluble litter
+    public static final int C3 = 2;     // Acid-insoluble litter
+    public static final int C4 = 3;     // Microbial biomass
+    public static final int C5 = 4;     // Coarse, heavy POM
+    public static final int C6 = 5;     // Litter layer DOM
+    public static final int C7 = 6;     // Emitted CO2
+    public static final int C8 = 7;     // Soil layer DOM
+    public static final int C9 = 8;     // Mineral-associated OM
+    public static final int C10 = 9;    // Light POM
+    public static final int C11 = 10;   // Leached DOM
+    double[] bins;
     private int realizationID;
-    public SoilCarbonPredictorCompartment(Matrix initialStock) {
-        if (initialStock.m_iRows != 11 || initialStock.m_iCols != 1)
+    public SoilCarbonPredictorCompartment(double[] initialStock) {
+        if (initialStock.length != 11)
             throw new InvalidParameterException();
 
-        compartments = initialStock;
+        bins = initialStock;
     }
     public SoilCarbonPredictorCompartment(double initialValue) {
-        compartments = new Matrix(11, 1, initialValue, 0d);
-    }
-
-    public double getStock(CompartmentID id) {
-        return compartments.getValueAt(id.ordinal(), 0);
-    }
-
-    public void setStock(CompartmentID id, double value) {
-        compartments.setValueAt(id.ordinal(), 0, value);
+        bins = new double[11];
+        for (int i = 0; i < bins.length; i++)
+            bins[i] = initialValue;
     }
 
     public double getSum() {
-        return compartments.getSumOfElements();
+        double sum = 0.0;
+        for (int i = 0; i < bins.length; i++)
+            sum += bins[i];
+        return sum;
     }
 
     public void add(SoilCarbonPredictorCompartment o) {
-        compartments = compartments.add(o.compartments);
+        for (int i = 0; i < bins.length; i++)
+            bins[i] += o.bins[i];
     }
 
     @Override
