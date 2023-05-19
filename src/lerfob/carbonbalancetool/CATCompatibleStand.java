@@ -27,9 +27,16 @@ import repicea.simulation.covariateproviders.plotlevel.ManagementTypeProvider;
 import repicea.simulation.covariateproviders.plotlevel.TreeStatusCollectionsProvider;
 
 /**
- * This method ensures the stand is compatible with LERFoB-CAT. The interface DateYrProvider is
- * used to retrieve the current date at which the stand was measured. The AgeYrProvider interface is
- * used only in the case of a even-aged stand.
+ * An interface to ensure the STAND instance is compatible with CAT. <br>
+ * <br>
+ * It extends several interfaces. The DateYrProvider interface is used to 
+ * retrieve the current date at which the stand was measured. The AgeYrProvider 
+ * interface is used if the simulation can be run in infinite sequence, i.e. if
+ * <ul> 
+ * <li>the getManagementType() method returns ManagementType.EvenAged </li>
+ * <li>the getApplicationScale() method returns ApplicationScale.Stand </li>
+ * <li>the growth simulation has a single simulation (typically a deterministic simulation) </li>
+ * </ul>
  * @author Mathieu Fortin - August 2013
  */
 public interface CATCompatibleStand extends AreaHaProvider, 

@@ -130,7 +130,7 @@ public class CATGrowthSimulationRecordReader extends REpiceaRecordReader {
 	}
 	
 	@Override
-	protected List<ImportFieldElement> defineFieldsToImport() throws Exception {
+	protected List<ImportFieldElement> defineFieldsToImport() {
 		List<ImportFieldElement> ifeList = new ArrayList<ImportFieldElement>();
 		ImportFieldElement ife;
 		ife = new ImportFieldElement(CATGrowthSimulationFieldID.Date,

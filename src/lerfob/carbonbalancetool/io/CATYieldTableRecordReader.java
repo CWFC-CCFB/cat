@@ -96,7 +96,7 @@ public class CATYieldTableRecordReader extends REpiceaRecordReader {
 
 
 	@Override
-	protected List<ImportFieldElement> defineFieldsToImport() throws Exception {
+	protected List<ImportFieldElement> defineFieldsToImport() {
 		List<ImportFieldElement> ifeList = new ArrayList<ImportFieldElement>();
 		ImportFieldElement ife;
 		ife = new ImportFieldElement(CATYieldTableFieldID.Date,
@@ -159,7 +159,7 @@ public class CATYieldTableRecordReader extends REpiceaRecordReader {
 	}
 
 	@Override
-	protected void checkInputFieldsFormat(Object[] oArray) throws Exception {
+	protected void checkInputFieldsFormat(Object[] oArray) {
 		int index = this.getImportFieldManager().getIndexOfThisField(CATYieldTableFieldID.HarvestedVolume);
 		if (oArray[index].toString().isEmpty()) {
 			oArray[index] = "0";

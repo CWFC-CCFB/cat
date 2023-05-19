@@ -1,8 +1,19 @@
+/*
+ *  Build file for gradle
+ */
+
+
 plugins {
-    id 'idea'
-    id 'eclipse'
-    id 'java'
+    id 'com.palantir.git-version' version '3.0.0'
+//    id 'maven-publish'
+//    id 'signing'
 }
+
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+
 
 java {
   toolchain {
@@ -11,8 +22,10 @@ java {
 }
 
 repositories {
+	maven {		// sonatype repository
+		url "https://repo1.maven.org/maven2/"
+	}
     mavenCentral()
-    mavenLocal()
 }
 
 println "Using java version " + JavaVersion.current()
@@ -45,15 +58,24 @@ sourceSets {
     }               
 }
 
+configurations {
+	catImplementation {
+		extendsFrom implementation
+		description = 'Main implementation'
+		canBeResolved = true
+	}
+}
+
 dependencies {
     implementation 'org.jfree:jcommon:1.0.23'
     implementation 'org.jfree:jfreechart:1.0.17'
     implementation 'jfree:jfreechart-swt:1.0.17'
-    implementation 'net.sf.py4j:py4j:0.10.9.2'    
-    implementation group: 'org', name: 'repicea', version: '[1.9.4,)'    
-    implementation group: 'org', name: 'repicea-mathstats', version: '[1.1,)'    
-    implementation group: 'org', name: 'repicea-simulation', version: '[1.0.2,)'    
-    implementation group: 'org', name: 'lerfobforesttools', version: '[1.4.2,)'    
+    implementation 'net.sf.py4j:py4j:0.10.9.2' 
+       
+   	implementation group: 'io.github.cwfc-ccfb', name: 'repicea', version: '[1.9.5,)'    
+    implementation group: 'io.github.cwfc-ccfb', name: 'repicea-mathstats', version: '[1.1.4,)'    
+    implementation group: 'io.github.cwfc-ccfb', name: 'repicea-simulation', version: '[1.0.2,)'    
+    implementation group: 'io.github.cwfc-ccfb', name: 'lerfobforesttools', version: '[1.4.2,)'    
     
     implementation group: 'org.apache.xmlgraphics', name: 'batik-svggen', version: '1.14'
 	implementation group: 'org.apache.xmlgraphics', name: 'batik-dom', version: '1.14'
@@ -62,33 +84,10 @@ dependencies {
     testImplementation "junit:junit:4.12"    
 }
 
-def getSemVersion = { ->
-
-	def versionStdOut = new ByteArrayOutputStream()
-
-	def cmd = ['gitversion', '/showvariable', 'SemVer']
-	
-	    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
-	        def oscmd = ['cmd', '/c'] + cmd
-	        exec {
-	        	commandLine oscmd
-	        	standardOutput = versionStdOut
-        	}
-	    
-	    } else {
-	        def oscmd = ['sh'] + cmd
-	        exec {
-	        	commandLine oscmd
-	    		standardOutput = versionStdOut
-    		}
-    	}
-    
-    return versionStdOut.toString().trim()        	
-}
-
 compileJava {
-	project.version=getSemVersion()
-	println "Building " + rootProject.name + " v" + project.version
+	project.version= gitVersion() 
+	println "Building " + rootProject.name + " " + project.version
+	println "Installation directory " + "../externallibraries/" + rootProject.name
 }
 
 test {
@@ -100,25 +99,6 @@ test {
     
     exclude '**/ProductionEnvironmentTest.class'
 }
-
-task integrationTest(type: Test) {
-	description = 'Runs the integration tests.'
-    group = 'verification'
-	dependsOn jar
-	
-	include '**/*.class'
-	
-	testLogging.showStandardStreams = true
-    testClassesDirs = sourceSets.test.output.classesDirs
-        
-    // set classpath to test classes + test dependencies + JAR
-    classpath = project.sourceSets.test.output + configurations.testRuntimeClasspath + files(jar.archiveFile) 
-    outputs.upToDateWhen { false }
-    mustRunAfter test
-    maxHeapSize = "2048m"
-}
-
-check.dependsOn integrationTest
 
 jar {
 	manifest {
@@ -153,19 +133,40 @@ task fatJar(type: Jar) {
                    "Main-Class": "lerfob.carbonbalancetool.Starter")
     }
     archiveBaseName = 'CAT'
-	destinationDirectory =  file("${installDir}")  
+	destinationDirectory =  file("../externallibraries/" + rootProject.name)  
     from { sourceSets.main.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }		
 }
 
+
+
+task integrationTest(type: Test) {
+	description = 'Runs the integration tests.'
+    group = 'verification'
+	dependsOn jar
+	
+	include '**/*.class'
+	
+	testLogging.showStandardStreams = true
+    testClassesDirs = sourceSets.test.output.classesDirs
+        
+    // set classpath to test classes + test dependencies + JAR
+    classpath = project.sourceSets.test.output + configurations.testRuntimeClasspath + files(jar.archiveFile) 
+    outputs.upToDateWhen { false }
+    mustRunAfter test
+    maxHeapSize = "2048m"
+}
+
+check.dependsOn integrationTest
+
 task deleteInstallFolder(type: Delete) {
-  delete "${installDir}"  
+  delete "../externallibraries/" + rootProject.name
 }
 
 task install(type: Copy) {
 	description = 'Copies the output jar to installation folder.'
 	group = 'build'
-	dependsOn jar,deleteInstallFolder,integrationTest
-	from configurations.default
+	dependsOn deleteInstallFolder,integrationTest
+	from configurations.catImplementation
 	from jar
-	into "${installDir}"
+	into "../externallibraries/" + rootProject.name
 }
