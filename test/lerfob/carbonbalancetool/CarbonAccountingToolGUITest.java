@@ -92,6 +92,10 @@ public class CarbonAccountingToolGUITest {
 
 	@Test
 	public void testSVNExportHappyPath() throws Exception {
+		if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+			System.out.println("Test will be skipped because Mac does not support Times font.");
+			return;
+		}
 		JComboBox b = (JComboBox) ROBOT.findComponentWithThisName(CATFrame.MessageID.HWP_Parameters.name() + "_ComboBox");
 		Runnable toRun = new Runnable() {
 			public void run() {
@@ -137,6 +141,10 @@ public class CarbonAccountingToolGUITest {
 	
 	@Test
 	public void testImportAndSimulateYieldTableHappyPath() throws Exception {
+		if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+			System.out.println("Test will be skipped because Mac does not support Times font.");
+			return;
+		}
 		ROBOT.clickThisButton(UIControlManager.CommonMenuTitle.File.name());
 		ROBOT.clickThisButton(UIControlManager.CommonControlID.Import.name()); 
 		Runnable toRun = new Runnable() {
@@ -167,6 +175,10 @@ public class CarbonAccountingToolGUITest {
 	
 	@Test
 	public void testImportAndSimulateGrowthSimulationHappyPath() throws Exception {
+		if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+			System.out.println("Test will be skipped because Mac does not support Times font.");
+			return;
+		}
 		ROBOT.clickThisButton(UIControlManager.CommonMenuTitle.File.name());
 		ROBOT.clickThisButton(UIControlManager.CommonControlID.Import.name()); 
 		
