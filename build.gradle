@@ -112,7 +112,7 @@ jar {
     }
     
 	into ('/') {
-		from files(['./README.txt', './COPYING.LESSER.txt'])			
+		from files(['./README.md', './LICENSE.md'])			
 	}
 	
 	// include all java files from main sourceset into the jar file (resources are already included)
