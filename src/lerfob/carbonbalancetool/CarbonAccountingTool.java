@@ -28,6 +28,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Vector;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -62,6 +64,7 @@ import repicea.simulation.treelogger.TreeLoggerCompatibilityCheck;
 import repicea.simulation.treelogger.TreeLoggerDescription;
 import repicea.simulation.treelogger.TreeLoggerManager;
 import repicea.stats.Distribution;
+import repicea.util.JarUtility;
 //import repicea.treelogger.wbirchprodvol.WBirchProdVolTreeLogger;
 import repicea.util.ObjectUtility;
 import repicea.util.REpiceaTranslator;
@@ -261,9 +264,21 @@ public class CarbonAccountingTool extends AbstractGenericEngine implements REpic
 				if (!hasAlreadyBeenInstanciated) {
 					String packagePath = ObjectUtility.getRelativePackagePath(CarbonAccountingTool.class);
 					String iconPath =  packagePath + "SplashImage.jpg";
-					String bottomSplashWindowString = "Versions lerfob " +  LerfobForesttoolsAppVersion.getInstance().getVersion() + 
-							"- repicea " + REpiceaAppVersion.getInstance().getVersion();
-					new REpiceaSplashWindow(iconPath, 4, parentFrame, bottomSplashWindowString);
+					String filePath = JarUtility.getJarFileImInIfAny(getClass());
+					String version;
+					if (filePath != null) {
+						try {
+							Manifest m = JarUtility.getManifestFromThisJarFile(filePath);
+							version = m.getMainAttributes().get(Attributes.Name.SPECIFICATION_VERSION).toString();				
+						} catch (IOException e) {
+							version = "Unknown";			
+						}
+					} else {
+						version = "Unknown";			
+					}
+					
+					String bottomSplashWindowString = "Version " + version;
+					new REpiceaSplashWindow(iconPath, 4, parentFrame, 500, bottomSplashWindowString, 16);	// 500: image width; 16: font size
 
 					String licensePath = packagePath + "CATLicense_en.html";
 					if (REpiceaTranslator.getCurrentLanguage() == REpiceaTranslator.Language.French) {
