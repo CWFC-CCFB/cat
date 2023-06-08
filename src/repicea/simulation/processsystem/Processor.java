@@ -151,9 +151,9 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 
 	/**
 	 * This method returns the processor intakes in a map.
-	 * @return a Map with Processor instances and Integer as keys and values
+	 * @return a Map with Processor instances and Integer from 0 to 100 as keys and values
 	 */
-	protected Map<Processor, Integer> getSubProcessorIntakes() {
+	public Map<Processor, Integer> getSubProcessorIntakes() {
 		if (subProcessorIntakes == null) {
 			subProcessorIntakes = new HashMap<Processor, Integer>();
 			for (Processor processor : subProcessors) {		// if so, means we are dealing with the former implementation

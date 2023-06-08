@@ -339,7 +339,6 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		logCategoryProcessors.addAll(lcp);
 		TreeLoggerParameters tlp = (TreeLoggerParameters) wasMemorized.remove(0);
 		setSelectedTreeLogger(tlp);
-//		this.actualizeTreeLoggerParameters();
 	}
 
 	@Override

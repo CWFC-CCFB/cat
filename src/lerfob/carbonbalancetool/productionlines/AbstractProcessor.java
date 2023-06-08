@@ -53,12 +53,11 @@ public class AbstractProcessor extends Processor {
 	}
 	
 	/*
-	 * For extended visibility in the package.
+	 * For extended visibility.
 	 */
 	@Override
 	protected Point getOriginalLocation() {
 		return super.getOriginalLocation();
 	}
 
-	
 }
