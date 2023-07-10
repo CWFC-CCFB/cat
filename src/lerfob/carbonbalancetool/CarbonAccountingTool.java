@@ -34,7 +34,6 @@ import java.util.jar.Manifest;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-import lerfob.app.LerfobForesttoolsAppVersion;
 import lerfob.carbonbalancetool.CATTask.SetProperRealizationTask;
 import lerfob.carbonbalancetool.CATTask.Task;
 import lerfob.carbonbalancetool.CATUtility.BiomassParametersName;
@@ -51,7 +50,6 @@ import lerfob.treelogger.maritimepine.MaritimePineBasicTreeLogger;
 import lerfob.treelogger.mathilde.MathildeTreeLogger;
 import repicea.app.AbstractGenericEngine;
 import repicea.app.GenericTask;
-import repicea.app.REpiceaAppVersion;
 import repicea.app.SettingMemory;
 import repicea.gui.REpiceaShowableUI;
 import repicea.gui.REpiceaShowableUIWithParent;
@@ -65,7 +63,6 @@ import repicea.simulation.treelogger.TreeLoggerDescription;
 import repicea.simulation.treelogger.TreeLoggerManager;
 import repicea.stats.Distribution;
 import repicea.util.JarUtility;
-//import repicea.treelogger.wbirchprodvol.WBirchProdVolTreeLogger;
 import repicea.util.ObjectUtility;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.Language;
@@ -264,7 +261,7 @@ public class CarbonAccountingTool extends AbstractGenericEngine implements REpic
 				if (!hasAlreadyBeenInstanciated) {
 					String packagePath = ObjectUtility.getRelativePackagePath(CarbonAccountingTool.class);
 					String iconPath =  packagePath + "SplashImage.jpg";
-					String filePath = JarUtility.getJarFileImInIfAny(getClass());
+					String filePath = JarUtility.getJarFileImInIfAny(CarbonAccountingTool.class);
 					String version;
 					if (filePath != null) {
 						try {
