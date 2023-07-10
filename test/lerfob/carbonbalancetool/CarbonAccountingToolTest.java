@@ -275,7 +275,7 @@ public class CarbonAccountingToolTest {
 			for (int i = 0; i < expEvolution.m_iRows; i++) {
 				double expected = expEvolution.getValueAt(i, 0);
 				double observed = obsEvolution.getValueAt(i, 0);
-				Assert.assertEquals("Testing compartment " + key.name(), expected, observed, 1E-8);
+				Assert.assertEquals("Testing compartment " + key.name() + " at row " + i, expected, observed, 1E-8);
 			}
 			nbCompartmentChecked++;
 		}

@@ -45,7 +45,7 @@ public class CATGrowthSimulationImportFromOtherApp {
 
 	public void instantiatePlotAndTree(String standIdentification, int dateYr, int realization, String plotID, double plotAreaHa,
 			StatusClass statusClass, double treeOverbarkVolumeDm3, double numberOfTrees, String originalSpeciesName, Double dbhCm) {
-		recordReader.instantiatePlotAndTree(standIdentification, dateYr, realization, plotID, plotAreaHa, statusClass, treeOverbarkVolumeDm3, numberOfTrees, originalSpeciesName, dbhCm);
+		recordReader.instantiatePlotAndTree(standIdentification, dateYr, realization, plotID, plotAreaHa, false, statusClass, treeOverbarkVolumeDm3, numberOfTrees, originalSpeciesName, dbhCm);
 	}
 	
 	/**

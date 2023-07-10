@@ -34,6 +34,7 @@ import org.junit.Test;
 
 import lerfob.carbonbalancetool.CATUtility.ProductionManagerName;
 import lerfob.carbonbalancetool.CarbonAccountingTool.CATMode;
+import lerfob.carbonbalancetool.io.CATGrowthSimulationRecordReader;
 import lerfob.carbonbalancetool.io.CATSpeciesSelectionDialog;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManagerDialog;
 import repicea.gui.REpiceaAWTProperty;
@@ -87,11 +88,10 @@ public class CarbonAccountingToolGUITest {
 		ROBOT.shutdown();
 		ROBOT.clickThisButton("Yes");
 		CAT.guiInterface.dispose();
-		int u = 0;
 	}
 
 	@Test
-	public void testSVNExportHappyPath() throws Exception {
+	public void testSVGExportHappyPath() throws Exception {
 		if (System.getProperty("os.name").toLowerCase().contains("mac")) {
 			System.out.println("Test will be skipped because Mac does not support Times font.");
 			return;
@@ -173,6 +173,7 @@ public class CarbonAccountingToolGUITest {
 		Assert.assertEquals("Testing if a tab has been craeted in the tabbedPane instance", tabCountBefore + 1, tabCountAfter);
 	}
 	
+//	@Ignore
 	@Test
 	public void testImportAndSimulateGrowthSimulationHappyPath() throws Exception {
 		if (System.getProperty("os.name").toLowerCase().contains("mac")) {
@@ -229,5 +230,68 @@ public class CarbonAccountingToolGUITest {
 	}
 	
 	
+	@Test
+	public void testImportAndSimulateGrowthSimulationSinglePlotHappyPath() throws Exception {
+		if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+			System.out.println("Test will be skipped because Mac does not support Times font.");
+			return;
+		}
+		CATGrowthSimulationRecordReader.TestUnevenAgedInfiniteSequence = true;
+
+		ROBOT.clickThisButton(UIControlManager.CommonMenuTitle.File.name());
+		ROBOT.clickThisButton(UIControlManager.CommonControlID.Import.name()); 
+		
+		Runnable toRun = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					ROBOT.clickThisButton(CATFrame.MessageID.ImportGrowthSimulation.name()); 
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		
+		Thread t = ROBOT.startGUI(toRun, JDialog.class);
+		String fileToLoad = ObjectUtility.getPackagePath(getClass()) + File.separator + "io" + File.separator + "art2009UnevenagedSimulation.csv";
+		ROBOT.fillThisTextField("Filename", fileToLoad);
+		ROBOT.clickThisButton("Open", ImportFieldManagerDialog.class);		
+		ROBOT.clickThisButton("Ok", REpiceaMatchSelectorDialog.class);
+		ROBOT.clickThisButton("File");
+
+		toRun = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					ROBOT.clickThisButton("Open"); 
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		
+		ROBOT.startGUI(toRun, JDialog.class);
+		
+		fileToLoad = ObjectUtility.getPackagePath(getClass()) + File.separator + "io" + File.separator + "speciesCorrespondanceForUnevenAgedSimulation.xml";
+		ROBOT.fillThisTextField("Filename", fileToLoad);
+		ROBOT.clickThisButton("Open");		
+		ROBOT.letDispatchThreadProcess();
+		ROBOT.clickThisButton("Ok", CATAWTProperty.StandListProperlySet);
+		
+		List<CATCompatibleStand> stands = CAT.getCarbonCompartmentManager().getStandList();
+		Assert.assertEquals("Testing the number of CATCompatibleStand instances imported", 5, stands.size());
+		
+		int tabCountBefore = CAT.getUI().graphicPanel.tabbedPane.getTabCount();
+		ROBOT.clickThisButton(CATFrame.MessageID.CalculateCarbonBalance.name(), CATAWTProperty.CarbonCalculationSuccessful); 
+		int tabCountAfter = CAT.getUI().graphicPanel.tabbedPane.getTabCount();
+		Assert.assertEquals("Testing if a tab has been craeted in the tabbedPane instance", tabCountBefore + 1, tabCountAfter);
+		
+		CATSingleSimulationResult summary = CAT.getCarbonCompartmentManager().getSimulationSummary();
+		Assert.assertTrue("Testing if budget map is not empty", !summary.getBudgetMap().isEmpty());
+		CATGrowthSimulationRecordReader.TestUnevenAgedInfiniteSequence = false;
+
+	}
+
 	
+
 }

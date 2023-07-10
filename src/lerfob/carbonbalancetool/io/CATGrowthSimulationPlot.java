@@ -15,9 +15,10 @@ class CATGrowthSimulationPlot implements CATCompatibleStand {
 	private final double areaHa;
 	protected final CATGrowthSimulationPlotSample plotSample;
 	private final String plotID;
+	private final boolean isInterventionResult;
 	
 	
-	CATGrowthSimulationPlot(String plotID, double areaHa, CATGrowthSimulationPlotSample plotSample) {
+	CATGrowthSimulationPlot(String plotID, double areaHa, boolean isInterventionResult, CATGrowthSimulationPlotSample plotSample) {
 		this.areaHa = areaHa;
 		this.plotSample = plotSample;
 		this.plotID = plotID;
@@ -25,6 +26,7 @@ class CATGrowthSimulationPlot implements CATCompatibleStand {
 		for (StatusClass status : StatusClass.values()) {
 			statusMap.put(status, new ArrayList<CATGrowthSimulationTree>());
 		}
+		this.isInterventionResult = isInterventionResult;
 	}
 	
 	
@@ -35,7 +37,7 @@ class CATGrowthSimulationPlot implements CATCompatibleStand {
 	public Collection<CATGrowthSimulationTree> getTrees(StatusClass statusClass) {return statusMap.get(statusClass);}
 
 	@Override
-	public boolean isInterventionResult() {return !getTrees(StatusClass.cut).isEmpty();}
+	public boolean isInterventionResult() {return isInterventionResult;}
 
 	@Override
 	public String getStandIdentification() {return plotID;}

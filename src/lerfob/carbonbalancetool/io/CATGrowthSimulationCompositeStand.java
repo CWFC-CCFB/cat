@@ -32,20 +32,24 @@ import repicea.simulation.covariateproviders.treelevel.TreeStatusProvider.Status
  * This class represents the plots in a growth simulation import in CAT.
  * @author Mathieu Fortin - July 2017
  */
-class CATGrowthSimulationCompositeStand implements CATCompatibleStand, StochasticInformationProvider<CATGrowthSimulationPlotSample> {
+public class CATGrowthSimulationCompositeStand implements CATCompatibleStand, StochasticInformationProvider<CATGrowthSimulationPlotSample> {
 
-	
 	private final String standIdentification;
 	private final Map<Integer, CATGrowthSimulationPlotSample> realizationMap;
 	private final int dateYr;
 	protected final CATGrowthSimulationRecordReader reader;
-
+	private ManagementType managementType;
+	private ApplicationScale applicationScale;
+	private final boolean isInterventionResult;
 	
-	CATGrowthSimulationCompositeStand(int dateYr, String standIdentification, CATGrowthSimulationRecordReader reader) {
+	CATGrowthSimulationCompositeStand(int dateYr, String standIdentification, CATGrowthSimulationRecordReader reader, boolean isInterventionResult) {
 		this.dateYr = dateYr;
 		this.standIdentification = standIdentification;
 		this.reader = reader;
 		realizationMap = new HashMap<Integer, CATGrowthSimulationPlotSample>();
+		managementType = ManagementType.UnevenAged;
+		applicationScale = reader.scale;
+		this.isInterventionResult = isInterventionResult;
 	}
 	
 	@Override
@@ -61,7 +65,7 @@ class CATGrowthSimulationCompositeStand implements CATCompatibleStand, Stochasti
 	}
 		
 	@Override
-	public boolean isInterventionResult() {return false;}
+	public boolean isInterventionResult() {return isInterventionResult;}
 
 	@Override
 	public String getStandIdentification() {return standIdentification;}
@@ -82,18 +86,28 @@ class CATGrowthSimulationCompositeStand implements CATCompatibleStand, Stochasti
 	@Override
 	public CATGrowthSimulationPlotSample getRealization(int realizationID) {return realizationMap.get(realizationID);}
 
-	void createRealization(int realization) {	
+	void createRealizationIfNeeded(int realization) {	
 		if (!realizationMap.containsKey(realization)) {
 			realizationMap.put(realization, new CATGrowthSimulationPlotSample(this));
 		}
 	}
 
 	@Override
-	public ManagementType getManagementType() {return ManagementType.UnevenAged;}
+	public ManagementType getManagementType() {return managementType;}
 
 	@Override
-	public ApplicationScale getApplicationScale() {return ApplicationScale.FMU;}
+	public ApplicationScale getApplicationScale() {return applicationScale;}
 
+	/*
+	 * For test purposes
+	 */
+	void setApplicationScale(ApplicationScale appScale) {applicationScale = appScale;}
+	
+	/*
+	 * For test purposes
+	 */
+	void setManagementType(ManagementType managType) {managementType = managType;}
+	
 	@Override
 	public CATCompatibleStand getHarvestedStand() {return null;}
 
