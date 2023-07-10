@@ -28,7 +28,7 @@ import repicea.util.ObjectUtility;
 public class AffiliereJSONReaderTest {
 
 	public static void main(String[] args) throws FileNotFoundException {
-		String filename = ObjectUtility.getPackagePath(AffiliereJSONReaderTest.class) + "sankey_diagram.json";
+		String filename = ObjectUtility.getPackagePath(AffiliereJSONReaderTest.class) + "Filière bois - Exports Sankeys_v23_layout - Copie.json";
 		AffiliereJSONReader reader = new AffiliereJSONReader(filename);
 		ProductionProcessorManager manager = new ProductionProcessorManager();
 		for (ProductionLineProcessor p : reader.processors.values()) {
