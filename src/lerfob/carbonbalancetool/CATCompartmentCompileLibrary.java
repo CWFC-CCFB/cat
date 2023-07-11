@@ -24,6 +24,7 @@ import java.util.List;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit;
 import lerfob.carbonbalancetool.productionlines.EndUseWoodProductCarbonUnit;
 import lerfob.carbonbalancetool.productionlines.LandfillCarbonUnit;
+import repicea.simulation.covariateproviders.plotlevel.ManagementTypeProvider.ManagementType;
 import repicea.simulation.covariateproviders.treelevel.TreeStatusProvider.StatusClass;
 
 /**
@@ -59,8 +60,6 @@ class CATCompartmentCompileLibrary {
 			for (CATCompatibleStand stand : stands) {
 				double carbonContent = manager.getCarbonToolSettings().getCurrentBiomassParameters().getBelowGroundCarbonMg(stand.getTrees(StatusClass.alive), manager);
 				oMap.put(stand, carbonContent);
-//				int indexOnTableTable = timeTable.getIndexOfThisStandOnTheTimeTable(stand);
-//				carbonCompartment.setCarbonIntoArray(indexOnTableTable, carbonContent);
 			}
 			oMap.interpolateIfNeeded();
 			carbonCompartment.setIntegratedCarbon(integrateCarbonOverHorizon(carbonCompartment) / revolutionPeriod);
@@ -72,8 +71,6 @@ class CATCompartmentCompileLibrary {
 			for (CATCompatibleStand stand : stands) {
 				double carbonContent = manager.getCarbonToolSettings().getCurrentBiomassParameters().getAboveGroundCarbonMg(stand.getTrees(StatusClass.alive), manager);
 				oMap.put(stand, carbonContent);
-//				int indexOnTableTable = timeTable.getIndexOfThisStandOnTheTimeTable(stand);
-//				carbonCompartment.setCarbonIntoArray(indexOnTableTable, carbonContent);
 			}	
 			oMap.interpolateIfNeeded();
 			carbonCompartment.setIntegratedCarbon(integrateCarbonOverHorizon(carbonCompartment) / revolutionPeriod);
@@ -103,7 +100,7 @@ class CATCompartmentCompileLibrary {
 				carbonCompartment.setCarbonIntoArray(i, carbon[i]);
 			}
 			
-			if (isEvenAged(carbonCompartment)) {
+			if (isInfiniteSequenceAllowed(carbonCompartment)) {
 				carbonCompartment.setIntegratedCarbon(integratedCarbon / revolutionPeriod);
 			} else {
 				carbonCompartment.setIntegratedCarbon(integrateCarbonOverHorizon(carbonCompartment) / revolutionPeriod);
@@ -118,7 +115,6 @@ class CATCompartmentCompileLibrary {
 				scalingCO2toCFactor = 1d;
 			};
 
-//			carbon = new double[timeScale.size()];
 			
 			// evolution
 			for (int i = 0; i < timeTable.size(); i++) {
@@ -277,8 +273,8 @@ class CATCompartmentCompileLibrary {
 	
 	}
 	
-	private boolean isEvenAged(CATCompartment carbonCompartment) {
-		return carbonCompartment.getCompartmentManager().isEvenAged();
+	private boolean isInfiniteSequenceAllowed(CATCompartment carbonCompartment) {
+		return carbonCompartment.getCompartmentManager().isInfiniteSequenceAllowed();
 	}
 	
 	/**
@@ -288,14 +284,16 @@ class CATCompartmentCompileLibrary {
 	 */
 	private double integrateCarbonOverHorizon(CATCompartment carbonCompartment) {
 		CATTimeTable timeScale = carbonCompartment.getCompartmentManager().getTimeTable();
-		boolean isEvenAged = isEvenAged(carbonCompartment);
+		boolean isInfiniteSequenceAllowed = isInfiniteSequenceAllowed(carbonCompartment);
 		double previousValue, currentValue;
 		int currentDateYr, previousDateYr;
 		double totalCarbon = 0d;
 		
 		for (int i = 1; i < timeScale.size(); i++) {		// time scale is now 
 			
-			if (i == 1 &&  isEvenAged) {	// then add the first years from 0 to the initial measurement of the stand
+			if (i == 1 && 
+					isInfiniteSequenceAllowed && 
+					carbonCompartment.getCompartmentManager().getManagementType() == ManagementType.EvenAged) {	// then add the first years from 0 to the initial measurement of the stand
 				int initialAgeYr = timeScale.getInitialAgeYr();
 				currentValue = carbonCompartment.getCalculatedCarbonArray()[i - 1];
 				totalCarbon += calculateCarbonForThisPeriod(0, initialAgeYr, 0, currentValue);
