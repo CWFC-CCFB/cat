@@ -18,7 +18,6 @@
  */
 package lerfob.carbonbalancetool.sensitivityanalysis;
 
-import repicea.math.Matrix;
 import repicea.simulation.MonteCarloSimulationCompliantObject;
 import repicea.simulation.SensitivityAnalysisParameter;
 import repicea.stats.estimates.Estimate;
