@@ -277,7 +277,12 @@ public class CarbonAccountingToolGUITest {
 		ROBOT.clickThisButton("Open");		
 		ROBOT.letDispatchThreadProcess();
 		ROBOT.clickThisButton("Ok", CATAWTProperty.StandListProperlySet);
-		
+
+		ROBOT.letDispatchThreadProcess();
+		ROBOT.clickThisButton("OK");
+
+		ROBOT.letDispatchThreadProcess();
+
 		List<CATCompatibleStand> stands = CAT.getCarbonCompartmentManager().getStandList();
 		Assert.assertEquals("Testing the number of CATCompatibleStand instances imported", 5, stands.size());
 		

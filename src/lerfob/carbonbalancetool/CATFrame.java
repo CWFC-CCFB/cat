@@ -21,6 +21,7 @@
 package lerfob.carbonbalancetool;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Event;
 import java.awt.FlowLayout;
@@ -61,6 +62,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileFilter;
 
@@ -609,7 +611,17 @@ public class CATFrame extends REpiceaFrame implements PropertyChangeListener, It
 		hwpComboBox.setEnabled(!b);
 		biomassComboBox.setEnabled(!b);
 	}
-
+	
+	protected void displayWarningMessage(String message) {
+		Runnable doRun = new Runnable() {
+			@Override
+			public void run() {
+				CommonGuiUtility.showWarningMessage(message, CATFrame.this);
+			}
+		};
+		SwingUtilities.invokeLater(doRun);
+	}
+	
 	private void updateMajorProgressBarValue(int i) {
 		majorProgressBar.setValue(i);
 		majorProgressBar.setString(majorProgressBar.getValue() + " / " + majorProgressBar.getMaximum());

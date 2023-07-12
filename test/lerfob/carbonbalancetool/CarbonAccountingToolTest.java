@@ -18,10 +18,13 @@ import lerfob.carbonbalancetool.CarbonAccountingTool.CATMode;
 import lerfob.carbonbalancetool.io.CATGrowthSimulationRecordReader;
 import lerfob.carbonbalancetool.io.CATYieldTableRecordReader;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager;
+import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettings;
+import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettings.VariabilitySource;
 import repicea.io.tools.ImportFieldManager;
 import repicea.math.Matrix;
 import repicea.serial.xml.XmlDeserializer;
 import repicea.serial.xml.XmlSerializerChangeMonitor;
+import repicea.stats.Distribution.Type;
 import repicea.stats.distributions.utility.GaussianUtility;
 import repicea.stats.estimates.Estimate;
 import repicea.stats.estimates.MonteCarloEstimate;
@@ -398,6 +401,35 @@ public class CarbonAccountingToolTest {
 		System.out.println("Successfully tested this number of compartments " + nbCompartmentChecked);
 		cat.requestShutdown();
 	}
+	
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test
+	public void testWithYieldTableAndIPCCConfigurationSensitivityAnalysis() throws Exception {
+		String filename = ObjectUtility.getPackagePath(getClass()) + "io" + File.separator + "ExampleYieldTable.csv";
+		String ifeFilename = ObjectUtility.getPackagePath(getClass()) + "io" + File.separator + "ExampleYieldTable.ife";
+		String refFilename = ObjectUtility.getPackagePath(getClass()) + "io" + File.separator + "ExampleYieldTableWithIPCCReference.xml";
+		String prlFilename = ObjectUtility.getRelativePackagePath(ProductionProcessorManager.class) + "library" + ObjectUtility.PathSeparator + "ipcc2014_en.prl";
+		CarbonAccountingTool cat = new CarbonAccountingTool(CATMode.SCRIPT);
+		cat.initializeTool(null);
+		CATYieldTableRecordReader recordReader = new CATYieldTableRecordReader(CATSpecies.ABIES);
+		ImportFieldManager ifm = ImportFieldManager.createImportFieldManager(ifeFilename, filename);
+		recordReader.initInScriptMode(ifm);
+		recordReader.readAllRecords();
+		cat.setStandList(recordReader.getStandList());
+		cat.setProductionManager(prlFilename);
+		CATSensitivityAnalysisSettings.getInstance().setNumberOfMonteCarloRealizations(2);
+		CATSensitivityAnalysisSettings.getInstance().setVariabilitySource(VariabilitySource.BasicDensity, Type.GAUSSIAN, true, 0.3);
+
+		cat.calculateCarbon();
+		CATSingleSimulationResult result = cat.getCarbonCompartmentManager().getSimulationSummary();
+		Map<CompartmentInfo, Estimate<?>> obsMap = result.getBudgetMap();
+		
+		cat.requestShutdown();
+	}
+
+	
+	
 	
 	public static void main(String[] args) throws Exception {
 		CarbonAccountingToolTest test = new CarbonAccountingToolTest();

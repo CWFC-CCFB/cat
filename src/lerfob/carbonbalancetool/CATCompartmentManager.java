@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
 
 import lerfob.carbonbalancetool.CATCompartment.CompartmentInfo;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit;
@@ -34,17 +35,40 @@ import lerfob.carbonbalancetool.productionlines.EndUseWoodProductCarbonUnit;
 import lerfob.carbonbalancetool.productionlines.ProductionLineManager;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager;
 import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettings;
+import repicea.simulation.ApplicationScaleProvider.ApplicationScale;
 import repicea.simulation.HierarchicalLevel;
 import repicea.simulation.MonteCarloSimulationCompliantObject;
-import repicea.simulation.ApplicationScaleProvider.ApplicationScale;
-import repicea.simulation.covariateproviders.plotlevel.StochasticInformationProvider;
 import repicea.simulation.covariateproviders.plotlevel.ManagementTypeProvider.ManagementType;
+import repicea.simulation.covariateproviders.plotlevel.StochasticInformationProvider;
 import repicea.simulation.covariateproviders.treelevel.SamplingUnitIDProvider;
 import repicea.simulation.covariateproviders.treelevel.TreeStatusProvider.StatusClass;
+import repicea.util.REpiceaLogManager;
+import repicea.util.REpiceaTranslator;
+import repicea.util.REpiceaTranslator.TextableEnum;
 
 @SuppressWarnings("deprecation")
 public class CATCompartmentManager implements MonteCarloSimulationCompliantObject {
 
+	private static enum MessageID implements TextableEnum {
+		UnevenAgedWarning("Carbon balance calculation under infinite sequence will be allowed. Its validity will depend on how similar the initial and final stands of the simulation are.",
+				"Le calcul du bilan de carbon en s\u00E9quence infinie sera possible. La validit\u00E9 de ce calcul d\u00E9pendra toutefois de la ressemblance entre les peuplements initial et final de la simulation."),
+		;
+
+		MessageID(String englishText, String frenchText) {
+			setText(englishText, frenchText);
+		}
+		
+		@Override
+		public void setText(String englishText, String frenchText) {	
+			REpiceaTranslator.setString(this, englishText, frenchText);
+		}
+		
+		@Override
+		public String toString() {return REpiceaTranslator.getString(this);}
+		
+	}
+	
+	
 	private static int NumberOfExtraYrs = 80;	// number of years after the final cut
 
 	private final Map<StatusClass, Map<CATCompatibleStand, Map<String, Map<String, Collection<CATCompatibleTree>>>>> treeCollections;
@@ -171,6 +195,10 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 				return true; 
 			} else { // then uneven-aged management type
 				if (lastStand.isInterventionResult()) { // but last stand has been harvested; 
+					REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.WARNING, null, MessageID.UnevenAgedWarning.toString());
+					if (caller.isGuiEnabled()) {
+						caller.getUI().displayWarningMessage(MessageID.UnevenAgedWarning.toString());
+					}
 					return true;
 				}
 			}
