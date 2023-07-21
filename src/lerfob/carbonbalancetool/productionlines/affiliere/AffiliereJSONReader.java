@@ -52,13 +52,18 @@ public class AffiliereJSONReader {
 		JsonObject<?,?> processorJSONMap = (JsonObject<?,?>) mappedJSON.get("nodes");
 		JsonObject<?,?> linkJSONMap = (JsonObject<?,?>) mappedJSON.get("links");
 		processors = new HashMap<String, ProductionLineProcessor>();
+		boolean toBeProcessed;
 		for (Object o : processorJSONMap.values()) {
-			String id = (String) ((JsonObject<?,?>) o).get("idNode");
-			String name = (String) ((JsonObject<?,?>) o).get("name");
-			int x = ((Number) ((JsonObject<?,?>) o).get("x")).intValue() + OFFSET;
-			int y = ((Number) ((JsonObject<?,?>) o).get("y")).intValue();
-			ProductionLineProcessor p = ProductionLineProcessor.createProductionLineProcessor(name, x, y);
-			processors.put(id, p);
+			JsonObject<String,?> oMap = (JsonObject<String,?>) o;
+			String id = (String) oMap.get("idNode");
+			String name = (String) oMap.get("name");
+			toBeProcessed = !oMap.containsKey("display") || ((Boolean) oMap.get("display"));	// if display is not part of the map, it is then considered to be displayed
+			if (toBeProcessed) {
+				int x = ((Number) ((JsonObject<?,?>) o).get("x")).intValue() + OFFSET;
+				int y = ((Number) ((JsonObject<?,?>) o).get("y")).intValue();
+				ProductionLineProcessor p = ProductionLineProcessor.createProductionLineProcessor(name, x, y);
+				processors.put(id, p);
+			}
 		}
 
 		for (Object o : processorJSONMap.values()) {
@@ -67,19 +72,28 @@ public class AffiliereJSONReader {
 				List<Double> values = new ArrayList<Double>();
 				for (Object linkName : linkArray) {
 					JsonObject<?,?> linkProperties = (JsonObject<?,?>) linkJSONMap.get(linkName.toString());
-					double value = ((Number) ((JsonObject<?,?>) linkProperties.get("value")).get("value")).doubleValue();
-					values.add(value);
-				}
-
-				List<Integer> subProcessorIntakes = calculateIntakes(values);
-				
-				for (int i = 0; i < linkArray.length; i++) {
-					Object linkName = linkArray[i];
-					JsonObject<?,?> linkProperties = (JsonObject<?,?>) linkJSONMap.get(linkName.toString());
 					ProductionLineProcessor fatherProcessor = processors.get((String) linkProperties.get("idSource"));
 					ProductionLineProcessor childProcessor = processors.get((String) linkProperties.get("idTarget"));
-					fatherProcessor.addSubProcessor(childProcessor);
-					fatherProcessor.getSubProcessorIntakes().put(childProcessor, subProcessorIntakes.get(i));
+					if (fatherProcessor != null && childProcessor != null) {				// means that both processors are displayed
+						double value = ((Number) ((JsonObject<?,?>) linkProperties.get("value")).get("value")).doubleValue();
+						values.add(value);
+					}
+				}
+
+				if (!values.isEmpty()) {
+					List<Integer> subProcessorIntakes = calculateIntakes(values);
+					
+					int j = 0;
+					for (int i = 0; i < linkArray.length; i++) {
+						Object linkName = linkArray[i];
+						JsonObject<?,?> linkProperties = (JsonObject<?,?>) linkJSONMap.get(linkName.toString());
+						ProductionLineProcessor fatherProcessor = processors.get((String) linkProperties.get("idSource"));
+						ProductionLineProcessor childProcessor = processors.get((String) linkProperties.get("idTarget"));
+						if (fatherProcessor != null && childProcessor != null) {		// means that both processors are displayed
+							fatherProcessor.addSubProcessor(childProcessor);
+							fatherProcessor.getSubProcessorIntakes().put(childProcessor, subProcessorIntakes.get(j++));
+						}
+					}
 				}
 			}
 		}

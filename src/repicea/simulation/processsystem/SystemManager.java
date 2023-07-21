@@ -217,13 +217,6 @@ public class SystemManager implements ListManager<Processor>,
 		for (Processor processor : getList()) {
 			processor.setPartOfEndlessLoop(false);
 		}
-//		List<ProcessUnit> inputUnits = new ArrayList<ProcessUnit>();
-//		addTestUnits(inputUnits);
-////		inputUnits.add(new TestProcessUnit());
-//		
-//		for (Processor processor : getPrimaryProcessors()) {
-//			processor.doProcess(inputUnits);
-//		}
 		List<ProcessUnit> inputUnits;
 		
 		for (Processor processor : getPrimaryProcessors()) {
