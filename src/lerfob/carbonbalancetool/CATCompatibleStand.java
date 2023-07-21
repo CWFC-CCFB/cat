@@ -63,17 +63,4 @@ public interface CATCompatibleStand extends AreaHaProvider,
 	 */
 	public String getStandIdentification();
 	
-	/**
-	 * This method returns true if the carbon balance can be calculated in infinite sequence. 
-	 * This is possible when the management type is even-aged and the application scale is at the
-	 * stand level.
-	 * @return a boolean
-	 */
-	public default boolean canBeRunInInfiniteSequence() {
-		return getManagementType() == ManagementType.EvenAged && 
-				getApplicationScale() == ApplicationScale.Stand &&
-				CATCompartmentManager.getNumberOfRealizations(this) == 1;		// we can hardly deal with multiple realizations in an infinite sequence 
-													// because the stand may be ready for final harvesting in one realization 
-													// but not in the others
-	}
 }

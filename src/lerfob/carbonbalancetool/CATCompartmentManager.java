@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
 
 import lerfob.carbonbalancetool.CATCompartment.CompartmentInfo;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit;
@@ -34,15 +35,40 @@ import lerfob.carbonbalancetool.productionlines.EndUseWoodProductCarbonUnit;
 import lerfob.carbonbalancetool.productionlines.ProductionLineManager;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager;
 import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettings;
+import repicea.simulation.ApplicationScaleProvider.ApplicationScale;
 import repicea.simulation.HierarchicalLevel;
 import repicea.simulation.MonteCarloSimulationCompliantObject;
+import repicea.simulation.covariateproviders.plotlevel.ManagementTypeProvider.ManagementType;
 import repicea.simulation.covariateproviders.plotlevel.StochasticInformationProvider;
 import repicea.simulation.covariateproviders.treelevel.SamplingUnitIDProvider;
 import repicea.simulation.covariateproviders.treelevel.TreeStatusProvider.StatusClass;
+import repicea.util.REpiceaLogManager;
+import repicea.util.REpiceaTranslator;
+import repicea.util.REpiceaTranslator.TextableEnum;
 
 @SuppressWarnings("deprecation")
 public class CATCompartmentManager implements MonteCarloSimulationCompliantObject {
 
+	private static enum MessageID implements TextableEnum {
+		UnevenAgedWarning("Carbon balance calculation under infinite sequence will be allowed. Its validity will depend on how similar the initial and final stands of the simulation are.",
+				"Le calcul du bilan de carbon en s\u00E9quence infinie sera possible. La validit\u00E9 de ce calcul d\u00E9pendra toutefois de la ressemblance entre les peuplements initial et final de la simulation."),
+		;
+
+		MessageID(String englishText, String frenchText) {
+			setText(englishText, frenchText);
+		}
+		
+		@Override
+		public void setText(String englishText, String frenchText) {	
+			REpiceaTranslator.setString(this, englishText, frenchText);
+		}
+		
+		@Override
+		public String toString() {return REpiceaTranslator.getString(this);}
+		
+	}
+	
+	
 	private static int NumberOfExtraYrs = 80;	// number of years after the final cut
 
 	private final Map<StatusClass, Map<CATCompatibleStand, Map<String, Map<String, Collection<CATCompatibleTree>>>>> treeCollections;
@@ -60,6 +86,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	private boolean isSimulationValid;
 	private int nbSimulations = 0;
 	private final CarbonAccountingTool caller;
+	private ManagementType managementType;
 	
 	protected CATSingleSimulationResult summary;
 	
@@ -162,19 +189,48 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		this.isSimulationValid = isSimulationValid;
 	}
 	
+	private boolean canBeRunInInfiniteSequence(CATCompatibleStand lastStand, int nRealizations) {
+		if (lastStand.getApplicationScale() == ApplicationScale.Stand && nRealizations == 1) {	// we can hardly deal with multiple realizations in an infinite sequence because the stand may be ready for final harvesting in one realization but not in the others
+			if (lastStand.getManagementType() == ManagementType.EvenAged) {
+				return true; 
+			} else { // then uneven-aged management type
+				if (lastStand.isInterventionResult()) { // but last stand has been harvested; 
+					REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.WARNING, null, MessageID.UnevenAgedWarning.toString());
+					if (caller.isGuiEnabled()) {
+						caller.getUI().displayWarningMessage(MessageID.UnevenAgedWarning.toString());
+					}
+					return true;
+				}
+			}
+		}
+		return false; // any other case
+	}
+	
+	/**
+	 * Initialize the carbon balance simulation. <p>
+	 * This method determines <p>
+	 * <ul>
+	 * <li> the management type (even aged or uneven aged)
+	 * <li> the rotation length (or cutting cycle in case of uneven-aged management)
+	 * <li> whether the simulation can be run in infinite sequence
+	 * <li> the number of Monte Carlo realizations (set to 1 if the model is deterministic)
+	 * </ul> 
+	 * @param stands a List of CATCompatibleStand instances
+	 */
 	public void init(List<CATCompatibleStand> stands) {
 		this.stands = stands;
 		if (stands != null) {
 			CATCompatibleStand lastStand = stands.get(stands.size() - 1);
-			isInfiniteSequenceAllowed = lastStand.canBeRunInInfiniteSequence();
+			managementType = lastStand.getManagementType();
 			int nRealizations = getNumberOfRealizations(lastStand);
+			isInfiniteSequenceAllowed = canBeRunInInfiniteSequence(lastStand, nRealizations);
 			boolean isStochastic = isStochastic(lastStand);
 			CATSensitivityAnalysisSettings.getInstance().setModelStochastic(isStochastic);
 			CATSensitivityAnalysisSettings.getInstance().setNumberOfMonteCarloRealizations(nRealizations);
 			int nbExtraYears = 0;
 			int initialAgeYr = -999;
-			if (isInfiniteSequenceAllowed) {
-				if (!lastStand.getTrees(StatusClass.alive).isEmpty()) {
+			if (isInfiniteSequenceAllowed && lastStand.getManagementType() == ManagementType.EvenAged) {
+				if (!lastStand.getTrees(StatusClass.alive).isEmpty()) { // even aged but the last stand has not been fully harvested
 					CATCompatibleStand stand = lastStand.getHarvestedStand();
 					stands.add(stand);
 					lastStand = stand;
@@ -183,19 +239,11 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 				rotationLength = lastStand.getAgeYr();
 				initialAgeYr = stands.get(0).getAgeYr();
 				nbExtraYears = NumberOfExtraYrs;
-			} else {
+			} else { // infinite sequence might be allowed but management is uneven-aged
 				rotationLength = lastStand.getDateYr() - stands.get(0).getDateYr();
 			}
 				
-//			int averageTimeStep = retrieveAverageTimeStep(stands);
-//			if (averageTimeStep == 0) {
-//				averageTimeStep = 5;	// default value in case there is a single step
-//			}
-			
-
-			// MF2020-11-27 changed to an annual CATTimeTable instance
 			timeTable = new CATTimeTable(stands, initialAgeYr, nbExtraYears);
-//			timeTable = new CATTimeTable(stands, initialAgeYr, nbExtraYears, averageTimeStep);
 		}
 	}
 	
@@ -206,7 +254,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	 * @return the number of Monte Carlo realizations or 1 if either the stand does not implement
 	 * Monte Carlo feature or these are not compatible
 	 */
-	protected static int getNumberOfRealizations(CATCompatibleStand stand) {
+	private int getNumberOfRealizations(CATCompatibleStand stand) {
 		if (stand instanceof StochasticInformationProvider) {
 			StochasticInformationProvider<?> stochProv = (StochasticInformationProvider<?>) stand;
 			List<Integer> monteCarloIds = stochProv.getRealizationIds();
@@ -448,7 +496,8 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		getSimulationSummary().updateResult(this);
 	}
 		
-	protected boolean isEvenAged() {return isInfiniteSequenceAllowed;}
+	protected boolean isInfiniteSequenceAllowed() {return isInfiniteSequenceAllowed;}
+	protected ManagementType getManagementType() {return managementType;}
 
 	protected void setRealization(int realizationId) {
 		getTimeTable().setMonteCarloRealization(realizationId);

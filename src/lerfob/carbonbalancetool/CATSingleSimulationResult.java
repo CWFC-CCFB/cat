@@ -92,7 +92,7 @@ class CATSingleSimulationResult implements CATSimulationResult {
 
 		isValid = true;
 		
-		isEvenAged = manager.isEvenAged();
+		isEvenAged = manager.isInfiniteSequenceAllowed();
 		setup = new ParameterSetup(manager.getCarbonToolSettings());
 		
 		rotationLength = manager.getRotationLength();

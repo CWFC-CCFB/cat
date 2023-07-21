@@ -18,7 +18,6 @@
  */
 package lerfob.carbonbalancetool.sensitivityanalysis;
 
-import repicea.math.Matrix;
 import repicea.simulation.MonteCarloSimulationCompliantObject;
 import repicea.simulation.SensitivityAnalysisParameter;
 import repicea.stats.estimates.Estimate;
@@ -38,8 +37,12 @@ public abstract class CATSensitivityAnalysisParameter<E extends Estimate> extend
 	
 	protected double getMultiplier() {return multiplier;}
 	
-	protected Matrix getParameterValueForThisSubject(MonteCarloSimulationCompliantObject subject) {
-		return getParametersForThisRealization(subject).scalarMultiply(getMultiplier()).scalarAdd(1d);
+	protected double getParameterValueForThisSubject(MonteCarloSimulationCompliantObject subject) {
+		if (isParametersVariabilityEnabled) {
+			return getParametersForThisRealization(subject).scalarMultiply(getMultiplier()).scalarAdd(1d).getValueAt(0, 0);
+		} else {
+			return 1d;
+		}
 	}
 
 	protected void setParametersVariabilityEnabled(boolean enabled) {

@@ -47,9 +47,9 @@ class CATGrowthSimulationPlotSample implements CATCompatibleStand {
 	@Override
 	public int getDateYr() {return compositeStand.getDateYr();}
 
-	void createPlot(String plotID, double plotAreaHa) {
+	void createPlot(String plotID, double plotAreaHa, boolean isInterventionResult) {
 		if (!getPlotMap().containsKey(plotID)) {
-			getPlotMap().put(plotID, new CATGrowthSimulationPlot(plotID, plotAreaHa, this));
+			getPlotMap().put(plotID, new CATGrowthSimulationPlot(plotID, plotAreaHa, isInterventionResult, this));
 		}
 	}
 	

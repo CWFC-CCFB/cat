@@ -30,11 +30,12 @@ import java.util.List;
 import java.util.Vector;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-import lerfob.app.LerfobForesttoolsAppVersion;
 import lerfob.carbonbalancetool.CATTask.SetProperRealizationTask;
 import lerfob.carbonbalancetool.CATTask.Task;
 import lerfob.carbonbalancetool.CATUtility.BiomassParametersName;
@@ -51,7 +52,6 @@ import lerfob.treelogger.maritimepine.MaritimePineBasicTreeLogger;
 import lerfob.treelogger.mathilde.MathildeTreeLogger;
 import repicea.app.AbstractGenericEngine;
 import repicea.app.GenericTask;
-import repicea.app.REpiceaAppVersion;
 import repicea.app.SettingMemory;
 import repicea.gui.REpiceaShowableUI;
 import repicea.gui.REpiceaShowableUIWithParent;
@@ -65,19 +65,19 @@ import repicea.simulation.treelogger.TreeLoggerDescription;
 import repicea.simulation.treelogger.TreeLoggerManager;
 import repicea.stats.Distribution;
 import repicea.util.JarUtility;
-//import repicea.treelogger.wbirchprodvol.WBirchProdVolTreeLogger;
 import repicea.util.ObjectUtility;
+import repicea.util.REpiceaLogManager;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.Language;
 
 /**
- * LERFoBCarbonAccountingTool is the class that implements a tool for the calculation of the carbon balance in a series
- * of CarbonToolCompatibleStand instances (LERFoB-CAT). <br>
- * <br>
- * ARCHITECTURE : The LERFoBCarbonAccountingTool has a GUI interface and it is in charge of calculating the carbon for all the compartments. It contains a CarbonCompartmentManager instance,
- * which contains in turn a collection of CarbonCompartment objects that can provide their carbon content on their own. <br>
+ * The CarbonAccountingTool class implements a tool for the calculation of the carbon balance in a series
+ * of CATCompatibleStand instances. <p>
+ *
+ * The class has a GUI interface and it is in charge of calculating the carbon for all the compartments. It contains a CATCompartmentManager instance,
+ * which contains in turn a collection of CATCarbonCompartment objects that can provide their carbon content on their own. 
  * 
- * @author Mathieu Fortin (INRA) - January 2010
+ * @author Mathieu Fortin - January 2010
  */
 public class CarbonAccountingTool extends AbstractGenericEngine implements REpiceaShowableUIWithParent, REpiceaShowableUI {
 
@@ -112,6 +112,8 @@ public class CarbonAccountingTool extends AbstractGenericEngine implements REpic
 			}
 		}
 	}
+	
+	public static String LOGGER_NAME = "CarbonAccountingTool";
 	
 	protected static final String englishTitle = "Carbon Accounting Tool (CAT)";
 	protected static final String frenchTitle = "Outil de comptabilit\u00E9 carbone (CAT)";
@@ -264,7 +266,7 @@ public class CarbonAccountingTool extends AbstractGenericEngine implements REpic
 				if (!hasAlreadyBeenInstanciated) {
 					String packagePath = ObjectUtility.getRelativePackagePath(CarbonAccountingTool.class);
 					String iconPath =  packagePath + "SplashImage.jpg";
-					String filePath = JarUtility.getJarFileImInIfAny(getClass());
+					String filePath = JarUtility.getJarFileImInIfAny(CarbonAccountingTool.class);
 					String version;
 					if (filePath != null) {
 						try {
@@ -605,19 +607,43 @@ public class CarbonAccountingTool extends AbstractGenericEngine implements REpic
 	 */
 	public static void main(String[] args) throws Exception {
 		String languageOption = "-l";
+		String logLevelOption = "-loglevel";
 		List<String> arguments = Arrays.asList(args);
+		if (arguments.isEmpty()) {
+			System.out.println("Usage: [-l <value>] [-loglevel <value>]");
+			System.out.println("");
+			System.out.println("   l		set the language (either en for English (default) or fr for French)");
+			System.out.println("   loglevel	set the log level (either INFO (default), FINE, FINER, or FINEST; see java.util.logging.Level class)");
+		}
 		String selectedLanguage = REpiceaSystem.retrieveArgument(languageOption, arguments);
-		if (selectedLanguage == null || selectedLanguage.equals("en")) {
+		if (selectedLanguage == null) {
+			System.out.println("Language sets to default (English)!");
+			REpiceaTranslator.setCurrentLanguage(Language.English);
+		} else if (selectedLanguage.equals("en")) {
 			REpiceaTranslator.setCurrentLanguage(Language.English);
 		} else if (selectedLanguage.equals("fr")) {
 			REpiceaTranslator.setCurrentLanguage(Language.French);
 		} else {
-			System.out.println("The language option " + selectedLanguage + " is not recognized!");
-			System.out.println("Usage: -l en (for English)");
-			System.out.println("Usage: -l fr (for French)");
-			System.out.println("For now, the language will be set to English!");
-			REpiceaTranslator.setCurrentLanguage(Language.English);
+			System.err.println("The language option " + selectedLanguage + " is not recognized!");
+			return;
 		}
+		String selectedLogLevel = REpiceaSystem.retrieveArgument(logLevelOption, arguments);
+		if (selectedLogLevel == null) {
+			System.out.println("Log level sets to default (INFO)!");
+			REpiceaLogManager.getLogger(CarbonAccountingTool.LOGGER_NAME).setLevel(Level.INFO);
+		} else if (selectedLogLevel == "INFO") {
+			REpiceaLogManager.getLogger(CarbonAccountingTool.LOGGER_NAME).setLevel(Level.INFO);
+		} else if (selectedLogLevel == "FINE") {
+			REpiceaLogManager.getLogger(CarbonAccountingTool.LOGGER_NAME).setLevel(Level.FINE);
+		} else if (selectedLogLevel == "FINER") {
+			REpiceaLogManager.getLogger(CarbonAccountingTool.LOGGER_NAME).setLevel(Level.FINER);
+		} else if (selectedLogLevel == "FINEST") {
+			REpiceaLogManager.getLogger(CarbonAccountingTool.LOGGER_NAME).setLevel(Level.FINEST);
+		} else  {
+			System.err.println("The log level option " + selectedLogLevel + " is not recognized!");
+		}
+//		ConsoleHandler ch = new ConsoleHandler();
+//		REpiceaLogManager.getLogger(CarbonAccountingTool.LOGGER_NAME).addHandler(ch);
 		CarbonAccountingTool tool = new CarbonAccountingTool();
 		tool.initializeTool();
 	}

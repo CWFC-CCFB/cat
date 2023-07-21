@@ -18,10 +18,13 @@ import lerfob.carbonbalancetool.CarbonAccountingTool.CATMode;
 import lerfob.carbonbalancetool.io.CATGrowthSimulationRecordReader;
 import lerfob.carbonbalancetool.io.CATYieldTableRecordReader;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager;
+import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettings;
+import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettings.VariabilitySource;
 import repicea.io.tools.ImportFieldManager;
 import repicea.math.Matrix;
 import repicea.serial.xml.XmlDeserializer;
 import repicea.serial.xml.XmlSerializerChangeMonitor;
+import repicea.stats.Distribution.Type;
 import repicea.stats.distributions.utility.GaussianUtility;
 import repicea.stats.estimates.Estimate;
 import repicea.stats.estimates.MonteCarloEstimate;
@@ -275,7 +278,7 @@ public class CarbonAccountingToolTest {
 			for (int i = 0; i < expEvolution.m_iRows; i++) {
 				double expected = expEvolution.getValueAt(i, 0);
 				double observed = obsEvolution.getValueAt(i, 0);
-				Assert.assertEquals("Testing compartment " + key.name(), expected, observed, 1E-8);
+				Assert.assertEquals("Testing compartment " + key.name() + " at row " + i, expected, observed, 1E-8);
 			}
 			nbCompartmentChecked++;
 		}
@@ -398,6 +401,88 @@ public class CarbonAccountingToolTest {
 		System.out.println("Successfully tested this number of compartments " + nbCompartmentChecked);
 		cat.requestShutdown();
 	}
+	
+
+	@Test
+	public void testWithYieldTableAndIPCCConfigurationSensitivityAnalysis() throws Exception {
+		String filename = ObjectUtility.getPackagePath(getClass()) + "io" + File.separator + "ExampleYieldTable.csv";
+		String ifeFilename = ObjectUtility.getPackagePath(getClass()) + "io" + File.separator + "ExampleYieldTable.ife";
+		String prlFilename = ObjectUtility.getRelativePackagePath(ProductionProcessorManager.class) + "library" + ObjectUtility.PathSeparator + "ipcc2014_en.prl";
+		CarbonAccountingTool cat = new CarbonAccountingTool(CATMode.SCRIPT);
+		cat.initializeTool(null);
+		CATYieldTableRecordReader recordReader = new CATYieldTableRecordReader(CATSpecies.ABIES);
+		ImportFieldManager ifm = ImportFieldManager.createImportFieldManager(ifeFilename, filename);
+		recordReader.initInScriptMode(ifm);
+		recordReader.readAllRecords();
+		cat.setStandList(recordReader.getStandList());
+		cat.setProductionManager(prlFilename);
+		CATSensitivityAnalysisSettings.getInstance().setNumberOfMonteCarloRealizations(2);
+		CATSensitivityAnalysisSettings.getInstance().setVariabilitySource(VariabilitySource.BasicDensity, Type.GAUSSIAN, true, 0.3);
+
+		double modifier1 = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BasicDensity, cat.getCarbonCompartmentManager(), CATSpecies.ABIES.getSpeciesType().name());
+		cat.calculateCarbon();
+		CATSingleSimulationResult result1 = cat.getCarbonCompartmentManager().getSimulationSummary();
+		Map<CompartmentInfo, Estimate<?>> refMap = result1.getBudgetMap();
+
+		
+		cat.setStandList(recordReader.getStandList());
+		cat.setProductionManager(prlFilename);
+		CATSensitivityAnalysisSettings.getInstance().setNumberOfMonteCarloRealizations(2);
+		CATSensitivityAnalysisSettings.getInstance().setVariabilitySource(VariabilitySource.BasicDensity, Type.GAUSSIAN, true, 0.3);
+
+		double modifier2 = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BasicDensity, cat.getCarbonCompartmentManager(), CATSpecies.ABIES.getSpeciesType().name());
+		Assert.assertEquals("Comparting first deviate", modifier1, modifier2, 1E-8);
+		cat.calculateCarbon();
+		CATSingleSimulationResult result2 = cat.getCarbonCompartmentManager().getSimulationSummary();
+		Map<CompartmentInfo, Estimate<?>> obsMap = result2.getBudgetMap();
+		int nbCompartmentChecked = 0;
+		Assert.assertTrue("Testing the size of the map", refMap.size() == obsMap.size());
+		for (CompartmentInfo key : refMap.keySet()) {
+			double expected = refMap.get(key).getMean().getValueAt(0, 0);
+			double observed = obsMap.get(key).getMean().getValueAt(0, 0);
+			Assert.assertEquals("Testing compartment " + key.name(), expected, observed, 1E-8);
+			nbCompartmentChecked++;
+		}
+		System.out.println("Successfully tested this number of compartments " + nbCompartmentChecked);
+		
+		cat.requestShutdown();
+	}
+
+	
+	
+	@Test
+	public void testWithYieldTableAndIPCCConfigurationSensitivityAnalysis2() throws Exception {
+		String filename = ObjectUtility.getPackagePath(getClass()) + "io" + File.separator + "ExampleYieldTable.csv";
+		String ifeFilename = ObjectUtility.getPackagePath(getClass()) + "io" + File.separator + "ExampleYieldTable.ife";
+		String prlFilename = ObjectUtility.getRelativePackagePath(ProductionProcessorManager.class) + "library" + ObjectUtility.PathSeparator + "ipcc2014_en.prl";
+		CarbonAccountingTool cat = new CarbonAccountingTool(CATMode.SCRIPT);
+		cat.initializeTool(null);
+		CATYieldTableRecordReader recordReader = new CATYieldTableRecordReader(CATSpecies.ABIES);
+		ImportFieldManager ifm = ImportFieldManager.createImportFieldManager(ifeFilename, filename);
+		recordReader.initInScriptMode(ifm);
+		recordReader.readAllRecords();
+		cat.setStandList(recordReader.getStandList());
+		cat.setProductionManager(prlFilename);
+		CATSensitivityAnalysisSettings.getInstance().setNumberOfMonteCarloRealizations(2);
+		CATSensitivityAnalysisSettings.getInstance().setVariabilitySource(VariabilitySource.BasicDensity, Type.UNIFORM, true, 0.3);
+
+		double modifier1 = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BasicDensity, cat.getCarbonCompartmentManager(), CATSpecies.ABIES.getSpeciesType().name());
+		cat.calculateCarbon();
+		
+		cat.setStandList(recordReader.getStandList());
+		cat.setProductionManager(prlFilename);
+		CATSensitivityAnalysisSettings.getInstance().setNumberOfMonteCarloRealizations(2);
+		CATSensitivityAnalysisSettings.getInstance().setVariabilitySource(VariabilitySource.BasicDensity, Type.UNIFORM, true, 0.15);
+
+		double modifier2 = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BasicDensity, cat.getCarbonCompartmentManager(), CATSpecies.ABIES.getSpeciesType().name());
+		Assert.assertEquals("Comparting first deviate", modifier1 - 1, (modifier2 - 1) * 2, 1E-8);
+		cat.calculateCarbon();
+		
+		cat.requestShutdown();
+	}
+
+	
+	
 	
 	public static void main(String[] args) throws Exception {
 		CarbonAccountingToolTest test = new CarbonAccountingToolTest();
