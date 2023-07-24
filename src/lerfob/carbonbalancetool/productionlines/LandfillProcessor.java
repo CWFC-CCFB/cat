@@ -72,12 +72,12 @@ public class LandfillProcessor extends AbstractProductionLineProcessor {
 
 	@SuppressWarnings({ "rawtypes"})
 	@Override
-	protected List<ProcessUnit> createProcessUnitsFromThisProcessor(ProcessUnit unit, int intake) {
+	protected List<ProcessUnit> createProcessUnitsFromThisProcessor(ProcessUnit unit, Number intake) {
 		List<ProcessUnit> outputUnits = new ArrayList<ProcessUnit>();
 
 		CarbonUnit carbonUnit = (CarbonUnit) unit;
 		int dateIndex = carbonUnit.getIndexInTimeScale();
-		AmountMap<Element> processedAmountMap = carbonUnit.getAmountMap().multiplyByAScalar(intake * .01);
+		AmountMap<Element> processedAmountMap = carbonUnit.getAmountMap().multiplyByAScalar(intake.doubleValue() * .01);
 
 		CarbonUnit woodProduct;
 

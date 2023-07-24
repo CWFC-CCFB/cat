@@ -81,7 +81,7 @@ public class AffiliereJSONReader {
 				}
 
 				if (!values.isEmpty()) {
-					List<Integer> subProcessorIntakes = calculateIntakes(values);
+					List<Double> subProcessorIntakes = calculateIntakes(values);
 					
 					int j = 0;
 					for (int i = 0; i < linkArray.length; i++) {
@@ -103,15 +103,16 @@ public class AffiliereJSONReader {
 	/*
 	 * Convert the absolute masses into proportions
 	 */
-	private static List<Integer> calculateIntakes(List<Double> values) {
+	private static List<Double> calculateIntakes(List<Double> values) {
 		double sum = 0d;
 		for (double v : values) {
 			sum += v;
 		}
-		List<Integer> intakes = new ArrayList<Integer>();
+		List<Double> intakes = new ArrayList<Double>();
 		for (double v : values) {
-			long roundedValue = Math.round(v / sum * 100);
-			intakes.add(((Number) roundedValue).intValue());
+			intakes.add(v / sum * 100);
+//			long roundedValue = Math.round(v / sum * 100);
+//			intakes.add(((Number) roundedValue).intValue());
 		}
 //		int sumIntakes = 0;
 //		for (int i : intakes) {

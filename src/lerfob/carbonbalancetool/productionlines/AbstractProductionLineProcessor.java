@@ -49,6 +49,6 @@ public abstract class AbstractProductionLineProcessor extends AbstractProcessor 
 	 */
 	@SuppressWarnings("rawtypes")
 	@Override
-	protected abstract List<ProcessUnit> createProcessUnitsFromThisProcessor(ProcessUnit unit, int intake);
+	protected abstract List<ProcessUnit> createProcessUnitsFromThisProcessor(ProcessUnit unit, Number intake);
 	
 }

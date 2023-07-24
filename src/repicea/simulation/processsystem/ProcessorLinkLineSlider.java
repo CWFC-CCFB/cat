@@ -44,7 +44,7 @@ public class ProcessorLinkLineSlider extends REpiceaDialog implements ChangeList
 	private final ProcessorLinkLine linkLine;
 	protected final JSlider slider;
 	protected final JButton setToAppropriateValue;
-	private transient int startingValue;
+	private transient Number startingValue;
 	
 	protected ProcessorLinkLineSlider(Window window, ProcessorLinkLine linkLine) {
 		super(window);
@@ -92,8 +92,8 @@ public class ProcessorLinkLineSlider extends REpiceaDialog implements ChangeList
 	public void refreshInterface() {
 		Processor fatherProcessor = linkLine.getFatherAnchor().getOwner();
 		Processor sonProcessor = linkLine.getSonAnchor().getOwner();
-		int value = fatherProcessor.getSubProcessorIntakes().get(sonProcessor);
-		slider.setValue(value);
+		Number value = fatherProcessor.getSubProcessorIntakes().get(sonProcessor);
+		slider.setValue(value.intValue());
 		super.refreshInterface();
 	}
 	
@@ -113,14 +113,14 @@ public class ProcessorLinkLineSlider extends REpiceaDialog implements ChangeList
 		}
 	}
 
-	private int getSumOfCurrentFlux() {
+	private double getSumOfCurrentFlux() {
 		Processor fatherProcessor = linkLine.getFatherAnchor().getOwner();
 		Processor sonProcessor = linkLine.getSonAnchor().getOwner();
-		int sum = 0;
-		Map<Processor, Integer> processorMap = fatherProcessor.getSubProcessorIntakes();
+		double sum = 0;
+		Map<Processor, Number> processorMap = fatherProcessor.getSubProcessorIntakes();
 		for (Processor subProcessor : processorMap.keySet()) {
 			if (!subProcessor.equals(sonProcessor)) {
-				sum += processorMap.get(subProcessor);
+				sum += processorMap.get(subProcessor).doubleValue();
 			}
 		}
 		return sum;
@@ -133,7 +133,7 @@ public class ProcessorLinkLineSlider extends REpiceaDialog implements ChangeList
 			Processor fatherProcessor = linkLine.getFatherAnchor().getOwner();
 			Processor sonProcessor = linkLine.getSonAnchor().getOwner();
 //			int originalValue = fatherProcessor.getSubProcessorIntakes().get(sonProcessor);
-			int newValue = 100 - getSumOfCurrentFlux();
+			double newValue = 100 - getSumOfCurrentFlux();
 			fatherProcessor.getSubProcessorIntakes().put(sonProcessor, newValue);
 			linkLine.setLabel();
 			refreshInterface();
@@ -150,7 +150,7 @@ public class ProcessorLinkLineSlider extends REpiceaDialog implements ChangeList
 	}
 	
 	
-	private int getCurrentValue() {
+	private Number getCurrentValue() {
 		Processor fatherProcessor = linkLine.getFatherAnchor().getOwner();
 		Processor sonProcessor = linkLine.getSonAnchor().getOwner();
 		return fatherProcessor.getSubProcessorIntakes().get(sonProcessor);
@@ -158,7 +158,7 @@ public class ProcessorLinkLineSlider extends REpiceaDialog implements ChangeList
 
 	@Override
 	public void windowClosing(WindowEvent e) {
-		int currentValue = getCurrentValue();
+		Number currentValue = getCurrentValue();
 		if (currentValue != startingValue) {
 			SystemManagerDialog dlg = (SystemManagerDialog) CommonGuiUtility.getParentComponent(this, SystemManagerDialog.class);
 			if (dlg != null) {

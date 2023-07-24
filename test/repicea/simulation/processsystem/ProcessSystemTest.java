@@ -133,7 +133,7 @@ public class ProcessSystemTest {
 		Assert.assertEquals("Testing if the link has been redone in father processor", 1, man.getList().get(0).getSubProcessors().size());
 
 		final ProcessorLinkLine link = (ProcessorLinkLine) sysPane.linkLines.get(0);
-		int intake = man.getList().get(0).getSubProcessorIntakes().get(man.getList().get(1));
+		Number intake = man.getList().get(0).getSubProcessorIntakes().get(man.getList().get(1));
 		Assert.assertEquals("Testing if initial flow is set to 0", 0, intake);
 		ProcessorLinkLineSlider linkDlg = link.getUI(dlg);
 		

@@ -41,7 +41,7 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 	private Point originalLocation;
 	protected transient ProcessorButton guiInterface;
 	
-	private Map<Processor, Integer> subProcessorIntakes;
+	private Map<Processor, Number> subProcessorIntakes;
 	protected List<Processor> subProcessors;
 	private String name;
 	
@@ -90,7 +90,7 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 		inputUnits.removeAll(coll); // and make sure that they won't follow the recursive method further on
 		
 		for (Processor subProcessor : getSubProcessorIntakes().keySet()) {
-			int intake = getSubProcessorIntakes().get(subProcessor);
+			Number intake = getSubProcessorIntakes().get(subProcessor);
 			for (ProcessUnit inputUnit : inputUnits) {
 				coll.addAll(subProcessor.doProcess(subProcessor.createProcessUnits(inputUnit, intake)));
 			}
@@ -102,7 +102,7 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 	}
 	
 	@SuppressWarnings("rawtypes")
-	protected final List<ProcessUnit> createProcessUnits(ProcessUnit inputUnit, int intake) {
+	protected final List<ProcessUnit> createProcessUnits(ProcessUnit inputUnit, Number intake) {
 		if (inputUnit instanceof TestProcessUnit) {
 			List<ProcessUnit> outputUnits = new ArrayList<ProcessUnit>();
 //			outputUnits.add(new TestProcessUnit(((TestProcessUnit) inputUnit).processorList));
@@ -115,9 +115,9 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	protected List<ProcessUnit> createProcessUnitsFromThisProcessor(ProcessUnit inputUnit, int intake) {
+	protected List<ProcessUnit> createProcessUnitsFromThisProcessor(ProcessUnit inputUnit, Number intake) {
 		List<ProcessUnit> outputUnits = new ArrayList<ProcessUnit>();
-		ProcessUnit unit = new ProcessUnit(inputUnit.getAmountMap().multiplyByAScalar(intake * .01));
+		ProcessUnit unit = new ProcessUnit(inputUnit.getAmountMap().multiplyByAScalar(intake.doubleValue() * .01));
 		outputUnits.add(unit);
 		return outputUnits;
 	}
@@ -153,9 +153,9 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 	 * This method returns the processor intakes in a map.
 	 * @return a Map with Processor instances and Integer from 0 to 100 as keys and values
 	 */
-	public Map<Processor, Integer> getSubProcessorIntakes() {
+	public Map<Processor, Number> getSubProcessorIntakes() {
 		if (subProcessorIntakes == null) {
-			subProcessorIntakes = new HashMap<Processor, Integer>();
+			subProcessorIntakes = new HashMap<Processor, Number>();
 			for (Processor processor : subProcessors) {		// if so, means we are dealing with the former implementation
 				int intake = (int) (processor.averageIntake * 100);
 				subProcessorIntakes.put(processor, intake);
@@ -238,11 +238,17 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 	 */
 	public boolean isValid() {
 		if (hasSubProcessors()) {
-			int sum = 0;
-			for (Integer intake : getSubProcessorIntakes().values()) {
-				sum += intake;
+			double sum = 0;
+			for (Number intake : getSubProcessorIntakes().values()) {
+				sum += intake.doubleValue();
 			}
-			return sum == 100;
+			if (sum != 100d) {
+			}
+			boolean isValid = Math.abs(sum - 100d) < 1E-12;
+			if (!isValid) {
+				int u = 0;
+			}
+			return isValid;
 		} else {
 			return true;
 		}

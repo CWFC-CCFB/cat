@@ -23,6 +23,7 @@ import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Window;
+import java.text.NumberFormat;
 
 import repicea.gui.REpiceaShowableUIWithParent;
 import repicea.gui.UIControlManager;
@@ -30,6 +31,8 @@ import repicea.gui.UIControlManager;
 @SuppressWarnings("serial")
 public class ProcessorLinkLine extends ValidProcessorLinkLine implements REpiceaShowableUIWithParent {
 
+	private static NumberFormat Formatter;
+	
 	private final SystemLabel label;
 	private transient ProcessorLinkLineSlider guiInterface;
 	
@@ -61,6 +64,15 @@ public class ProcessorLinkLine extends ValidProcessorLinkLine implements REpicea
 		label.setLocation(new Point(point.x + getSize().width, point.y + getSize().height));
 	}
 	
+	private NumberFormat getFormatter() {
+		if (Formatter == null) {
+			Formatter = NumberFormat.getInstance();
+			Formatter.setMinimumFractionDigits(1);
+			Formatter.setMaximumFractionDigits(1);
+		}
+		return Formatter;
+	}
+	
 	@Override
 	protected void finalize() {
 		super.finalize();
@@ -74,8 +86,8 @@ public class ProcessorLinkLine extends ValidProcessorLinkLine implements REpicea
 		if (fatherProcessor.getSubProcessorIntakes().get(sonProcessor) == null) {
 			fatherProcessor.getSubProcessorIntakes().get(sonProcessor);
 		}
-		int intake = fatherProcessor.getSubProcessorIntakes().get(sonProcessor);
-		label.setText(intake + "%");
+		Number intake = fatherProcessor.getSubProcessorIntakes().get(sonProcessor);
+		label.setText(getFormatter().format(intake.doubleValue()) + "%");
 		panel.repaint();
 	}
 
