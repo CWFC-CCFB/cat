@@ -19,8 +19,12 @@
  */
 package lerfob.carbonbalancetool.productionlines.affiliere;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,13 +44,24 @@ public class AffiliereJSONReader {
 	
 	/**
 	 * Constructor.
-	 * @param filename the JSON file to be read.
+	 * @param file the File instance to be read.
 	 * @throws FileNotFoundException if the file cannot be found.
 	 */
-	public AffiliereJSONReader(String filename) throws FileNotFoundException {
-		// TODO check if extension is json. Otherwise throw an InvalidParameterException here
-		FileInputStream fis = new FileInputStream(filename);
-		JsonReader reader = new JsonReader(fis);
+	public AffiliereJSONReader(File file) throws FileNotFoundException {
+		this(new FileInputStream(file));
+	}
+
+	/**
+	 * Constructor.
+	 * @param url the url of the file to be read.
+	 * @throws IOException if the url cannot produce an input stream.
+	 */
+	public AffiliereJSONReader(URL url) throws IOException {
+		this(url.openStream());
+	}
+	
+	private AffiliereJSONReader(InputStream is) {
+		JsonReader reader = new JsonReader(is);
 		mappedJSON = (JsonObject<?,?>) reader.readObject();
 		reader.close();
 		JsonObject<?,?> processorJSONMap = (JsonObject<?,?>) mappedJSON.get("nodes");
@@ -98,6 +113,8 @@ public class AffiliereJSONReader {
 			}
 		}
 	}
+	
+	
 	
 
 	/*

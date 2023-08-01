@@ -19,22 +19,48 @@
  */
 package lerfob.carbonbalancetool.productionlines.affiliere;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
+import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import lerfob.carbonbalancetool.productionlines.ProductionLineProcessor;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager;
+import repicea.serial.MemorizerPackage;
 import repicea.util.ObjectUtility;
 
 public class AffiliereJSONReaderTest {
 
-	public static void main(String[] args) throws FileNotFoundException {
-		String filename = ObjectUtility.getPackagePath(AffiliereJSONReaderTest.class) + "Filière bois - Exports Sankeys_v23_layout.json";
-		AffiliereJSONReader reader = new AffiliereJSONReader(filename);
+	@Test
+	public void testAffiliereReaderFromFile() throws FileNotFoundException {
+		String filename = ObjectUtility.getPackagePath(AffiliereJSONReaderTest.class) + "Filière bois - Exports Sankeys_v25_layout.json";
+		AffiliereJSONReader reader = new AffiliereJSONReader(new File(filename));
 		ProductionProcessorManager manager = new ProductionProcessorManager();
 		for (ProductionLineProcessor p : reader.processors.values()) {
 			manager.registerObject(p);
 		}
-		manager.showUI(null);
+//		manager.showUI(null);
+		MemorizerPackage mp = manager.getMemorizerPackage();
+		Assert.assertEquals("Testing nb of processors", 88, ((List) mp.get(1)).size());
+	}
+	
+	@Ignore
+	@Test
+	public void testAffiliereReaderFromURL() throws IOException {
+		URL url = new URL("https://open-sankey.fr/fm/userfiles/Fili%C3%A8res/ForetBois/EtudeCarbone4/sankey/Fili%C3%A8re%20bois%20-%20Exports%20Sankeys_v25_layout.json");
+		AffiliereJSONReader reader = new AffiliereJSONReader(url);
+		ProductionProcessorManager manager = new ProductionProcessorManager();
+		for (ProductionLineProcessor p : reader.processors.values()) {
+			manager.registerObject(p);
+		}
+//		manager.showUI(null);
+		MemorizerPackage mp = manager.getMemorizerPackage();
+		Assert.assertEquals("Testing nb of processors", 88, ((List) mp.get(1)).size());
 	}
 	
 }
