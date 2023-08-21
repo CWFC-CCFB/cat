@@ -22,10 +22,10 @@ import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettin
 import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettings.VariabilitySource;
 import repicea.io.tools.ImportFieldManager;
 import repicea.math.Matrix;
+import repicea.math.utility.GaussianUtility;
 import repicea.serial.xml.XmlDeserializer;
 import repicea.serial.xml.XmlSerializerChangeMonitor;
 import repicea.stats.Distribution.Type;
-import repicea.stats.distributions.utility.GaussianUtility;
 import repicea.stats.estimates.Estimate;
 import repicea.stats.estimates.MonteCarloEstimate;
 import repicea.util.ObjectUtility;

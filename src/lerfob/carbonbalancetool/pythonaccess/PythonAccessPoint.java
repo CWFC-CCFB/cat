@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
 
-import lerfob.app.LerfobForesttoolsAppVersion;
 import lerfob.carbonbalancetool.CATCompartment.CompartmentInfo;
 import lerfob.carbonbalancetool.CATCompatibleStand;
 import lerfob.carbonbalancetool.CATSettings.CATSpecies;
@@ -45,15 +44,14 @@ import lerfob.treelogger.douglasfirfcba.DouglasFCBATreeLogger;
 import lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLogger;
 import lerfob.treelogger.maritimepine.MaritimePineBasicTreeLogger;
 import py4j.GatewayServer;
-import repicea.app.REpiceaAppVersion;
 import repicea.lang.REpiceaSystem;
 import repicea.math.Matrix;
+import repicea.math.utility.GaussianUtility;
 import repicea.simulation.ApplicationScaleProvider.ApplicationScale;
 import repicea.simulation.covariateproviders.treelevel.TreeStatusProvider.StatusClass;
 import repicea.simulation.treelogger.TreeLoggerCompatibilityCheck;
 import repicea.simulation.treelogger.TreeLoggerDescription;
 import repicea.stats.distributions.TruncatedGaussianDistribution;
-import repicea.stats.distributions.utility.GaussianUtility;
 import repicea.util.ObjectUtility;
 
 /**
