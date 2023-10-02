@@ -35,12 +35,30 @@ import com.cedarsoftware.util.io.JsonReader;
 
 import lerfob.carbonbalancetool.productionlines.ProductionLineProcessor;
 
+/**
+ * The AffiliereJSONReader class reads a JSON file from AFFILIERE and 
+ * converts it into a flux configuration file for CAT.
+ * @author Mathieu Fortin - October 2023
+ */
 public class AffiliereJSONReader {
 
+	private static class FutureLink {
+		final ProductionLineProcessor fatherProcessor;
+		final ProductionLineProcessor childProcessor;
+		final double value;
+		
+		FutureLink(ProductionLineProcessor fatherProcessor, ProductionLineProcessor childProcessor, double value) {
+			this.fatherProcessor = fatherProcessor;
+			this.childProcessor = childProcessor;
+			this.value = value;
+		}
+	}
+		
 	public static int OFFSET = 150;
 	
 	protected final JsonObject<?,?> mappedJSON;
 	protected final Map<String, ProductionLineProcessor> processors;
+	protected final List<ProductionLineProcessor> endProductProcessors;
 	
 	/**
 	 * Constructor.
@@ -67,76 +85,53 @@ public class AffiliereJSONReader {
 		JsonObject<?,?> processorJSONMap = (JsonObject<?,?>) mappedJSON.get("nodes");
 		JsonObject<?,?> linkJSONMap = (JsonObject<?,?>) mappedJSON.get("links");
 		processors = new HashMap<String, ProductionLineProcessor>();
-		boolean toBeProcessed;
+		endProductProcessors = new ArrayList<ProductionLineProcessor>();
 		for (Object o : processorJSONMap.values()) {
 			JsonObject<String,?> oMap = (JsonObject<String,?>) o;
 			String id = (String) oMap.get("idNode");
 			String name = (String) oMap.get("name");
-			toBeProcessed = !oMap.containsKey("display") || ((Boolean) oMap.get("display"));	// if display is not part of the map, it is then considered to be displayed
-			if (toBeProcessed) {
-				int x = ((Number) ((JsonObject<?,?>) o).get("x")).intValue() + OFFSET;
-				int y = ((Number) ((JsonObject<?,?>) o).get("y")).intValue();
-				ProductionLineProcessor p = ProductionLineProcessor.createProductionLineProcessor(name, x, y);
-				processors.put(id, p);
-			}
+			int x = ((Number) ((JsonObject<?,?>) o).get("x")).intValue() + OFFSET;
+			int y = ((Number) ((JsonObject<?,?>) o).get("y")).intValue();
+			ProductionLineProcessor p = ProductionLineProcessor.createProductionLineProcessor(name, x, y);
+			processors.put(id, p);
 		}
 
-		for (Object o : processorJSONMap.values()) {
-			Object[] linkArray = (Object[]) ((JsonObject<?,?>) o).get("outputLinksId");
-			if (linkArray.length > 0) {
-				List<Double> values = new ArrayList<Double>();
-				for (Object linkName : linkArray) {
-					JsonObject<?,?> linkProperties = (JsonObject<?,?>) linkJSONMap.get(linkName.toString());
-					ProductionLineProcessor fatherProcessor = processors.get((String) linkProperties.get("idSource"));
-					ProductionLineProcessor childProcessor = processors.get((String) linkProperties.get("idTarget"));
-					if (fatherProcessor != null && childProcessor != null) {				// means that both processors are displayed
-						double value = ((Number) ((JsonObject<?,?>) linkProperties.get("value")).get("value")).doubleValue();
-						values.add(value);
+		Map<ProductionLineProcessor, List<FutureLink>> linkMap = new HashMap<ProductionLineProcessor, List<FutureLink>>();
+		
+		for (String fatherProcessorName : processors.keySet()) {
+			for (Object linkValue : linkJSONMap.values()) {
+				JsonObject<?,?> linkProperties = (JsonObject<?,?>)  linkValue;
+				if (linkProperties.containsKey("idSource") && linkProperties.get("idSource").equals(fatherProcessorName)) {
+					ProductionLineProcessor fatherProcessor = processors.get(fatherProcessorName);
+					if (fatherProcessor.getName().equals("BO feuillus présumé IGN")) {
+						int u = 0;
 					}
-				}
-
-				if (!values.isEmpty()) {
-					List<Double> subProcessorIntakes = calculateIntakes(values);
-					
-					int j = 0;
-					for (int i = 0; i < linkArray.length; i++) {
-						Object linkName = linkArray[i];
-						JsonObject<?,?> linkProperties = (JsonObject<?,?>) linkJSONMap.get(linkName.toString());
-						ProductionLineProcessor fatherProcessor = processors.get((String) linkProperties.get("idSource"));
-						ProductionLineProcessor childProcessor = processors.get((String) linkProperties.get("idTarget"));
-						if (fatherProcessor != null && childProcessor != null) {		// means that both processors are displayed
-							fatherProcessor.addSubProcessor(childProcessor);
-							fatherProcessor.getSubProcessorIntakes().put(childProcessor, subProcessorIntakes.get(j++));
+					if (linkProperties.containsKey("idTarget")) {
+						String childProcessorName = (String) linkProperties.get("idTarget");
+						ProductionLineProcessor childProcessor = processors.get(childProcessorName);
+						if (childProcessor != null) {
+							double value = ((Number) ((JsonObject<?,?>) linkProperties.get("value")).get("value")).doubleValue();
+							if (!linkMap.containsKey(fatherProcessor)) {
+								linkMap.put(fatherProcessor, new ArrayList<FutureLink>());
+							}
+							linkMap.get(fatherProcessor).add(new FutureLink(fatherProcessor, childProcessor, value));
 						}
 					}
 				}
 			}
 		}
-	}
-	
-	
-	
-
-	/*
-	 * Convert the absolute masses into proportions
-	 */
-	private static List<Double> calculateIntakes(List<Double> values) {
-		double sum = 0d;
-		for (double v : values) {
-			sum += v;
+		
+		for (List<FutureLink> futureLinks : linkMap.values()) {
+			double sumValues = 0d;
+			for (FutureLink fLink : futureLinks) {
+				sumValues += fLink.value;
+			}
+			
+			for (FutureLink fLink : futureLinks) {
+				fLink.fatherProcessor.addSubProcessor(fLink.childProcessor);
+				fLink.fatherProcessor.getSubProcessorIntakes().put(fLink.childProcessor, fLink.value / sumValues * 100);
+			}
 		}
-		List<Double> intakes = new ArrayList<Double>();
-		for (double v : values) {
-			intakes.add(v / sum * 100);
-//			long roundedValue = Math.round(v / sum * 100);
-//			intakes.add(((Number) roundedValue).intValue());
-		}
-//		int sumIntakes = 0;
-//		for (int i : intakes) {
-//			sumIntakes += i;
-//		}
-		return intakes;
 	}
-	
 	
 }

@@ -69,8 +69,8 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 	}
 	
 	/**
-	 * This method returns true if the processor is a final processor, which means it cannot
-	 * send anything to subprocessors.
+	 * A terminal processor cannot have any subprocessor by definition. This method returns true if the processor belong to 
+	 * this category.
 	 * @return a boolean
 	 */
 	public boolean isTerminalProcessor() {return isTerminal;}

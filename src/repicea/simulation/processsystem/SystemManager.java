@@ -222,7 +222,7 @@ public class SystemManager implements ListManager<Processor>,
 		for (Processor processor : getPrimaryProcessors()) {
 			inputUnits = new ArrayList<ProcessUnit>();
 			addTestUnits(inputUnits);
-			processor.doProcess(inputUnits);
+	//		processor.doProcess(inputUnits);
 		}
 
 	}

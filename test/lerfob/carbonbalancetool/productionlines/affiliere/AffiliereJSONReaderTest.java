@@ -38,7 +38,7 @@ public class AffiliereJSONReaderTest {
 
 	@Test
 	public void testAffiliereReaderFromFile() throws FileNotFoundException {
-		String filename = ObjectUtility.getPackagePath(AffiliereJSONReaderTest.class) + "Filière bois - Exports Sankeys_v25_layout.json";
+		String filename = ObjectUtility.getPackagePath(AffiliereJSONReaderTest.class) + "EtudesAvecEtiquette4.json";
 		AffiliereJSONReader reader = new AffiliereJSONReader(new File(filename));
 		ProductionProcessorManager manager = new ProductionProcessorManager();
 		for (ProductionLineProcessor p : reader.processors.values()) {
@@ -46,7 +46,7 @@ public class AffiliereJSONReaderTest {
 		}
 //		manager.showUI(null);
 		MemorizerPackage mp = manager.getMemorizerPackage();
-		Assert.assertEquals("Testing nb of processors", 88, ((List) mp.get(1)).size());
+		Assert.assertEquals("Testing nb of processors", 94, ((List) mp.get(1)).size());
 	}
 	
 	@Ignore
@@ -61,6 +61,18 @@ public class AffiliereJSONReaderTest {
 //		manager.showUI(null);
 		MemorizerPackage mp = manager.getMemorizerPackage();
 		Assert.assertEquals("Testing nb of processors", 88, ((List) mp.get(1)).size());
+	}
+	
+	
+	public static void main(String[] args) throws FileNotFoundException {
+		String filename = ObjectUtility.getPackagePath(AffiliereJSONReaderTest.class) + "EtudesAvecEtiquette4.json";
+		AffiliereJSONReader reader = new AffiliereJSONReader(new File(filename));
+		ProductionProcessorManager manager = new ProductionProcessorManager();
+		for (ProductionLineProcessor p : reader.processors.values()) {
+			manager.registerObject(p);
+		}
+		manager.showUI(null);
+		
 	}
 	
 }
