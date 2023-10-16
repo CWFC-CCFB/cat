@@ -86,13 +86,6 @@ public final class ProductionLineManager extends AbstractDesigner<ProductionLine
 		public String getExtension() {return extension;}
 	}
 
-//	public static enum CarbonUnitType {EndUseWoodProduct, 
-//		LandFillDegradable,
-//		LandFillNonDegradable,
-//		Recycled, 
-//		LeftInForest, 
-//		IndustrialLosses,
-//		RecycledLosses};
 	
 	public final static int PROCESSED_PIECE = 0;
 	public final static int LEFTINFOREST_PIECE = 1;
@@ -235,23 +228,6 @@ public final class ProductionLineManager extends AbstractDesigner<ProductionLine
 
 	
 
-
-//	@Override
-//	public ProductionLineManagerDialog getGuiInterface(Container parent) {
-//		if (guiInterface == null) {
-//			guiInterface = new ProductionLineManagerDialog((Window) parent, this);
-//		}
-//		return guiInterface;
-//	}
-//
-//	
-//	@Override
-//	public void showInterface(Window parent) {
-//		if (!getGuiInterface(parent).isVisible()) {
-//			getGuiInterface(parent).validateEntries();
-//			getGuiInterface(parent).setVisible(true);
-//		}
-//	}
 
 
 	

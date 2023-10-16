@@ -617,7 +617,7 @@ public class CarbonAccountingTool extends AbstractGenericEngine implements REpic
 		}
 		String selectedLanguage = REpiceaSystem.retrieveArgument(languageOption, arguments);
 		if (selectedLanguage == null) {
-			System.out.println("Language sets to default (English)!");
+			System.out.println("Language set to default (English)!");
 			REpiceaTranslator.setCurrentLanguage(Language.English);
 		} else if (selectedLanguage.equals("en")) {
 			REpiceaTranslator.setCurrentLanguage(Language.English);
@@ -629,7 +629,7 @@ public class CarbonAccountingTool extends AbstractGenericEngine implements REpic
 		}
 		String selectedLogLevel = REpiceaSystem.retrieveArgument(logLevelOption, arguments);
 		if (selectedLogLevel == null) {
-			System.out.println("Log level sets to default (INFO)!");
+			System.out.println("Log level set to default (INFO)!");
 			REpiceaLogManager.getLogger(CarbonAccountingTool.LOGGER_NAME).setLevel(Level.INFO);
 		} else if (selectedLogLevel == "INFO") {
 			REpiceaLogManager.getLogger(CarbonAccountingTool.LOGGER_NAME).setLevel(Level.INFO);

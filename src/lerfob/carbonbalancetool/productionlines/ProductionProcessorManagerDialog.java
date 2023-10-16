@@ -22,6 +22,7 @@ import java.awt.BorderLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
@@ -57,7 +58,9 @@ import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
 
 @SuppressWarnings("serial")
-public class ProductionProcessorManagerDialog extends SystemManagerDialog implements OwnedWindow, PropertyChangeListener {
+public class ProductionProcessorManagerDialog extends SystemManagerDialog implements OwnedWindow, 
+																					PropertyChangeListener,
+																					ItemListener {
 	
 	static {
 		UISetup.Icons.put(CreateLeftInForestProcessorButton.class.getName(), CommonGuiUtility.retrieveIcon(ProductionProcessorManagerDialog.class, "IconLeftInForest.png"));
@@ -152,6 +155,19 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 	}
 
 	@Override
+	public void setVisible(boolean bool) {
+		super.setVisible(bool);
+		Window w = getOwner();
+		if (w != null) {
+			if (bool) {
+				w.setEnabled(false);
+			} else {
+				w.setEnabled(true);
+			}
+		}
+	}
+	
+	@Override
 	protected JMenu createAboutMenu() {
 		JMenu about = super.createAboutMenu();
 		about.add(downloadExamplesMenuItem);
@@ -201,8 +217,8 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 			getCaller().setSelectedTreeLogger((TreeLoggerParameters<?>) treeLoggerComboBox.getSelectedItem());
 			firePropertyChange(REpiceaAWTProperty.SynchronizeWithOwner, null, this);
 			firePropertyChange(REpiceaAWTProperty.ActionPerformed, null, this);
-		} else {
-			super.itemStateChanged(arg0);
+//		} else {
+//			super.itemStateChanged(arg0);
 		}
 	}
 	

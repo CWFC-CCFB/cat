@@ -21,15 +21,11 @@ package repicea.simulation.processsystem;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 
 import javax.swing.AbstractButton;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -41,7 +37,7 @@ import javax.swing.JSlider;
 import repicea.gui.CommonGuiUtility;
 import repicea.gui.OwnedWindow;
 import repicea.gui.REpiceaAWTProperty;
-import repicea.gui.REpiceaDialog;
+import repicea.gui.REpiceaFrame;
 import repicea.gui.REpiceaMemorizerHandler;
 import repicea.gui.Resettable;
 import repicea.gui.UIControlManager;
@@ -56,11 +52,10 @@ import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
 
 @SuppressWarnings("serial")
-public class SystemManagerDialog extends REpiceaDialog implements ActionListener, 
+public class SystemManagerDialog extends REpiceaFrame implements ActionListener, 
 									IOUserInterface,
 									Resettable,
-									OwnedWindow, 
-									ItemListener {
+									OwnedWindow {
 	
 	public static enum MessageID implements TextableEnum {
 		SliderTitle("Output flux", "Flux sortant"),
@@ -97,8 +92,9 @@ public class SystemManagerDialog extends REpiceaDialog implements ActionListener
 	protected JMenuItem help;
 	protected JMenuItem undo;
 	protected JMenuItem redo;
-	protected JCheckBoxMenuItem enlarge;
-	protected Dimension previousDimension;
+//	protected JCheckBoxMenuItem enlarge;
+//	protected Dimension previousDimension;
+//	protected Point previousLocation;
 	protected JSlider zoomSlider;
 	
 	protected final WindowSettings windowSettings;
@@ -143,7 +139,7 @@ public class SystemManagerDialog extends REpiceaDialog implements ActionListener
 		
 		new REpiceaMemorizerHandler(this, undo, redo);
 		
-		enlarge = new JCheckBoxMenuItem(CommonControlID.FullScreen.toString());
+//		enlarge = new JCheckBoxMenuItem(CommonControlID.FullScreen.toString());
 		zoomSlider = createZoomSlider();
 		zoomSlider.addChangeListener(systemPanel);
 	}
@@ -212,18 +208,18 @@ public class SystemManagerDialog extends REpiceaDialog implements ActionListener
 		return about;
 	}
 	
-	protected JMenu createViewMenu() {
-		JMenu view = UIControlManager.createCommonMenu(CommonMenuTitle.View);
-		view.add(enlarge);
-		return view;
-	}
+//	protected JMenu createViewMenu() {
+//		JMenu view = UIControlManager.createCommonMenu(CommonMenuTitle.View);
+//		view.add(enlarge);
+//		return view;
+//	}
 	/**
 	 * This method returns the SystemManager instance behind this dialog.
 	 * @return a SystemManager instance.
 	 */
 	protected SystemManager getCaller() {return caller;}
 	
-	@Override
+//	@Override
 	protected void initUI() {
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
@@ -236,7 +232,7 @@ public class SystemManagerDialog extends REpiceaDialog implements ActionListener
 		menuBar.add(editMenu);
 		editMenu.setEnabled(getCaller().getGUIPermission().isEnablingGranted());
 		
-		menuBar.add(createViewMenu());
+//		menuBar.add(createViewMenu());
 				
 		menuBar.add(createAboutMenu());
 
@@ -258,7 +254,7 @@ public class SystemManagerDialog extends REpiceaDialog implements ActionListener
 		reset.addActionListener(this);
 		close.addActionListener(this);
 		help.addActionListener(this);
-		enlarge.addItemListener(this);
+//		enlarge.addItemListener(this);
 	}
 
 	@Override
@@ -266,7 +262,7 @@ public class SystemManagerDialog extends REpiceaDialog implements ActionListener
 		reset.removeActionListener(this);
 		close.removeActionListener(this);
 		help.removeActionListener(this);
-		enlarge.removeItemListener(this);
+//		enlarge.removeItemListener(this);
 	}
 
 	@Override
@@ -338,20 +334,26 @@ public class SystemManagerDialog extends REpiceaDialog implements ActionListener
 	@Override
 	public WindowSettings getWindowSettings() {return windowSettings;}
 
-	@Override
-	public void itemStateChanged(ItemEvent e) {
-		if (e.getSource().equals(enlarge)) {
-			if (enlarge.isSelected()) {
-				if (previousDimension == null) {
-					previousDimension = getSize();
-				}
-				Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-				setSize(screenSize);
-			} else {
-				setSize(previousDimension);
-				previousDimension = null;
-			}
-		}
-	}
+//	@Override
+//	public void itemStateChanged(ItemEvent e) {
+//		if (e.getSource().equals(enlarge)) {
+//			if (e.getStateChange() == ItemEvent.SELECTED) {
+//				previousDimension = getSize();
+//				previousLocation = getLocation();
+//			    GraphicsConfiguration config = this.getGraphicsConfiguration();
+//			    GraphicsDevice currentScreen = config.getDevice();
+//			    Dimension screenSize = new Dimension(currentScreen.getDisplayMode().getWidth(),
+//			    		currentScreen.getDisplayMode().getHeight());
+//				setSize(screenSize);
+//				
+//				setLocation(new Point(0,0)); // TODO should be in absolute not in relative
+//			} else if (e.getStateChange() == ItemEvent.DESELECTED) {
+//				setSize(previousDimension);
+//				setLocation(previousLocation);
+//			}
+//		}
+//	}
+	
+
 	
 }

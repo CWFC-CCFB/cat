@@ -222,9 +222,8 @@ public class SystemManager implements ListManager<Processor>,
 		for (Processor processor : getPrimaryProcessors()) {
 			inputUnits = new ArrayList<ProcessUnit>();
 			addTestUnits(inputUnits);
-	//		processor.doProcess(inputUnits);
+			processor.doProcess(inputUnits); 
 		}
-
 	}
 	
 	protected void addTestUnits(List<ProcessUnit> inputUnits) {
@@ -253,7 +252,7 @@ public class SystemManager implements ListManager<Processor>,
 		@SuppressWarnings("unused")
 		List<Processor> processors = manager.getList();
 		manager.showUI(null);
-		System.exit(0);
+//		System.exit(0);
 	}
 
 }
