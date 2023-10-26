@@ -3,9 +3,11 @@ The Carbon Accounting Tool (CAT)
 
 <!-- badges: start -->
 [![Java CI](https://github.com/CWFC-CCFB/CAT/actions/workflows/gradle.yml/badge.svg)](https://github.com/CWFC-CCFB/CAT/actions/workflows/gradle.yml)
+[![License: LGPL v3](https://img.shields.io/badge/License-LGPL_v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 <!-- badges: end -->
 
 Copyright (C) 2012-2019 Mathieu Fortin, AgroParisTech, France
+
 Copyright (C) 2019-2023 His Majesty the King in Right of Canada
 
 **Author:** Mathieu Fortin, Canadian Forest Service (formerly LERFoB, AgroParisTech)
