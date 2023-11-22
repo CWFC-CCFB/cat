@@ -30,6 +30,8 @@ import lerfob.carbonbalancetool.CATCompartment.CompartmentInfo;
 import lerfob.carbonbalancetool.gui.AsymmetricalCategoryDataset;
 import lerfob.carbonbalancetool.gui.EnhancedStatisticalBarRenderer;
 import lerfob.carbonbalancetool.io.CATExportTool;
+import repicea.math.Matrix;
+import repicea.math.SymmetricMatrix;
 import repicea.stats.estimates.Estimate;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
@@ -69,7 +71,7 @@ class CATResultBudgetPanel extends CATResultPanel {
 		AsymmetricalCategoryDataset dataset = new AsymmetricalCategoryDataset(getCarbonFactor(), getCICoverage());
 
 		for (CompartmentInfo compartmentID : optionPanel.getCompartmentToBeShown()) {
-			Estimate<?> estimate = summary.getBudgetMap().get(compartmentID);
+			Estimate<Matrix, SymmetricMatrix, ?> estimate = summary.getBudgetMap().get(compartmentID);
 			dataset.add(estimate, 
 					compartmentID.getColor(), 
 					compartmentID.toString(), 

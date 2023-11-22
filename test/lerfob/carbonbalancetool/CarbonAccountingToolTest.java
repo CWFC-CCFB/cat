@@ -22,6 +22,7 @@ import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettin
 import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettings.VariabilitySource;
 import repicea.io.tools.ImportFieldManager;
 import repicea.math.Matrix;
+import repicea.math.SymmetricMatrix;
 import repicea.math.utility.GaussianUtility;
 import repicea.serial.xml.XmlDeserializer;
 import repicea.serial.xml.XmlSerializerChangeMonitor;
@@ -224,13 +225,13 @@ public class CarbonAccountingToolTest {
 		cat.setStandList(recordReader.getStandList());
 		cat.calculateCarbon();
 		CATSingleSimulationResult result = cat.getCarbonCompartmentManager().getSimulationSummary();
-		Map<CompartmentInfo, Estimate<?>> obsMap = result.getBudgetMap();
+		Map<CompartmentInfo, Estimate<Matrix, SymmetricMatrix, ?>> obsMap = result.getBudgetMap();
 		
 //		XmlSerializer serializer = new XmlSerializer(refFilename);
 //		serializer.writeObject(obsMap);
 
 		XmlDeserializer deserializer = new XmlDeserializer(refFilename);
-		Map<CompartmentInfo, Estimate<?>> refMap = (Map) deserializer.readObject();
+		Map<CompartmentInfo, Estimate<Matrix, SymmetricMatrix, ?>> refMap = (Map) deserializer.readObject();
 		int nbCompartmentChecked = 0;
 		Assert.assertTrue("Testing the size of the map", refMap.size() == obsMap.size());
 		for (CompartmentInfo key : refMap.keySet()) {
@@ -346,12 +347,12 @@ public class CarbonAccountingToolTest {
 		cat.getCarbonToolSettings().setCurrentProductionProcessorManagerSelection(ProductionManagerName.customized);
 		cat.calculateCarbon();
 		CATSingleSimulationResult resultAverageLifetime = cat.getCarbonCompartmentManager().getSimulationSummary();
-		Map<CompartmentInfo, Estimate<?>> obsMapAverageLifetime = resultAverageLifetime.getBudgetMap();
+		Map<CompartmentInfo, Estimate<Matrix, SymmetricMatrix, ?>> obsMapAverageLifetime = resultAverageLifetime.getBudgetMap();
 		
 		cat.getCarbonToolSettings().getCustomizableProductionProcessorManager().load(halflifeFilename);
 		cat.calculateCarbon();
 		CATSingleSimulationResult resultHalflife = cat.getCarbonCompartmentManager().getSimulationSummary();
-		Map<CompartmentInfo, Estimate<?>> obsMapHalflife = resultHalflife.getBudgetMap();
+		Map<CompartmentInfo, Estimate<Matrix, SymmetricMatrix, ?>> obsMapHalflife = resultHalflife.getBudgetMap();
 		
 		
 		Assert.assertTrue("Testing the size of the map", obsMapAverageLifetime.size() == obsMapHalflife.size());
@@ -383,13 +384,13 @@ public class CarbonAccountingToolTest {
 		cat.setProductionManager(prlFilename);
 		cat.calculateCarbon();
 		CATSingleSimulationResult result = cat.getCarbonCompartmentManager().getSimulationSummary();
-		Map<CompartmentInfo, Estimate<?>> obsMap = result.getBudgetMap();
+		Map<CompartmentInfo, Estimate<Matrix, SymmetricMatrix, ?>> obsMap = result.getBudgetMap();
 		
 //		XmlSerializer serializer = new XmlSerializer(refFilename);
 //		serializer.writeObject(obsMap);
 
 		XmlDeserializer deserializer = new XmlDeserializer(refFilename);
-		Map<CompartmentInfo, Estimate<?>> refMap = (Map) deserializer.readObject();
+		Map<CompartmentInfo, Estimate<Matrix, SymmetricMatrix, ?>> refMap = (Map) deserializer.readObject();
 		int nbCompartmentChecked = 0;
 //		Assert.assertTrue("Testing the size of the map", refMap.size() == obsMap.size());
 		for (CompartmentInfo key : refMap.keySet()) {
@@ -422,7 +423,7 @@ public class CarbonAccountingToolTest {
 		double modifier1 = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BasicDensity, cat.getCarbonCompartmentManager(), CATSpecies.ABIES.getSpeciesType().name());
 		cat.calculateCarbon();
 		CATSingleSimulationResult result1 = cat.getCarbonCompartmentManager().getSimulationSummary();
-		Map<CompartmentInfo, Estimate<?>> refMap = result1.getBudgetMap();
+		Map<CompartmentInfo, Estimate<Matrix, SymmetricMatrix, ?>> refMap = result1.getBudgetMap();
 
 		
 		cat.setStandList(recordReader.getStandList());
@@ -434,7 +435,7 @@ public class CarbonAccountingToolTest {
 		Assert.assertEquals("Comparting first deviate", modifier1, modifier2, 1E-8);
 		cat.calculateCarbon();
 		CATSingleSimulationResult result2 = cat.getCarbonCompartmentManager().getSimulationSummary();
-		Map<CompartmentInfo, Estimate<?>> obsMap = result2.getBudgetMap();
+		Map<CompartmentInfo, Estimate<Matrix, SymmetricMatrix, ?>> obsMap = result2.getBudgetMap();
 		int nbCompartmentChecked = 0;
 		Assert.assertTrue("Testing the size of the map", refMap.size() == obsMap.size());
 		for (CompartmentInfo key : refMap.keySet()) {

@@ -18,12 +18,14 @@
  */
 package lerfob.carbonbalancetool.sensitivityanalysis;
 
+import repicea.math.Matrix;
+import repicea.math.SymmetricMatrix;
 import repicea.simulation.MonteCarloSimulationCompliantObject;
 import repicea.simulation.SensitivityAnalysisParameter;
 import repicea.stats.estimates.Estimate;
 
-@SuppressWarnings({ "serial", "rawtypes" })
-public abstract class CATSensitivityAnalysisParameter<E extends Estimate> extends SensitivityAnalysisParameter<E> {
+@SuppressWarnings({ "serial" })
+public abstract class CATSensitivityAnalysisParameter<E extends Estimate<Matrix, SymmetricMatrix, ?>> extends SensitivityAnalysisParameter<E> {
 
 	private double multiplier;
 

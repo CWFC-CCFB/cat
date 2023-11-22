@@ -22,6 +22,7 @@ package lerfob.carbonbalancetool;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.logging.Level;
 
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -46,6 +47,7 @@ import repicea.gui.genericwindows.REpiceaLicenseWindow;
 import repicea.io.tools.ImportFieldManagerDialog;
 import repicea.simulation.processsystem.SystemManagerDialog.MessageID;
 import repicea.util.ObjectUtility;
+import repicea.util.REpiceaLogManager;
 
 public class CarbonAccountingToolGUITest {
 	
@@ -54,6 +56,7 @@ public class CarbonAccountingToolGUITest {
 	
 	@BeforeClass
 	public static void initTest() throws Exception {
+		REpiceaLogManager.getLogger(CarbonAccountingTool.LOGGER_NAME).setLevel(Level.SEVERE);
 		CAT = new CarbonAccountingTool(CATMode.FROM_OTHER_APP);		// FROM_OTHER_APP to avoid shutdown with exit 
 		Runnable toRun = new Runnable() {
 			@Override
