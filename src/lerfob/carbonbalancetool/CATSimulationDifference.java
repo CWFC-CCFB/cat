@@ -27,6 +27,8 @@ import lerfob.carbonbalancetool.CATCompartment.CompartmentInfo;
 import lerfob.carbonbalancetool.CATUtilityMaps.SpeciesMonteCarloEstimateMap;
 import lerfob.carbonbalancetool.CATUtilityMaps.UseClassSpeciesMonteCarloEstimateMap;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
+import repicea.math.Matrix;
+import repicea.math.SymmetricMatrix;
 import repicea.stats.estimates.Estimate;
 import repicea.stats.estimates.MonteCarloEstimate;
 
@@ -39,7 +41,7 @@ public class CATSimulationDifference implements CATSimulationResult {
 	private final CATSingleSimulationResult scenToCompare;
 	private final CATSingleSimulationResult baseline;
 	private final String resultId;
-	private final Map<CompartmentInfo, Estimate<?>> budgetMap;
+	private final Map<CompartmentInfo, Estimate<Matrix, SymmetricMatrix, ?>> budgetMap;
 	private final Integer refDate;
 	private final Integer altDate;
 	
@@ -53,33 +55,33 @@ public class CATSimulationDifference implements CATSimulationResult {
 		this.refDate = refDate;
 		this.scenToCompare = scenToCompare;
 		this.altDate = altDate;
-		budgetMap = new HashMap<CompartmentInfo, Estimate<?>>();
+		budgetMap = new HashMap<CompartmentInfo, Estimate<Matrix, SymmetricMatrix, ?>>();
 		setBudgetMap();
 	}
 	
 	
 	private void setBudgetMap() {
-		Map<CompartmentInfo, Estimate<?>> refMap;
+		Map<CompartmentInfo, Estimate<Matrix, SymmetricMatrix, ?>> refMap;
 		if (refDate == null) {
 			refMap = baseline.getBudgetMap();
 		} else {
-			refMap = new HashMap<CompartmentInfo, Estimate<?>>();
+			refMap = new HashMap<CompartmentInfo, Estimate<Matrix, SymmetricMatrix, ?>>();
 			refMap.putAll(getEstimateForThisDate(baseline, refDate));
 //			System.out.println("Just extracted date " + refDate + " in baseline");
 		}
 		
-		Map<CompartmentInfo, Estimate<?>> altMap;
+		Map<CompartmentInfo, Estimate<Matrix, SymmetricMatrix, ?>> altMap;
 		if (altDate == null) {
 			altMap = scenToCompare.getBudgetMap();
 		} else {
-			altMap = new HashMap<CompartmentInfo, Estimate<?>>();
+			altMap = new HashMap<CompartmentInfo, Estimate<Matrix, SymmetricMatrix, ?>>();
 			altMap.putAll(getEstimateForThisDate(scenToCompare, altDate));
 //			System.out.println("Just extracted date " + altDate + " in alternative scenario");
 		}
 		
 		for (CompartmentInfo comp : altMap.keySet()) {
 			if (refMap.containsKey(comp)) {
-				Estimate<?> diffEst = altMap.get(comp).getDifferenceEstimate(refMap.get(comp));
+				Estimate<Matrix, SymmetricMatrix, ?> diffEst = altMap.get(comp).getDifferenceEstimate(refMap.get(comp));
 				budgetMap.put(comp, diffEst);
 			} else {
 				budgetMap.put(comp, altMap.get(comp));
@@ -106,7 +108,7 @@ public class CATSimulationDifference implements CATSimulationResult {
 	}
 		
 	@Override
-	public Map<CompartmentInfo, Estimate<?>> getBudgetMap() {return budgetMap;}
+	public Map<CompartmentInfo, Estimate<Matrix, SymmetricMatrix, ?>> getBudgetMap() {return budgetMap;}
 
 	@Override
 	public String getStandID() {return scenToCompare.getStandID() + " - " + baseline.getStandID();}

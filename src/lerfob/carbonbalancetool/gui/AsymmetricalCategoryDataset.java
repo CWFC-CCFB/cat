@@ -55,10 +55,10 @@ public class AsymmetricalCategoryDataset implements StatisticalCategoryDataset, 
 
 	class EstimateWrapper {
 		
-		private final Estimate<?> estimate;
+		private final Estimate<Matrix, SymmetricMatrix, ?> estimate;
 		private final Color color;
 		
-		EstimateWrapper(Estimate<?> estimate, Color color) {
+		EstimateWrapper(Estimate<Matrix, SymmetricMatrix, ?> estimate, Color color) {
 			this.estimate = estimate;
 			this.color = color;
 		}
@@ -82,7 +82,7 @@ public class AsymmetricalCategoryDataset implements StatisticalCategoryDataset, 
 		ciToBeDisplayedMap = new HashMap<Comparable, Map<Comparable, Boolean>>(); 
 	}
 
-	public void add(Estimate<?> estimate, Color color, Comparable category, Comparable group) {
+	public void add(Estimate<Matrix, SymmetricMatrix, ?> estimate, Color color, Comparable category, Comparable group) {
 //		if (estimate.getMean().getValueAt(0, 0) > 0d) {
 			if (!estimateMap.containsKey(category)) {
 				if (!rowKeys.contains(category)) {
@@ -114,7 +114,7 @@ public class AsymmetricalCategoryDataset implements StatisticalCategoryDataset, 
 
 	@Override
 	public Number getEndValue(Comparable arg0, Comparable arg1) {
-		Estimate<?> estimate = getEstimate(arg0, arg1);
+		Estimate<Matrix, SymmetricMatrix, ?> estimate = getEstimate(arg0, arg1);
 		if (estimate != null) {
 			ConfidenceInterval ci = estimate.getConfidenceIntervalBounds(percentile);
 			if (ci != null && !ci.isThereAnyNaN()) {
@@ -162,7 +162,7 @@ public class AsymmetricalCategoryDataset implements StatisticalCategoryDataset, 
 	
 	@Override
 	public Number getStartValue(Comparable arg0, Comparable arg1) {
-		Estimate<?> estimate = getEstimate(arg0, arg1);
+		Estimate<Matrix, SymmetricMatrix, ?> estimate = getEstimate(arg0, arg1);
 		if (estimate != null) {
 			ConfidenceInterval ci = estimate.getConfidenceIntervalBounds(percentile);
 			if (ci != null && !ci.isThereAnyNaN()) {
@@ -204,14 +204,14 @@ public class AsymmetricalCategoryDataset implements StatisticalCategoryDataset, 
 
 	@Override
 	public Number getValue(Comparable arg0, Comparable arg1) {
-		Estimate<?> estimate = getEstimate(arg0, arg1);
+		Estimate<Matrix, SymmetricMatrix, ?> estimate = getEstimate(arg0, arg1);
 		if (estimate != null) {
 			return estimate.getMean().getValueAt(0, 0);
 		}
 		return null;
 	}
 	
-	protected final Estimate<?> getEstimate(Comparable arg0, Comparable arg1) {
+	protected final Estimate<Matrix, SymmetricMatrix, ?> getEstimate(Comparable arg0, Comparable arg1) {
 		EstimateWrapper wrapper = getWrapper(arg0, arg1);
 		if (wrapper != null) { 
 			return wrapper.estimate;

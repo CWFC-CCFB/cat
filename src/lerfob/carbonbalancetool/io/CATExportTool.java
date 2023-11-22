@@ -43,6 +43,8 @@ import repicea.io.GExportRecord;
 import repicea.io.REpiceaRecordSet;
 import repicea.io.tools.REpiceaExportTool;
 import repicea.io.tools.REpiceaExportToolDialog;
+import repicea.math.Matrix;
+import repicea.math.SymmetricMatrix;
 import repicea.stats.estimates.Estimate;
 import repicea.stats.estimates.MonteCarloEstimate;
 import repicea.util.BrowserCaller;
@@ -267,7 +269,7 @@ public class CATExportTool extends REpiceaExportTool {
 			GExportFieldDetails standIDField = new GExportFieldDetails("StandID", standID);
 
 			for (CompartmentInfo compartmentInfo : CompartmentInfo.values()) {
-				Estimate<?> estimate = caller.summary.getBudgetMap().get(compartmentInfo);
+				Estimate<Matrix, SymmetricMatrix, ?> estimate = caller.summary.getBudgetMap().get(compartmentInfo);
 				if (estimate instanceof MonteCarloEstimate) {
 					int nbRealizations = ((MonteCarloEstimate) estimate).getNumberOfRealizations();
 					for (int j = 0; j < nbRealizations; j++) {

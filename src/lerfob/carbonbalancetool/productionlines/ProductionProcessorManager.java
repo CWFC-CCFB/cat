@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.logging.Level;
 
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
@@ -36,6 +37,7 @@ import javax.swing.filechooser.FileFilter;
 import lerfob.carbonbalancetool.CATCompartmentManager;
 import lerfob.carbonbalancetool.CATDecayFunction;
 import lerfob.carbonbalancetool.CATExponentialFunction;
+import lerfob.carbonbalancetool.CarbonAccountingTool;
 import lerfob.carbonbalancetool.catdiameterbasedtreelogger.CATDiameterBasedTreeLogger;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.BiomassType;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
@@ -62,6 +64,7 @@ import repicea.simulation.treelogger.TreeLoggerDescription;
 import repicea.simulation.treelogger.TreeLoggerParameters;
 import repicea.util.ExtendedFileFilter;
 import repicea.util.ObjectUtility;
+import repicea.util.REpiceaLogManager;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.Language;
 
@@ -358,7 +361,9 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 					UIControlManager.InformationMessageTitle.Warning.toString(),
 					JOptionPane.WARNING_MESSAGE);
 		} else {
-//			System.out.println(MessageID.IncompatibleTreeLogger.toString());
+			REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, 
+					Level.WARNING, 
+					getClass().getSimpleName(), MessageID.IncompatibleTreeLogger.toString());
 		}
 		setSelectedTreeLogger(availableTreeLoggerParameters.get(0));
 		if (guiInterface != null) {
@@ -415,6 +420,7 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		return -1;
 	}
 	
+	@SuppressWarnings("rawtypes")
 	protected void addTestUnits(List<ProcessUnit> inputUnits) {
 		inputUnits.add(new CarbonTestProcessUnit());
 		inputUnits.add(new BarkTestProcessUnit());
@@ -513,17 +519,19 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	private void actualizeCarbonUnitsOfThisType(CarbonUnitStatus type, CATCompartmentManager compartmentManager) throws Exception {
 		try {
 			CarbonUnitList list = getCarbonUnits(type);
-			if (compartmentManager.getCarbonToolSettings().isVerboseEnabled()) {
-				System.out.println("Carbon units of type " + type.name() + ". Before actualization, " + list.toString());
-			}
+			REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, 
+					Level.FINEST, 
+					getClass().getSimpleName(), 
+					"Carbon units of type " + type.name() + ". Before actualization, " + list.toString());
 			for (int i = 0; i < list.size(); i++) {		// the condition based on the size of the list makes sure that newly created HWPs will be actualized.
 				CarbonUnit carbonUnit = list.get(i);
 				carbonUnit.actualizeCarbon(compartmentManager);
 			}
 			
-			if (compartmentManager.getCarbonToolSettings().isVerboseEnabled()) {
-				System.out.println("Carbon units of type " + type.name() + " actualized. After actualization, " + list.toString());
-			}
+			REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, 
+					Level.FINEST, 
+					getClass().getSimpleName(), 
+					"Carbon units of type " + type.name() + " actualized. After actualization, " + list.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new Exception("An exception occurred while actualizing carbon units of type " + type.name() + " : " + e.getMessage());

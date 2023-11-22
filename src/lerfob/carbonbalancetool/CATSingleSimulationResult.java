@@ -29,6 +29,7 @@ import lerfob.carbonbalancetool.CATUtilityMaps.SpeciesMonteCarloEstimateMap;
 import lerfob.carbonbalancetool.CATUtilityMaps.UseClassSpeciesMonteCarloEstimateMap;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
 import repicea.math.Matrix;
+import repicea.math.SymmetricMatrix;
 import repicea.stats.estimates.Estimate;
 import repicea.stats.estimates.MonteCarloEstimate;
 import repicea.util.REpiceaTranslator;
@@ -77,7 +78,7 @@ class CATSingleSimulationResult implements CATSimulationResult {
 	private final String standID;
 	private final CATTimeTable timeTable;
 	private final boolean isEvenAged;
-	private final Map<CompartmentInfo, Estimate<?>> budgetMap;
+	private final Map<CompartmentInfo, Estimate<Matrix, SymmetricMatrix, ?>> budgetMap;
 	private final Map<String, SpeciesMonteCarloEstimateMap> logGradeMap;
 	private final Map<CompartmentInfo, MonteCarloEstimate> evolutionMap;
 	private final Map<CarbonUnitStatus, UseClassSpeciesMonteCarloEstimateMap> hwpContentByUseClass;
@@ -100,7 +101,7 @@ class CATSingleSimulationResult implements CATSimulationResult {
 		
 		timeTable = manager.getTimeTable();
 		
-		budgetMap = new HashMap<CompartmentInfo, Estimate<?>>();
+		budgetMap = new HashMap<CompartmentInfo, Estimate<Matrix, SymmetricMatrix, ?>>();
 		evolutionMap = new HashMap<CompartmentInfo, MonteCarloEstimate>();
 		logGradeMap = new TreeMap<String, SpeciesMonteCarloEstimateMap>();
 		
@@ -194,7 +195,7 @@ class CATSingleSimulationResult implements CATSimulationResult {
 
 
 	@Override
-	public Map<CompartmentInfo, Estimate<?>> getBudgetMap() {return budgetMap;}
+	public Map<CompartmentInfo, Estimate<Matrix, SymmetricMatrix, ?>> getBudgetMap() {return budgetMap;}
 
 	@Override
 	public String getStandID() {return standID;}

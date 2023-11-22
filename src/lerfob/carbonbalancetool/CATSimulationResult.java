@@ -24,6 +24,8 @@ import lerfob.carbonbalancetool.CATCompartment.CompartmentInfo;
 import lerfob.carbonbalancetool.CATUtilityMaps.SpeciesMonteCarloEstimateMap;
 import lerfob.carbonbalancetool.CATUtilityMaps.UseClassSpeciesMonteCarloEstimateMap;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
+import repicea.math.Matrix;
+import repicea.math.SymmetricMatrix;
 import repicea.stats.estimates.Estimate;
 import repicea.stats.estimates.MonteCarloEstimate;
 
@@ -46,7 +48,7 @@ public interface CATSimulationResult {
 	 * is also used to calculate the difference between two budgets and the result is then
 	 * an SimpleEstimate instance. 
 	 */
-	public Map<CompartmentInfo, Estimate<?>> getBudgetMap();
+	public Map<CompartmentInfo, Estimate<Matrix, SymmetricMatrix, ?>> getBudgetMap();
 	
 	/**
 	 * This method return the identifier of the stand.

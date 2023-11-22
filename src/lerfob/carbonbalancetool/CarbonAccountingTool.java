@@ -189,7 +189,7 @@ public class CarbonAccountingTool extends AbstractGenericEngine implements REpic
 
 	@Override
 	protected void shutdown(int shutdownCode) {
-		System.out.println("Shutting down CAT...");
+		REpiceaLogManager.logMessage(LOGGER_NAME, Level.INFO, null, "Shutting down CAT...");
 		CATSensitivityAnalysisSettings.getInstance().clear();
 		isShuttedDown = true;
 		if (mode == CATMode.STANDALONE) {		// only the stand alone mode will shutdown the JVM
@@ -256,12 +256,10 @@ public class CarbonAccountingTool extends AbstractGenericEngine implements REpic
 				try {
 					UIManager.setLookAndFeel(lastLookAndFeelClass);
 				} catch (Exception e) {
-					System.out.println("Unable to set the look and feel to " + lastLookAndFeelClass);
+					REpiceaLogManager.logMessage(LOGGER_NAME, Level.SEVERE, null, "Unable to set the look and feel to " + lastLookAndFeelClass + " : " + e.getMessage());
 				}
 			}
 			
-//			System.out.println("Look and feel set to " + UIManager.getLookAndFeel().getName());
-
 			if (isGuiEnabled()) {
 				if (!hasAlreadyBeenInstanciated) {
 					String packagePath = ObjectUtility.getRelativePackagePath(CarbonAccountingTool.class);

@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.security.InvalidParameterException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.logging.Level;
 
 import javax.swing.filechooser.FileFilter;
 
@@ -39,6 +40,7 @@ import lerfob.carbonbalancetool.CATBelowGroundCarbonProvider;
 import lerfob.carbonbalancetool.CATBelowGroundVolumeProvider;
 import lerfob.carbonbalancetool.CATCarbonContentRatioProvider;
 import lerfob.carbonbalancetool.CATCompatibleTree;
+import lerfob.carbonbalancetool.CarbonAccountingTool;
 import lerfob.carbonbalancetool.biomassparameters.BiomassParametersDialog.MessageID;
 import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettings;
 import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettings.VariabilitySource;
@@ -57,11 +59,34 @@ import repicea.simulation.MonteCarloSimulationCompliantObject;
 import repicea.simulation.covariateproviders.treelevel.SpeciesTypeProvider.SpeciesType;
 import repicea.util.ExtendedFileFilter;
 import repicea.util.ObjectUtility;
+import repicea.util.REpiceaLogManager;
 
+/**
+ * The BiomassParameters class handles the conversion from 
+ * merchantable volume to carbon.
+ * @author Mathieu Fortin - 2013
+ */
 public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInterfaceableObject, Resettable, Memorizable {
 
+	/**
+	 * Define the different conversion factors for which
+	 * a Tier 2 approach can be enabled. <p>
+	 * 
+	 * To enable a Tier 2 approach, the Tree class must implement
+	 * some interfaces. 
+	 * 
+	 * @see <a href=https://sourceforge.net/p/lerfobforesttools/wiki/CAT%20-%20User%20interface/#setting-carbon-balance-parameters>https://sourceforge.net/p/lerfobforesttools/wiki/CAT%20-%20User%20interface</a>
+	 * @author Mathieu Fortin - 2013
+	 *
+	 */
 	public static enum Tier2Implementation {
+		/**
+		 * Associated with belowground expansion factors.
+		 */
 		RootExpansionFactor,
+		/**
+		 * Associated with aboveground expansion factors.
+		 */
 		BranchExpansionFactor,
 		BasicWoodDensityFactor,
 		CarbonContentFactor
@@ -127,7 +152,8 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 	protected transient REpiceaGUIPermission permissions = new DefaultREpiceaGUIPermission(true);
 
 	/**
-	 * Empty constructor for class.newInstance() call.
+	 * Constructor with permissions.
+	 * @param permissions an REpiceaGUIPermission instance
 	 */
 	public BiomassParameters(REpiceaGUIPermission permissions) {
 		if (permissions != null) {
@@ -147,6 +173,11 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 		this(new DefaultREpiceaGUIPermission(true));
 	}
 	
+	/**
+	 * Check if the IPCC Tier 2 approach is enabled.
+	 * @param item a Tier2Implementation enum
+	 * @return a boolean
+	 */
 	public boolean isTier2ImplementationEnabled(Tier2Implementation item) {
 		switch(item) {
 		case RootExpansionFactor:
@@ -161,35 +192,71 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 			throw new InvalidParameterException("isTier2ImplementationEnabled : This item is not recognized :" + item.name());
 		}
 	}
+
+	private void logTier2WarningMessage(Tier2Implementation item) {
+		REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, 
+				Level.WARNING, 
+				"BiomassParameters.setTier2ImplementationEnabled", "Tier 2 implementation for " + item.name() + " was enabled but model implementation doesn't support it.");
+	}
 	
+	/**
+	 * Enable an IPCC Tier 2 approach if the model allows it. <p>
+	 * To allow the Tier 2 approach the Tree instance must implement
+	 * additional interfaces. If an attempt is made to enable a Tier 
+	 * 2 approach but the model does not allow it, then a warning is 
+	 * issued and the Tier 2 approach remains disabled for the item 
+	 * parameter.
+	 *  
+	 * @see <a href=https://sourceforge.net/p/lerfobforesttools/wiki/CAT%20-%20User%20interface/#setting-carbon-balance-parameters>https://sourceforge.net/p/lerfobforesttools/wiki/CAT%20-%20User%20interface</a>
+	 * @param item a Tier2Implementation enum
+	 * @param value true to enable or false to disable
+	 */
 	public void setTier2ImplementationEnabled(Tier2Implementation item, boolean value) {
 		switch(item) {
 		case RootExpansionFactor:
-			rootExpansionFactorFromModel = value;
-			if (value && !rootExpansionFactorFromModelEnabled)
-				System.out.println("setTier2ImplementationEnabled Warning : " + item.name() + " was enabled but implementation doesn't support it.");
+			if (value && !rootExpansionFactorFromModelEnabled) {
+				logTier2WarningMessage(item);
+			} else {
+				rootExpansionFactorFromModel = value;
+			}
 			break;
 		case BranchExpansionFactor:
-			branchExpansionFactorFromModel = value;
-			if (value && !rootExpansionFactorFromModelEnabled)
-				System.out.println("setTier2ImplementationEnabled Warning : " + item.name() + " was enabled but implementation doesn't support it.");
+			if (value && !branchExpansionFactorFromModelEnabled) {
+				logTier2WarningMessage(item);
+			} else {
+				branchExpansionFactorFromModel = value;
+			}
 			break;
 		case BasicWoodDensityFactor:
-			basicWoodDensityFromModel = value;
-			if (value && !rootExpansionFactorFromModelEnabled)
-				System.out.println("setTier2ImplementationEnabled Warning : " + item.name() + " was enabled but implementation doesn't support it.");
+			if (value && !basicWoodDensityFromModelEnabled) {
+				logTier2WarningMessage(item);
+			} else {
+				basicWoodDensityFromModel = value;
+			}
 			break;
 		case CarbonContentFactor:
-			carbonContentFromModel = value;
-			if (value && !rootExpansionFactorFromModelEnabled)
-				System.out.println("setTier2ImplementationEnabled Warning : " + item.name() + " was enabled but implementation doesn't support it.");
+			if (value && !carbonContentFromModelEnabled) {
+				logTier2WarningMessage(item);
+			} else {
+				carbonContentFromModel = value;
+			}
 			break;
 		default:
 			throw new InvalidParameterException("setTier2ImplementationEnabled : This item is not recognized :" + item.name());
 		}
 	}
 
-	
+	/**
+	 * Set the referent object, typically a Tree instance.<p>
+	 * 
+	 * The referent is used to define whether the model allows for
+	 * a Tier 2 approach for different factors. In case the model allows 
+	 * for a Tier 2 approach, the BiomassParameters instance will 
+	 * automatically enable the Tier 2 approach.
+	 * 
+	 * @see Tier2Implementation
+	 * @param referent typically a Tree instance
+	 */
 	public void setReferent(Object referent) {
 		this.referent = referent; 
 		testReferent(referent);
@@ -238,6 +305,13 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 		carbonContentFromModel = carbonContentFromModelEnabled;
 	}
 
+	/**
+	 * Check the consistency of Tier 2 approaches if they have been enabled. <p>
+	 * 
+	 * The method will return false if the Tier 2 approach has been enabled but
+	 * the model does not allow it.
+	 * @return a boolean
+	 */
 	public boolean isValid() {
 		if (!branchExpansionFactorFromModelEnabled && branchExpansionFactorFromModel) {
 			return false;
@@ -418,7 +492,7 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 	 * @param tree a CarbonToolCompatibleTree instance
 	 * @return the biomass (Mg)
 	 */
-	private double getBelowGroundBiomassMg(CATCompatibleTree tree, MonteCarloSimulationCompliantObject subject) {
+	double getBelowGroundBiomassMg(CATCompatibleTree tree, MonteCarloSimulationCompliantObject subject) {
 		boolean tier2Implementation = rootExpansionFactorFromModel && tree instanceof CATBelowGroundBiomassProvider;
 		if (tier2Implementation) {
 			CATBelowGroundBiomassProvider t = (CATBelowGroundBiomassProvider) tree;
@@ -438,7 +512,7 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 	 * @param tree a CarbonToolCompatibleTree instance
 	 * @return the volume (M3)
 	 */
-	private double getBelowGroundVolumeM3(CATCompatibleTree tree, MonteCarloSimulationCompliantObject subject) {
+	double getBelowGroundVolumeM3(CATCompatibleTree tree, MonteCarloSimulationCompliantObject subject) {
 		boolean tier2Implementation = rootExpansionFactorFromModel && tree instanceof CATBelowGroundVolumeProvider;
 		boolean isStochastic = false;
 		double value;
@@ -483,7 +557,7 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 	 * @param tree a CarbonCompatibleTree
 	 * @return a double
 	 */
-	private double getAboveGroundBiomassMg(CATCompatibleTree tree, MonteCarloSimulationCompliantObject subject) {
+	double getAboveGroundBiomassMg(CATCompatibleTree tree, MonteCarloSimulationCompliantObject subject) {
 		boolean tier2Implementation = branchExpansionFactorFromModel && tree instanceof CATAboveGroundBiomassProvider;
 		if (tier2Implementation) {
 			CATAboveGroundBiomassProvider t = (CATAboveGroundBiomassProvider) tree;
@@ -506,7 +580,7 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 	 * @param subject a MonteCarloSimulationCompliantObject 
 	 * @return a double
 	 */
-	private double getAboveGroundVolumeM3(CATCompatibleTree tree, MonteCarloSimulationCompliantObject subject) {
+	double getAboveGroundVolumeM3(CATCompatibleTree tree, MonteCarloSimulationCompliantObject subject) {
 		boolean tier2Implementation = branchExpansionFactorFromModel && tree instanceof CATAboveGroundVolumeProvider;
 		boolean isStochastic = false;
 		double value;
@@ -708,9 +782,9 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 		return guiInterface != null && guiInterface.isVisible();
 	}
 
-	public static void main(String[] args) {
-		BiomassParameters bp = new BiomassParameters();
-		bp.showUI(null);
-	}
+//	public static void main(String[] args) {
+//		BiomassParameters bp = new BiomassParameters();
+//		bp.showUI(null);
+//	}
 
 }
