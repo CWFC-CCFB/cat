@@ -20,35 +20,39 @@
 package lerfob.carbonbalancetool.productionlines.affiliere;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.logging.Level;
 
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import lerfob.carbonbalancetool.CarbonAccountingTool;
 import lerfob.carbonbalancetool.productionlines.ProductionLineProcessor;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager;
+import repicea.gui.permissions.DefaultREpiceaGUIPermission;
 import repicea.serial.MemorizerPackage;
 import repicea.util.ObjectUtility;
+import repicea.util.REpiceaLogManager;
 
-public class AffiliereJSONReaderTest {
+public class AffiliereJSONTest {
 
+	@SuppressWarnings("rawtypes")
 	@Test
-	public void testAffiliereReaderFromFile() throws FileNotFoundException {
-		String filename = ObjectUtility.getPackagePath(AffiliereJSONReaderTest.class) + "EtudesAvecEtiquette4.json";
-		AffiliereJSONReader reader = new AffiliereJSONReader(new File(filename));
+	public void testAffiliereReaderFromFile() throws IOException {
+		String filename = ObjectUtility.getPackagePath(AffiliereJSONTest.class) + "EtudesAvecEtiquette4.json";
 		ProductionProcessorManager manager = new ProductionProcessorManager();
-		for (ProductionLineProcessor p : reader.processors.values()) {
-			manager.registerObject(p);
-		}
+		manager.load(filename);
 //		manager.showUI(null);
 		MemorizerPackage mp = manager.getMemorizerPackage();
 		Assert.assertEquals("Testing nb of processors", 94, ((List) mp.get(1)).size());
 	}
 	
+	@SuppressWarnings("rawtypes")
 	@Ignore
 	@Test
 	public void testAffiliereReaderFromURL() throws IOException {
@@ -63,14 +67,27 @@ public class AffiliereJSONReaderTest {
 		Assert.assertEquals("Testing nb of processors", 88, ((List) mp.get(1)).size());
 	}
 	
-	
-	public static void main(String[] args) throws FileNotFoundException {
-		String filename = ObjectUtility.getPackagePath(AffiliereJSONReaderTest.class) + "EtudesAvecEtiquette4.json";
-		AffiliereJSONReader reader = new AffiliereJSONReader(new File(filename));
+
+	@Test
+	public void testAffiliereWriter() throws IOException {
+		String fluxConfigurationFilename = ObjectUtility.getPackagePath(getClass()) + "hardwood_recycling_en.prl";
+		ProductionProcessorManager productionProcessorManager = new ProductionProcessorManager(new DefaultREpiceaGUIPermission(false));
+		productionProcessorManager.load(fluxConfigurationFilename);
+		String jSONFilename = ObjectUtility.getPackagePath(getClass()) + "jSONExportTest.json";
+		File f = new File(jSONFilename);
+		if (f.exists())
+			f.delete();
+		REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.INFO, null, "Writing the ProductionProcessorManager to file: " + jSONFilename);
+		productionProcessorManager.save(jSONFilename);
+		Assert.assertTrue("Testing if file has been saved", f.exists());
+		long fileSize = Files.size(Paths.get(f.toURI()));
+		Assert.assertTrue("Testing if file has been saved", fileSize > 4000);
+	}
+
+	public static void main(String[] args) throws IOException {
+		String filename = ObjectUtility.getPackagePath(AffiliereJSONTest.class) + "EtudesAvecEtiquette4.json";
 		ProductionProcessorManager manager = new ProductionProcessorManager();
-		for (ProductionLineProcessor p : reader.processors.values()) {
-			manager.registerObject(p);
-		}
+		manager.load(filename);
 		manager.showUI(null);
 		
 	}
