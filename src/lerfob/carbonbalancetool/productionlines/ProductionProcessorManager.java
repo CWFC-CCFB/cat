@@ -26,6 +26,7 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -44,6 +45,8 @@ import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManagerDialog.MessageID;
 import lerfob.carbonbalancetool.productionlines.WoodyDebrisProcessor.WoodyDebrisProcessorID;
+import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONReader;
+import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONWriter;
 import lerfob.treelogger.basictreelogger.BasicTreeLogger;
 import lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLogger;
 import lerfob.treelogger.maritimepine.MaritimePineBasicTreeLogger;
@@ -69,47 +72,79 @@ import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.Language;
 
 /**
- * The ProductionProcessorManager class is an implementation of SystemManager for production
- * line design in a context of carbon balance assessment.
+ * The ProductionProcessorManager class is an implementation of SystemManager
+ * for production line design in a context of carbon balance assessment.
+ * 
  * @author Mathieu Fortin - May 2014
  */
 public class ProductionProcessorManager extends SystemManager implements Memorizable {
 
 	@SuppressWarnings("serial")
 	protected static class TreeLoggerInstanceCompatibilityException extends InvalidParameterException {
-		protected TreeLoggerInstanceCompatibilityException() {}
+		protected TreeLoggerInstanceCompatibilityException() {
+		}
 	}
-	
-	static {
-		XmlSerializerChangeMonitor.registerClassNameChange("lerfob.carbonbalancetool.defaulttreelogger.CATDefaultLogCategory", "repicea.treelogger.basictreelogger.BasicLogCategory");
-		XmlSerializerChangeMonitor.registerClassNameChange("lerfob.carbonbalancetool.defaulttreelogger.CATDefaultTreeLogger", "repicea.treelogger.basictreelogger.BasicTreeLogger");
-		XmlSerializerChangeMonitor.registerClassNameChange("lerfob.carbonbalancetool.defaulttreelogger.CATDefaultTreeLoggerParameters", "repicea.treelogger.basictreelogger.BasicTreeLoggerParameters");
-		XmlSerializerChangeMonitor.registerClassNameChange("lerfob.carbonbalancetool.defaulttreelogger.CATDefaultTreeLoggerParametersDialog", "repicea.treelogger.basictreelogger.BasicTreeLoggerParametersDialog");
-		XmlSerializerChangeMonitor.registerClassNameChange("lerfob.carbonbalancetool.defaulttreelogger.CATWoodPiece", "repicea.treelogger.basictreelogger.BasicTreeLoggerWoodPiece");
-		
-		XmlSerializerChangeMonitor.registerClassNameChange("repicea.treelogger.basictreelogger.BasicTreeLogger", "lerfob.treelogger.basictreelogger.BasicTreeLogger");
-		XmlSerializerChangeMonitor.registerClassNameChange("repicea.treelogger.basictreelogger.BasicTreeLoggerParameters", "lerfob.treelogger.basictreelogger.BasicTreeLoggerParameters");
-		XmlSerializerChangeMonitor.registerClassNameChange("repicea.treelogger.basictreelogger.BasicLogCategory", "lerfob.treelogger.basictreelogger.BasicLogCategory");
-		
-		XmlSerializerChangeMonitor.registerClassNameChange("repicea.treelogger.europeanbeech.EuropeanBeechBasicTreeLogger", "lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLogger");
-		XmlSerializerChangeMonitor.registerClassNameChange("repicea.treelogger.europeanbeech.EuropeanBeechBasicTreeLoggerParameters", "lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLoggerParameters");
-		XmlSerializerChangeMonitor.registerClassNameChange("repicea.treelogger.europeanbeech.EuropeanBeechBasicTreeLogCategory", "lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLogCategory");
-		XmlSerializerChangeMonitor.registerClassNameChange("repicea.treelogger.europeanbeech.EuropeanBeechBasicTreeLoggerParameters$Grade", "lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLoggerParameters$Grade");
 
-		XmlSerializerChangeMonitor.registerClassNameChange("repicea.treelogger.maritimepine.MaritimePineBasicTreeLogger", "lerfob.treelogger.maritimepine.MaritimePineBasicTreeLogger");
-		XmlSerializerChangeMonitor.registerClassNameChange("repicea.treelogger.maritimepine.MaritimePineBasicTreeLoggerParameters", "lerfob.treelogger.maritimepine.MaritimePineBasicTreeLoggerParameters");
-		XmlSerializerChangeMonitor.registerClassNameChange("repicea.treelogger.maritimepine.MaritimePineBasicTreeLogCategory", "lerfob.treelogger.maritimepine.MaritimePineBasicTreeLogCategory");
-		XmlSerializerChangeMonitor.registerClassNameChange("repicea.treelogger.maritimepine.MaritimePineBasicTreeLoggerParameters$Grade", "lerfob.treelogger.maritimepine.MaritimePineBasicTreeLoggerParameters$Grade");
+	static {
+		XmlSerializerChangeMonitor.registerClassNameChange(
+				"lerfob.carbonbalancetool.defaulttreelogger.CATDefaultLogCategory",
+				"repicea.treelogger.basictreelogger.BasicLogCategory");
+		XmlSerializerChangeMonitor.registerClassNameChange(
+				"lerfob.carbonbalancetool.defaulttreelogger.CATDefaultTreeLogger",
+				"repicea.treelogger.basictreelogger.BasicTreeLogger");
+		XmlSerializerChangeMonitor.registerClassNameChange(
+				"lerfob.carbonbalancetool.defaulttreelogger.CATDefaultTreeLoggerParameters",
+				"repicea.treelogger.basictreelogger.BasicTreeLoggerParameters");
+		XmlSerializerChangeMonitor.registerClassNameChange(
+				"lerfob.carbonbalancetool.defaulttreelogger.CATDefaultTreeLoggerParametersDialog",
+				"repicea.treelogger.basictreelogger.BasicTreeLoggerParametersDialog");
+		XmlSerializerChangeMonitor.registerClassNameChange("lerfob.carbonbalancetool.defaulttreelogger.CATWoodPiece",
+				"repicea.treelogger.basictreelogger.BasicTreeLoggerWoodPiece");
+
+		XmlSerializerChangeMonitor.registerClassNameChange("repicea.treelogger.basictreelogger.BasicTreeLogger",
+				"lerfob.treelogger.basictreelogger.BasicTreeLogger");
+		XmlSerializerChangeMonitor.registerClassNameChange(
+				"repicea.treelogger.basictreelogger.BasicTreeLoggerParameters",
+				"lerfob.treelogger.basictreelogger.BasicTreeLoggerParameters");
+		XmlSerializerChangeMonitor.registerClassNameChange("repicea.treelogger.basictreelogger.BasicLogCategory",
+				"lerfob.treelogger.basictreelogger.BasicLogCategory");
+
+		XmlSerializerChangeMonitor.registerClassNameChange(
+				"repicea.treelogger.europeanbeech.EuropeanBeechBasicTreeLogger",
+				"lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLogger");
+		XmlSerializerChangeMonitor.registerClassNameChange(
+				"repicea.treelogger.europeanbeech.EuropeanBeechBasicTreeLoggerParameters",
+				"lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLoggerParameters");
+		XmlSerializerChangeMonitor.registerClassNameChange(
+				"repicea.treelogger.europeanbeech.EuropeanBeechBasicTreeLogCategory",
+				"lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLogCategory");
+		XmlSerializerChangeMonitor.registerClassNameChange(
+				"repicea.treelogger.europeanbeech.EuropeanBeechBasicTreeLoggerParameters$Grade",
+				"lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLoggerParameters$Grade");
+
+		XmlSerializerChangeMonitor.registerClassNameChange(
+				"repicea.treelogger.maritimepine.MaritimePineBasicTreeLogger",
+				"lerfob.treelogger.maritimepine.MaritimePineBasicTreeLogger");
+		XmlSerializerChangeMonitor.registerClassNameChange(
+				"repicea.treelogger.maritimepine.MaritimePineBasicTreeLoggerParameters",
+				"lerfob.treelogger.maritimepine.MaritimePineBasicTreeLoggerParameters");
+		XmlSerializerChangeMonitor.registerClassNameChange(
+				"repicea.treelogger.maritimepine.MaritimePineBasicTreeLogCategory",
+				"lerfob.treelogger.maritimepine.MaritimePineBasicTreeLogCategory");
+		XmlSerializerChangeMonitor.registerClassNameChange(
+				"repicea.treelogger.maritimepine.MaritimePineBasicTreeLoggerParameters$Grade",
+				"lerfob.treelogger.maritimepine.MaritimePineBasicTreeLoggerParameters$Grade");
 	}
-	
+
 	/**
 	 * This class is the file filter for loading and saving production lines.
+	 * 
 	 * @author Mathieu Fortin - May 2014
 	 */
 	private static class ProductionLineFileFilter extends FileFilter implements ExtendedFileFilter {
 
 		private String extension = ".prl";
-		
+
 		@Override
 		public boolean accept(File f) {
 			if (f.isDirectory() || f.getAbsolutePath().toLowerCase().trim().endsWith(extension)) {
@@ -125,12 +160,13 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		}
 
 		@Override
-		public String getExtension() {return extension;}
+		public String getExtension() {
+			return extension;
+		}
 	}
 
-	
 	static class CarbonTestProcessUnit extends TestProcessUnit {
-		
+
 		CarbonTestProcessUnit() {
 			super();
 		}
@@ -142,18 +178,18 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		protected boolean recordProcessor(Processor processor) {
 			return super.recordProcessor(processor);
 		}
-		
+
 		@Override
 		protected TestProcessUnit createNewProcessUnitFromThisOne() {
 			CarbonTestProcessUnit ctpu = new CarbonTestProcessUnit();
 			ctpu.processorList.addAll(this.processorList);
 			return ctpu;
 		}
-		
+
 	}
-	
+
 	static class BarkTestProcessUnit extends CarbonTestProcessUnit implements BiomassTypeProvider {
-		
+
 		BarkTestProcessUnit() {
 			super();
 		}
@@ -162,7 +198,7 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		public BiomassType getBiomassType() {
 			return BiomassType.Bark;
 		}
-		
+
 		@Override
 		protected TestProcessUnit createNewProcessUnitFromThisOne() {
 			BarkTestProcessUnit ctpu = new BarkTestProcessUnit();
@@ -171,37 +207,82 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		}
 
 	}
-	
-	
- 	protected static List<LeftHandSideProcessor> DefaultLeftHandSideProcessors;
-	
+
+	public static class LightJSONNodeRepresentation {
+		@SuppressWarnings("unused")
+		private final String idNode;
+		@SuppressWarnings("unused")
+		private final String name;
+		@SuppressWarnings("unused")
+		private final int x;
+		@SuppressWarnings("unused")
+		private final int y;
+
+		LightJSONNodeRepresentation(String idNode, Processor p) {
+			this.idNode = idNode;
+			name = p.getName();
+			x = p.getOriginalLocation().x;
+			y = p.getOriginalLocation().y;
+		}
+	}
+
+	public static class LightJSONLinkRepresentation {
+		@SuppressWarnings("unused")
+		private final String idLink;
+		@SuppressWarnings("unused")
+		private final String idSource;
+		@SuppressWarnings("unused")
+		private final String idTarget;
+		@SuppressWarnings("unused")
+		private final String linkType;
+		private final LinkedHashMap<String, Double> value;
+
+		LightJSONLinkRepresentation(String idLink, boolean endOfLife, Processor source, Processor target,
+				Map<Processor, String> processorToIdMap) {
+			this.idLink = idLink;
+			this.linkType = endOfLife ? "EndOfLife" : "Production";
+			idSource = processorToIdMap.get(source);
+			idTarget = processorToIdMap.get(target);
+			value = new LinkedHashMap<String, Double>();
+			if (endOfLife) {
+				value.put("proportion", 1d);
+			} else {
+				value.put("proportion", source.getSubProcessorIntakes().get(target).doubleValue() * .01);
+			}
+		}
+	}
+
+	protected static List<LeftHandSideProcessor> DefaultLeftHandSideProcessors;
+
 	protected static final ProductionLineFileFilter MyFileFilter = new ProductionLineFileFilter();
-	
+
 	/**
-	 * The VERY_SMALL value serves as threshold when dealing with small quantities. Below the threshold the quantity is not considered at all. 
+	 * The VERY_SMALL value serves as threshold when dealing with small quantities.
+	 * Below the threshold the quantity is not considered at all.
 	 */
 	public static final double VERY_SMALL = 1E-12;
 //	public static final double VERY_SMALL = 1E-200;
 
-	protected static enum EnhancedMode {CreateEndOfLifeLinkLine}
-	
+	protected static enum EnhancedMode {
+		CreateEndOfLifeLinkLine
+	}
+
 	private transient final Vector<TreeLoggerParameters<?>> availableTreeLoggerParameters;
-	
+
 	@SuppressWarnings("rawtypes")
 	private TreeLoggerParameters selectedTreeLoggerParameters;
-	
+
 	@SuppressWarnings("rawtypes")
 	private transient TreeLogger treeLogger;
 
 	protected final ArrayList<LeftHandSideProcessor> logCategoryProcessors;
-	
+
 	private transient Map<LogCategory, LogCategoryProcessor> logCategoryProcessorIndices = new HashMap<LogCategory, LogCategoryProcessor>();
-	
+
 	private transient CarbonUnitMap<CarbonUnitStatus> carbonUnitMap;
-	
+
 	private CATDecayFunction decayFunction;
-	
-	
+
 	/**
 	 * Constructor.
 	 */
@@ -224,18 +305,64 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 //			Class<?> sybilleTreeLoggerClass = ClassLoader.getSystemClassLoader().loadClass("quebecmrnfutility.treelogger.sybille.SybilleTreeLogger");
 //			defaultTreeLoggerDescriptions.add(new TreeLoggerDescription(sybilleTreeLoggerClass.getName()));
 //		} catch (ClassNotFoundException e) {}
-		
+
 		setAvailableTreeLoggers(defaultTreeLoggerDescriptions);
 	}
 
 	public ProductionProcessorManager() {
 		this(new DefaultREpiceaGUIPermission(true));
 	}
-	
+
+	/**
+	 * Produce a JSON representation before parsing.
+	 * 
+	 * @return a Map instance that contains all the information to be converted in
+	 *         JSON format
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public Map<?, ?> getLightJSONRepresentation() {
+		int idDispenser = 1;
+		Map<String, LightJSONNodeRepresentation> nodeMap = new LinkedHashMap<String, LightJSONNodeRepresentation>();
+		Map<Processor, String> processorToIdMap = new HashMap<Processor, String>();
+		for (Processor p : getList()) {
+			String idNode = "node" + idDispenser++;
+			nodeMap.put(idNode, new LightJSONNodeRepresentation(idNode, p));
+			processorToIdMap.put(p, idNode);
+		}
+		Map<String, LightJSONLinkRepresentation> linkMap = new LinkedHashMap<String, LightJSONLinkRepresentation>();
+		for (Processor source : getList()) {
+			for (Processor target : source.getSubProcessors()) {
+				String idLink = "link" + idDispenser++;
+				linkMap.put(idLink, new LightJSONLinkRepresentation(idLink, false, source, target, processorToIdMap)); // false:
+																														// a
+																														// typical
+																														// production
+																														// processor
+																														// (not
+																														// end
+																														// of
+																														// life)
+			}
+			if (source instanceof ProductionLineProcessor) {
+				if (((ProductionLineProcessor) source).disposedToProcessor != null) {
+					String idLink = "link" + idDispenser++;
+					linkMap.put(idLink, new LightJSONLinkRepresentation(idLink, true, source,
+							((ProductionLineProcessor) source).disposedToProcessor, processorToIdMap)); // end of life
+																										// processor
+				}
+			}
+		}
+		Map outputMap = new LinkedHashMap();
+		outputMap.put("nodes", nodeMap);
+		outputMap.put("links", linkMap);
+		return outputMap;
+	}
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public TreeLogger getSelectedTreeLogger() {
 		TreeLoggerParameters<?> parms = getSelectedTreeLoggerParameters();
-		if (treeLogger == null || !parms.getTreeLoggerDescription().getTreeLoggerClass().equals(treeLogger.getClass())) {
+		if (treeLogger == null
+				|| !parms.getTreeLoggerDescription().getTreeLoggerClass().equals(treeLogger.getClass())) {
 			treeLogger = parms.createTreeLoggerInstance();
 		} else if (!treeLogger.getTreeLoggerParameters().equals(parms)) {
 			treeLogger.setTreeLoggerParameters(parms);
@@ -243,13 +370,14 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		return treeLogger;
 	}
 
-	
 	public void resetCarbonUnitMap() {
 		logCategoryProcessorIndices.clear();
 		getCarbonUnitMap().clear();
 	}
-	
-	protected TreeLoggerParameters<?> getSelectedTreeLoggerParameters() {return selectedTreeLoggerParameters;}
+
+	protected TreeLoggerParameters<?> getSelectedTreeLoggerParameters() {
+		return selectedTreeLoggerParameters;
+	}
 
 	protected void setSelectedTreeLogger(TreeLoggerParameters<?> treeLoggerParameters) {
 		if (!isCompatibleWithAvailableTreeLoggerParameters(treeLoggerParameters)) {
@@ -259,7 +387,7 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 			actualizeTreeLoggerParameters();
 		}
 	}
-	
+
 	private boolean isCompatibleWithAvailableTreeLoggerParameters(TreeLoggerParameters<?> treeLoggerParameters) {
 		boolean matchFound = false;
 		int index = -1;
@@ -276,7 +404,7 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		}
 		return matchFound;
 	}
-	
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected void actualizeTreeLoggerParameters() {
 		List<LeftHandSideProcessor> formerProcessorList = new ArrayList<LeftHandSideProcessor>();
@@ -285,8 +413,8 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		newProcessorList.addAll(getDefaultLeftHandSideProcessors());
 		for (Object species : selectedTreeLoggerParameters.getLogCategories().keySet()) {
 			List<LogCategory> innerList = (List) selectedTreeLoggerParameters.getLogCategories().get(species);
- 			for (LogCategory logCategory : innerList) {
- 				newProcessorList.add(new LogCategoryProcessor(logCategory));
+			for (LogCategory logCategory : innerList) {
+				newProcessorList.add(new LogCategoryProcessor(logCategory));
 			}
 		}
 		formerProcessorList.removeAll(newProcessorList);
@@ -295,12 +423,12 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 			removeObject(processor);
 		}
 		newProcessorList.removeAll(logCategoryProcessors);
-		for (LeftHandSideProcessor  processor : newProcessorList) {
+		for (LeftHandSideProcessor processor : newProcessorList) {
 			logCategoryProcessors.add(processor);
 			registerObject(processor);
 		}
 	}
-	
+
 	private Collection<? extends LeftHandSideProcessor> getDefaultLeftHandSideProcessors() {
 		if (DefaultLeftHandSideProcessors == null) {
 			DefaultLeftHandSideProcessors = new ArrayList<LeftHandSideProcessor>();
@@ -311,12 +439,15 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		return DefaultLeftHandSideProcessors;
 	}
 
-	protected Vector<TreeLoggerParameters<?>> getAvailableTreeLoggerParameters() {return availableTreeLoggerParameters;}
+	protected Vector<TreeLoggerParameters<?>> getAvailableTreeLoggerParameters() {
+		return availableTreeLoggerParameters;
+	}
 
 	@Override
-	public FileFilter getFileFilter() {return MyFileFilter;}
-	
-	
+	public FileFilter getFileFilter() {
+		return MyFileFilter;
+	}
+
 	@Override
 	public SystemManagerDialog getUI(Container parent) {
 		if (guiInterface == null) {
@@ -333,7 +464,7 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		return mp;
 	}
 
-	@SuppressWarnings({"unchecked","rawtypes"})
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void unpackMemorizerPackage(MemorizerPackage wasMemorized) {
 		super.unpackMemorizerPackage(wasMemorized);
@@ -347,32 +478,48 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	@Override
 	public void load(String filename) throws IOException {
 		try {
-			super.load(filename);
+			if (filename.endsWith(".json")) {
+				AffiliereJSONReader reader = new AffiliereJSONReader(new File(filename));
+				for (ProductionLineProcessor p : reader.getProcessors().values()) {
+					registerObject(p);
+				}
+
+			} else {
+				super.load(filename);
+			}
 		} catch (TreeLoggerInstanceCompatibilityException e) {
-			handleTreeLoggerChange();
+			handleTreeLoggerChange(true);	// enable warning because the tree logger instance is not available for this simulation
 		}
 	}
 
-	
-	private void handleTreeLoggerChange() {
-		if (guiInterface != null) {
-			JOptionPane.showMessageDialog(getUI(null), 
-					MessageID.IncompatibleTreeLogger.toString(),
-					UIControlManager.InformationMessageTitle.Warning.toString(),
-					JOptionPane.WARNING_MESSAGE);
+	@Override
+	public void save(String filename) throws IOException {
+		if (filename.endsWith(".json")) {
+			new AffiliereJSONWriter(this, filename);
 		} else {
-			REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, 
-					Level.WARNING, 
-					getClass().getSimpleName(), MessageID.IncompatibleTreeLogger.toString());
+			super.save(filename);
+		}
+	}
+
+	private void handleTreeLoggerChange(boolean enableWarning) {
+		if (enableWarning) {
+			if (guiInterface != null) {
+				JOptionPane.showMessageDialog(getUI(null), MessageID.IncompatibleTreeLogger.toString(),
+						UIControlManager.InformationMessageTitle.Warning.toString(), JOptionPane.WARNING_MESSAGE);
+			} else {
+				REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.WARNING, getClass().getSimpleName(),
+						MessageID.IncompatibleTreeLogger.toString());
+			}
 		}
 		setSelectedTreeLogger(availableTreeLoggerParameters.get(0));
 		if (guiInterface != null) {
 			guiInterface.synchronizeUIWithOwner();
 		}
 	}
-	
+
 	/**
 	 * This method sets the list of tree logger descriptions.
+	 * 
 	 * @param vector a Vector instance containing TreeLoggerdescription objects
 	 */
 	public void setAvailableTreeLoggers(Vector<TreeLoggerDescription> vector) {
@@ -384,15 +531,17 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 			vector.add(new TreeLoggerDescription(BasicTreeLogger.class.getName()));
 		}
 		for (TreeLoggerDescription description : vector) {
-			TreeLoggerParameters<?> treeLoggerParameters = description.instantiateTreeLogger(true).createDefaultTreeLoggerParameters();
+			TreeLoggerParameters<?> treeLoggerParameters = description.instantiateTreeLogger(true)
+					.createDefaultTreeLoggerParameters();
 			treeLoggerParameters.setReadWritePermissionGranted(getGUIPermission());
 			availableTreeLoggerParameters.add(treeLoggerParameters);
 		}
-		
+
 		int index = findSelectedTreeLoggerAmongAvailableTreeLoggers();
 		if (index > -1) {
 			availableTreeLoggerParameters.setElementAt(selectedTreeLoggerParameters, index);
-			if (guiInterface != null) {						// 20180926 BUG CORRECTION the combobox model was not updated if it already contained the selected tree logger 
+			if (guiInterface != null) { // 20180926 BUG CORRECTION the combobox model was not updated if it already
+										// contained the selected tree logger
 				guiInterface.synchronizeUIWithOwner();
 			}
 		} else {
@@ -402,7 +551,7 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 //			Runnable doRun2 = new Runnable() {
 //				@Override
 //				public void run() {
-					handleTreeLoggerChange();
+			handleTreeLoggerChange(false);		// false: no need to issue a warning here
 //				}
 //			};
 //			SwingUtilities.invokeLater(doRun2);
@@ -419,23 +568,24 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		}
 		return -1;
 	}
-	
+
 	@SuppressWarnings("rawtypes")
 	protected void addTestUnits(List<ProcessUnit> inputUnits) {
 		inputUnits.add(new CarbonTestProcessUnit());
 		inputUnits.add(new BarkTestProcessUnit());
 	}
-	
-	
+
 	/**
-	 * This method returns true if the ProductionProcessorManager instance is valid or false otherwise. To be 
-	 * valid, all the LogCategoryProcessor must have at least one sub processor. Moreover, all the processors must be
-	 * valid, i.e. the sum of the fluxes to the sub processors must be equal to 100%.
+	 * This method returns true if the ProductionProcessorManager instance is valid
+	 * or false otherwise. To be valid, all the LogCategoryProcessor must have at
+	 * least one sub processor. Moreover, all the processors must be valid, i.e. the
+	 * sum of the fluxes to the sub processors must be equal to 100%.
 	 */
 	public void validate() throws ProductionProcessorManagerException {
 		for (Processor logCategoryProcessor : logCategoryProcessors) {
 			if (!logCategoryProcessor.hasSubProcessors()) {
-				throw new ProductionProcessorManagerException("This processor should be linked to sub processors: " + logCategoryProcessor.getName());
+				throw new ProductionProcessorManagerException(
+						"This processor should be linked to sub processors: " + logCategoryProcessor.getName());
 			}
 		}
 		for (Processor processor : getList()) {
@@ -443,50 +593,43 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 				throw new ProductionProcessorManagerException("This processor is invalid: " + processor.getName());
 			}
 			if (processor.isPartOfEndlessLoop()) {
-				throw new ProductionProcessorManagerException("This processor is part of an endless loop: " + processor.getName());
+				throw new ProductionProcessorManagerException(
+						"This processor is part of an endless loop: " + processor.getName());
 			}
 		}
 	}
-	
+
 	/**
-	 * The main method for this class. The different kinds of produced carbon units are stored in the carbon unit map, which is accessible
-	 * through the getCarbonUnits(CarbonUnitType) method.
+	 * The main method for this class. The different kinds of produced carbon units
+	 * are stored in the carbon unit map, which is accessible through the
+	 * getCarbonUnits(CarbonUnitType) method.
+	 * 
 	 * @param logCategory a TreeLogCategory instance
-	 * @param dateIndex the index of the date in the time scale
-	 * @param amountMap a Map which contains the amounts of the different elements
+	 * @param dateIndex   the index of the date in the time scale
+	 * @param amountMap   a Map which contains the amounts of the different elements
 	 */
-	public void processWoodPiece(LogCategory logCategory, 
-			int dateIndex, 
-			String samplingUnitID, 
-			Map<BiomassType, AmountMap<Element>> amountMaps,
-			String speciesName) {
+	public void processWoodPiece(LogCategory logCategory, int dateIndex, String samplingUnitID,
+			Map<BiomassType, AmountMap<Element>> amountMaps, String speciesName) {
 		Processor processor = findLeftHandSideProcessor(logCategory);
 		processAmountMap(processor, dateIndex, samplingUnitID, amountMaps, speciesName);
 	}
 
-	
 	/**
-	 * This method calculates the carbon units in the woody debris. 
+	 * This method calculates the carbon units in the woody debris.
+	 * 
 	 * @param dateIndex the index of the date in the time scale
 	 * @param amountMap a Map which contains the amounts of the different elements
-	 * @param type a WoodyDebrisProcessorID enum variable
+	 * @param type      a WoodyDebrisProcessorID enum variable
 	 */
-	public void processWoodyDebris(int dateIndex, 
-			String samplingUnitID, 
-			Map<BiomassType, AmountMap<Element>> amountMaps,
-			String speciesName,
-			WoodyDebrisProcessorID type) {
+	public void processWoodyDebris(int dateIndex, String samplingUnitID,
+			Map<BiomassType, AmountMap<Element>> amountMaps, String speciesName, WoodyDebrisProcessorID type) {
 		Processor processor = findWoodyDebrisProcessor(type);
 		processAmountMap(processor, dateIndex, samplingUnitID, amountMaps, speciesName);
 	}
-	
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private Collection<CarbonUnit> processAmountMap(Processor processor, 
-			int dateIndex, 
-			String samplingUnitID, 
-			Map<BiomassType, AmountMap<Element>> amountMaps,
-			String speciesName) {
+	private Collection<CarbonUnit> processAmountMap(Processor processor, int dateIndex, String samplingUnitID,
+			Map<BiomassType, AmountMap<Element>> amountMaps, String speciesName) {
 		List<ProcessUnit> inputUnits = new ArrayList<ProcessUnit>();
 		if (!amountMaps.isEmpty()) {
 			for (BiomassType bt : amountMaps.keySet()) {
@@ -499,14 +642,16 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 			return new ArrayList<CarbonUnit>();
 		}
 	}
-	
+
 	/**
-	 * This method actualizes the different carbon units. It proceeds in the following order : </br>
-	 * &nbsp	1- the carbon units in the wood products</br>
-	 * &nbsp	2- the carbon units recycled from the disposed wood products</br>
-	 * &nbsp	3- the carbon units left in the forest</br>
-	 * &nbsp	4- the carbon units at the landfill site</br>
-	 * @param compartmentManager the CATCompartmentManager instance 
+	 * This method actualizes the different carbon units. It proceeds in the
+	 * following order : </br>
+	 * &nbsp 1- the carbon units in the wood products</br>
+	 * &nbsp 2- the carbon units recycled from the disposed wood products</br>
+	 * &nbsp 3- the carbon units left in the forest</br>
+	 * &nbsp 4- the carbon units at the landfill site</br>
+	 * 
+	 * @param compartmentManager the CATCompartmentManager instance
 	 * @throws Exception
 	 */
 	public void actualizeCarbonUnits(CATCompartmentManager compartmentManager) throws Exception {
@@ -516,25 +661,24 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		actualizeCarbonUnitsOfThisType(CarbonUnitStatus.LandFillDegradable, compartmentManager);
 	}
 
-	private void actualizeCarbonUnitsOfThisType(CarbonUnitStatus type, CATCompartmentManager compartmentManager) throws Exception {
+	private void actualizeCarbonUnitsOfThisType(CarbonUnitStatus type, CATCompartmentManager compartmentManager)
+			throws Exception {
 		try {
 			CarbonUnitList list = getCarbonUnits(type);
-			REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, 
-					Level.FINEST, 
-					getClass().getSimpleName(), 
+			REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.FINEST, getClass().getSimpleName(),
 					"Carbon units of type " + type.name() + ". Before actualization, " + list.toString());
-			for (int i = 0; i < list.size(); i++) {		// the condition based on the size of the list makes sure that newly created HWPs will be actualized.
+			for (int i = 0; i < list.size(); i++) { // the condition based on the size of the list makes sure that newly
+													// created HWPs will be actualized.
 				CarbonUnit carbonUnit = list.get(i);
 				carbonUnit.actualizeCarbon(compartmentManager);
 			}
-			
-			REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, 
-					Level.FINEST, 
-					getClass().getSimpleName(), 
+
+			REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.FINEST, getClass().getSimpleName(),
 					"Carbon units of type " + type.name() + " actualized. After actualization, " + list.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new Exception("An exception occurred while actualizing carbon units of type " + type.name() + " : " + e.getMessage());
+			throw new Exception("An exception occurred while actualizing carbon units of type " + type.name() + " : "
+					+ e.getMessage());
 		}
 	}
 
@@ -542,16 +686,16 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		if (decayFunction == null) {
 			decayFunction = new CATExponentialFunction();
 		}
-		return decayFunction; 
+		return decayFunction;
 	}
-	
+
 	protected CarbonUnitMap<CarbonUnitStatus> getCarbonUnitMap() {
 		if (carbonUnitMap == null) {
 			carbonUnitMap = new CarbonUnitMap<CarbonUnitStatus>(CarbonUnitStatus.EndUseWoodProduct);
 		}
 		return carbonUnitMap;
 	}
-	
+
 	private WoodyDebrisProcessor findWoodyDebrisProcessor(WoodyDebrisProcessorID processorID) {
 		for (LeftHandSideProcessor processor : logCategoryProcessors) {
 			if (processor instanceof WoodyDebrisProcessor) {
@@ -561,11 +705,12 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 			}
 		}
 		if (processorID == WoodyDebrisProcessorID.CommercialWoodyDebris) {
-			return findWoodyDebrisProcessor(WoodyDebrisProcessorID.CoarseWoodyDebris);		// in case commercial does not exist
-		} 
+			return findWoodyDebrisProcessor(WoodyDebrisProcessorID.CoarseWoodyDebris); // in case commercial does not
+																						// exist
+		}
 		return null;
 	}
-	
+
 	private LeftHandSideProcessor findLeftHandSideProcessor(LogCategory logCategory) {
 		if (!logCategoryProcessorIndices.containsKey(logCategory)) {
 			for (LeftHandSideProcessor processor : logCategoryProcessors) {
@@ -580,15 +725,19 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 
 		LeftHandSideProcessor outputProcessor = logCategoryProcessorIndices.get(logCategory);
 		if (outputProcessor == null) {
-			throw new InvalidParameterException("The log category is not recognized by the ProductionProcessorManager instance");
+			throw new InvalidParameterException(
+					"The log category is not recognized by the ProductionProcessorManager instance");
 		} else {
 			return outputProcessor;
 		}
 	}
-	
+
 	/**
-	 * This method returns the CarbonUnitList instance that match the type of carbon.
-	 * @param type a CarbonUnitType enum (EndUseWoodProduct, Landfill, Recycled, LeftInForest)
+	 * This method returns the CarbonUnitList instance that match the type of
+	 * carbon.
+	 * 
+	 * @param type a CarbonUnitType enum (EndUseWoodProduct, Landfill, Recycled,
+	 *             LeftInForest)
 	 * @return a CarbonUnitList instance
 	 */
 	public CarbonUnitList getCarbonUnits(CarbonUnitStatus type) {
@@ -601,23 +750,20 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		logCategoryProcessors.clear();
 		actualizeTreeLoggerParameters();
 	}
-	
 
 	public static void main(String[] args) {
 		REpiceaTranslator.setCurrentLanguage(Language.English);
 //		REpiceaTranslator.setCurrentLanguage(Language.French);
 //		ProductionProcessorManager ppm = new ProductionProcessorManager(new DefaultREpiceaGUIPermission(false));
 		ProductionProcessorManager ppm = new ProductionProcessorManager();
-		String filename = ObjectUtility.getPackagePath(ppm.getClass()) 
-				+ File.separator + "library"
-				+ File.separator + "hardwood_recycling_en.prl";
+		String filename = ObjectUtility.getPackagePath(ppm.getClass()) + File.separator + "library" + File.separator
+				+ "hardwood_recycling_en.prl";
 		try {
 			ppm.load(filename);
 			ppm.showUI(null);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.exit(0);
 	}
 
 }

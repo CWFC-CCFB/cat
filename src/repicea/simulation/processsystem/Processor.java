@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,13 +32,14 @@ import javax.swing.JTextField;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 
+import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONReader;
 import repicea.gui.REpiceaPanel;
 import repicea.gui.REpiceaUIObject;
 import repicea.gui.REpiceaUIObjectWithParent;
 
 @SuppressWarnings("serial")
 public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, CaretListener, Serializable {
-
+	
 	private Point originalLocation;
 	protected transient ProcessorButton guiInterface;
 	
@@ -164,16 +166,35 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 		return subProcessorIntakes;
 	}
 
-	
-	protected Point getOriginalLocation() {
-		if (originalLocation == null) {
-			return originalLocation;
-		} else {
-			return SystemLayout.convertOriginalToRelative(originalLocation);
-		}
+	/**
+	 * Provide the original location (x,y) of the processor.<p>
+	 * Here the zoom factor is assumed to be 1. The Point instance
+	 * returned by this method is a copy.
+	 * @return a Point instance
+	 */
+	public final Point getOriginalLocation() {
+		return originalLocation == null ? null : new Point(originalLocation);
+	}
+
+	/**
+	 * Provide the location of the Processor instance in the SystemPanel. <p>
+	 * The original location is converted to relative (to the zoom factor).
+	 * @return a Point instance
+	 */
+	public final Point getLocation() {
+		return getOriginalLocation() == null ? null : SystemLayout.convertOriginalToRelative(getOriginalLocation());
 	}
 	
-	protected void setOriginalLocation(Point relativePoint) {
+	
+	
+	/**
+	 * Set the original location in the Processor instance. <p>
+	 * The argument might be given as a relative point if the zoom factor is .5 for instance.
+	 * This relative point is transformed in order to obtain the absolute point as if the zoom factor 
+	 * was 1.
+	 * @param relativePoint a Point instance
+	 */
+	protected final void setOriginalLocation(Point relativePoint) {
 		if (relativePoint == null) {
 			originalLocation = relativePoint;
 		} else {
@@ -245,9 +266,9 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 			if (sum != 100d) {
 			}
 			boolean isValid = Math.abs(sum - 100d) < 1E-12;
-			if (!isValid) {
-				int u = 0;
-			}
+//			if (!isValid) {
+//				int u = 0;
+//			}
 			return isValid;
 		} else {
 			return true;

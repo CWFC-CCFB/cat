@@ -182,9 +182,9 @@ public class ProcessorButton extends SelectableJButton implements AnchorProvider
 		return new Point(x,y);
 	}
 
-	protected Point retrieveFormerLocation() {
-		return process.getOriginalLocation();
-	}
+//	protected Point retrieveFormerLocation() {
+//		return process.getOriginalLocation();
+//	}
 	
 	@Override
 	public void setLocation(int x, int y) {

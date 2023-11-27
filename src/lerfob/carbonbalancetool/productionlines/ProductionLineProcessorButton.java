@@ -171,7 +171,7 @@ public class ProductionLineProcessorButton extends AbstractProcessorButton imple
 	public void actionPerformed(ActionEvent arg0) {
 		if (arg0.getSource().equals(addDebarkerItem)) {
 			ProductionLineProcessor parentProcessor = (ProductionLineProcessor) getOwner();
-			Point upperStreamProcessorLocation = parentProcessor.getOriginalLocation();
+			Point upperStreamProcessorLocation = parentProcessor.getLocation();
 			Point newLocation = new Point(upperStreamProcessorLocation.x + 50, upperStreamProcessorLocation.y - 50);
 			DebarkingProcessor debarkingProcessor = new DebarkingProcessor();
 			LocatedEvent evt = new LocatedEvent(this, newLocation);

@@ -54,7 +54,7 @@ public class AffiliereJSONReader {
 		}
 	}
 		
-	public static int OFFSET = 150;
+	protected static int OFFSET = 150;
 	
 	protected final JsonObject<?,?> mappedJSON;
 	protected final Map<String, ProductionLineProcessor> processors;
@@ -78,6 +78,7 @@ public class AffiliereJSONReader {
 		this(url.openStream());
 	}
 	
+	@SuppressWarnings("unchecked")
 	private AffiliereJSONReader(InputStream is) {
 		JsonReader reader = new JsonReader(is);
 		mappedJSON = (JsonObject<?,?>) reader.readObject();
@@ -103,9 +104,6 @@ public class AffiliereJSONReader {
 				JsonObject<?,?> linkProperties = (JsonObject<?,?>)  linkValue;
 				if (linkProperties.containsKey("idSource") && linkProperties.get("idSource").equals(fatherProcessorName)) {
 					ProductionLineProcessor fatherProcessor = processors.get(fatherProcessorName);
-					if (fatherProcessor.getName().equals("BO feuillus présumé IGN")) {
-						int u = 0;
-					}
 					if (linkProperties.containsKey("idTarget")) {
 						String childProcessorName = (String) linkProperties.get("idTarget");
 						ProductionLineProcessor childProcessor = processors.get(childProcessorName);
@@ -133,5 +131,14 @@ public class AffiliereJSONReader {
 			}
 		}
 	}
-	
+
+	/**
+	 * Provide a map of the processors read by this AffiliereJSONReader instance.<p>
+	 * Map keys are the names of the processors whereas the values are the ProductionLineProcessors
+	 * instances.
+	 * @return a Map
+	 */
+	public Map<String, ProductionLineProcessor> getProcessors() {
+		return processors;
+	}
 }

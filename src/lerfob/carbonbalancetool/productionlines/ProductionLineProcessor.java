@@ -134,7 +134,6 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 		return p;
 	}
 	
-	
 	List<AbstractExtractionProcessor> getExtractionProcessors() {
 		if (extractionProcessors == null) {
 			extractionProcessors = new ArrayList<AbstractExtractionProcessor>();
@@ -142,6 +141,7 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 		return extractionProcessors;
 	}
 	
+	@SuppressWarnings("rawtypes")
 	@Override
 	public Collection<ProcessUnit> doProcess(List<ProcessUnit> inputUnits) {
 		Collection<ProcessUnit> resultingUnits = new ArrayList<ProcessUnit>();

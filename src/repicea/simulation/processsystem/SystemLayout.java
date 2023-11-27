@@ -84,12 +84,12 @@ public class SystemLayout implements LayoutManager {
 				if (comp instanceof ProcessorButton) {
 					ProcessorButton processUnitButton = (ProcessorButton) comp;
 					Processor thisProcessor = processUnitButton.getOwner();
-					Point locationOfThisButton = thisProcessor.getOriginalLocation();
+					Point locationOfThisButton = thisProcessor.getLocation();
 					if (locationOfThisButton == null) {
 						boolean hasAFather = false;
 						int farY = 0;
 						for (Processor fatherProcessor : knownProcessors) {
-							Point fatherLocation = fatherProcessor.getOriginalLocation();	
+							Point fatherLocation = fatherProcessor.getLocation();	
 							if (fatherLocation.y > farY) {
 								farY = fatherLocation.y;
 							}
@@ -102,7 +102,7 @@ public class SystemLayout implements LayoutManager {
 								do {
 									for (Processor knownProcessor : knownProcessors) {
 										isIn = false;
-										if (knownProcessor.getOriginalLocation().equals(tmpPoint)) {
+										if (knownProcessor.getLocation().equals(tmpPoint)) {
 											isIn = true;
 											break;
 										}

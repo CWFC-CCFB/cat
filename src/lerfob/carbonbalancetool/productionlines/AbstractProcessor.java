@@ -18,7 +18,6 @@
  */
 package lerfob.carbonbalancetool.productionlines;
 
-import java.awt.Point;
 import java.util.Collection;
 import java.util.List;
 
@@ -35,6 +34,7 @@ public class AbstractProcessor extends Processor {
 	protected double emissionsByFunctionalUnit; // in Mg
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Override
 	public Collection<ProcessUnit> doProcess(List<ProcessUnit> inputUnits) {
 		for (ProcessUnit processUnit : inputUnits) {
 			AbstractProcessor.updateProcessEmissions(processUnit.getAmountMap(), functionUnitBiomass, emissionsByFunctionalUnit);
@@ -52,12 +52,12 @@ public class AbstractProcessor extends Processor {
 		}
 	}
 	
-	/*
-	 * For extended visibility.
-	 */
-	@Override
-	protected Point getOriginalLocation() {
-		return super.getOriginalLocation();
-	}
+//	/*
+//	 * For extended visibility.
+//	 */
+//	@Override
+//	protected Point getOriginalLocation() {
+//		return super.getOriginalLocation();
+//	}
 
 }
