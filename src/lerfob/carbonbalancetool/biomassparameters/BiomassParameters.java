@@ -49,6 +49,7 @@ import repicea.gui.Resettable;
 import repicea.gui.permissions.DefaultREpiceaGUIPermission;
 import repicea.gui.permissions.REpiceaGUIPermission;
 import repicea.io.IOUserInterfaceableObject;
+import repicea.io.REpiceaFileFilterList;
 import repicea.serial.Memorizable;
 import repicea.serial.MemorizerPackage;
 import repicea.serial.xml.XmlDeserializer;
@@ -97,7 +98,7 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 				"repicea.simulation.covariateproviders.treelevel.SpeciesNameProvider$SpeciesType");
 	}
 	
-	private static class BiomassParametersFileFilter extends FileFilter implements ExtendedFileFilter {
+	public static class BiomassParametersFileFilter extends FileFilter implements ExtendedFileFilter {
 
 		private String extension = ".bpf";
 		
@@ -119,7 +120,7 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 		public String getExtension() {return extension;}
 	}
 
-	private static final BiomassParametersFileFilter MyFileFilter = new BiomassParametersFileFilter();
+	public static final BiomassParametersFileFilter BiomassParameterFileFilter = new BiomassParametersFileFilter();
 	
 	protected final HashMap<SpeciesType, Double> branchExpansionFactors;
 	protected final HashMap<SpeciesType, Double> rootExpansionFactors;
@@ -264,7 +265,7 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 	
 
 	@Override
-	public FileFilter getFileFilter() {return MyFileFilter;}
+	public REpiceaFileFilterList getFileFilters() {return new REpiceaFileFilterList(BiomassParameterFileFilter);}
 
 
 	@Override

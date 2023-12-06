@@ -28,11 +28,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.filechooser.FileFilter;
 
 import lerfob.carbonbalancetool.AbstractDesigner;
-import lerfob.carbonbalancetool.CATFrame;
 import lerfob.carbonbalancetool.CATCompartmentManager;
+import lerfob.carbonbalancetool.CATFrame;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
 import lerfob.carbonbalancetool.productionlines.EndUseWoodProductCarbonUnitFeature.UseClass;
+import repicea.io.REpiceaFileFilterList;
 import repicea.serial.xml.XmlSerializerChangeMonitor;
 import repicea.simulation.processsystem.AmountMap;
 import repicea.simulation.processsystem.Processor;
@@ -421,7 +422,9 @@ public final class ProductionLineManager extends AbstractDesigner<ProductionLine
 	@Override
 	public FileFilter getFileFilter() {return MyFileFilter;}
 
-
+	@Override
+	public REpiceaFileFilterList getFileFilters() {return new REpiceaFileFilterList(MyFileFilter);}
+ 
 	@Override
 	public boolean equals(Object obj) {
 		if (!(obj instanceof ProductionLineManager)) {

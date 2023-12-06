@@ -219,7 +219,6 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 	 */
 	protected SystemManager getCaller() {return caller;}
 	
-//	@Override
 	protected void initUI() {
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
@@ -232,8 +231,6 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 		menuBar.add(editMenu);
 		editMenu.setEnabled(getCaller().getGUIPermission().isEnablingGranted());
 		
-//		menuBar.add(createViewMenu());
-				
 		menuBar.add(createAboutMenu());
 
 		JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -254,7 +251,6 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 		reset.addActionListener(this);
 		close.addActionListener(this);
 		help.addActionListener(this);
-//		enlarge.addItemListener(this);
 	}
 
 	@Override
@@ -262,7 +258,6 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 		reset.removeActionListener(this);
 		close.removeActionListener(this);
 		help.removeActionListener(this);
-//		enlarge.removeItemListener(this);
 	}
 
 	@Override

@@ -33,8 +33,9 @@ import lerfob.carbonbalancetool.CATFrame;
 import lerfob.carbonbalancetool.productionlines.ProductionLineEvent;
 import lerfob.carbonbalancetool.productionlines.ProductionLineManager;
 import lerfob.carbonbalancetool.productionlines.ProductionLineManagerChangeListener;
-import repicea.simulation.treelogger.TreeLoggerWrapper;
 import lerfob.treelogger.basictreelogger.BasicTreeLoggerParameters;
+import repicea.io.REpiceaFileFilterList;
+import repicea.simulation.treelogger.TreeLoggerWrapper;
 import repicea.util.ExtendedFileFilter;
 import repicea.util.ObjectUtility;
 import repicea.util.REpiceaTranslator;
@@ -335,6 +336,9 @@ public final class WoodPieceDispatcher extends AbstractDesigner<LogCategoryDispa
 
 	@Override
 	public FileFilter getFileFilter() {return MyFileFilter;}
+	
+	@Override
+	public REpiceaFileFilterList getFileFilters() {return new REpiceaFileFilterList(MyFileFilter);}
 
 	@Override
 	public void productionLineManagerChanged(ProductionLineEvent evt) {

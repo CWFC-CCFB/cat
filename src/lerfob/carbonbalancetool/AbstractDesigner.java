@@ -24,10 +24,9 @@ import java.io.Serializable;
 import java.security.InvalidParameterException;
 import java.util.List;
 
-import javax.swing.filechooser.FileFilter;
-
 import repicea.gui.Resettable;
 import repicea.io.IOUserInterfaceableObject;
+import repicea.io.REpiceaFileFilterList;
 import repicea.io.Workspaceable;
 import repicea.serial.Memorizable;
 import repicea.serial.MemorizerPackage;
@@ -66,7 +65,7 @@ public abstract class AbstractDesigner<C>
 	public String getFilename() {return getWorkspace() + File.separator + getName();}
 	
 	@Override
-	public abstract FileFilter getFileFilter();
+	public abstract REpiceaFileFilterList getFileFilters();
 	
 	/**
 	 * This method determines whether the designer is valid or not

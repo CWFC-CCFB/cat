@@ -52,6 +52,9 @@ import lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLogger;
 import lerfob.treelogger.maritimepine.MaritimePineBasicTreeLogger;
 import repicea.gui.UIControlManager;
 import repicea.gui.permissions.DefaultREpiceaGUIPermission;
+import repicea.io.REpiceaFileFilter;
+import repicea.io.REpiceaFileFilter.FileType;
+import repicea.io.REpiceaFileFilterList;
 import repicea.serial.Memorizable;
 import repicea.serial.MemorizerPackage;
 import repicea.serial.xml.XmlSerializerChangeMonitor;
@@ -141,7 +144,7 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	 * 
 	 * @author Mathieu Fortin - May 2014
 	 */
-	private static class ProductionLineFileFilter extends FileFilter implements ExtendedFileFilter {
+	public static class ProductionLineFileFilter extends FileFilter implements ExtendedFileFilter {
 
 		private String extension = ".prl";
 
@@ -254,7 +257,7 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 
 	protected static List<LeftHandSideProcessor> DefaultLeftHandSideProcessors;
 
-	protected static final ProductionLineFileFilter MyFileFilter = new ProductionLineFileFilter();
+	public static final ProductionLineFileFilter ProductionProcessorManagerFileFilter = new ProductionLineFileFilter();
 
 	/**
 	 * The VERY_SMALL value serves as threshold when dealing with small quantities.
@@ -444,8 +447,8 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	}
 
 	@Override
-	public FileFilter getFileFilter() {
-		return MyFileFilter;
+	public REpiceaFileFilterList getFileFilters() {
+		return new REpiceaFileFilterList(ProductionProcessorManagerFileFilter, REpiceaFileFilter.JSON, REpiceaFileFilter.CSV);
 	}
 
 	@Override
@@ -478,7 +481,7 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	@Override
 	public void load(String filename) throws IOException {
 		try {
-			if (filename.endsWith(".json")) {
+			if (REpiceaFileFilter.getFileType(filename) == FileType.JSON) {
 				AffiliereJSONReader reader = new AffiliereJSONReader(new File(filename));
 				for (ProductionLineProcessor p : reader.getProcessors().values()) {
 					registerObject(p);
@@ -494,7 +497,7 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 
 	@Override
 	public void save(String filename) throws IOException {
-		if (filename.endsWith(".json")) {
+		if (REpiceaFileFilter.getFileType(filename) == FileType.JSON) {
 			new AffiliereJSONWriter(this, filename);
 		} else {
 			super.save(filename);

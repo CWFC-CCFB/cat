@@ -26,8 +26,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.filechooser.FileFilter;
-
 import repicea.gui.ListManager;
 import repicea.gui.REpiceaShowableUIWithParent;
 import repicea.gui.Resettable;
@@ -35,6 +33,7 @@ import repicea.gui.permissions.DefaultREpiceaGUIPermission;
 import repicea.gui.permissions.REpiceaGUIPermission;
 import repicea.gui.permissions.REpiceaGUIPermissionProvider;
 import repicea.io.IOUserInterfaceableObject;
+import repicea.io.REpiceaFileFilterList;
 import repicea.serial.Memorizable;
 import repicea.serial.MemorizerPackage;
 import repicea.serial.xml.XmlDeserializer;
@@ -163,7 +162,7 @@ public class SystemManager implements ListManager<Processor>,
 	 * @see repicea.simulation.Parameterizable#getFileFilter()
 	 */
 	@Override
-	public FileFilter getFileFilter() {
+	public REpiceaFileFilterList getFileFilters() {
 		return null;
 	}
 
@@ -226,6 +225,7 @@ public class SystemManager implements ListManager<Processor>,
 		}
 	}
 	
+	@SuppressWarnings("rawtypes")
 	protected void addTestUnits(List<ProcessUnit> inputUnits) {
 		inputUnits.add(new TestProcessUnit());
 	}

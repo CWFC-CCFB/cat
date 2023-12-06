@@ -35,7 +35,8 @@ import org.w3c.dom.Document;
 
 import repicea.gui.REpiceaAWTEvent;
 import repicea.gui.REpiceaAWTProperty;
-import repicea.io.GFileFilter.FileType;
+import repicea.io.REpiceaFileFilter.FileType;
+import repicea.io.REpiceaFileFilterList;
 import repicea.io.REpiceaSaveAsHandlerUI;
 
 /**
@@ -56,7 +57,7 @@ public class REpiceaOSVGFileHandlerUI extends REpiceaSaveAsHandlerUI implements 
 	 * @param componentToExport the component to be drawn into the SVG file
 	 */
 	public REpiceaOSVGFileHandlerUI(Component mainWindow, AbstractButton saveAsButton, Component componentToExport) {
-		super(mainWindow, FileType.SVG.getFileFilter());
+		super(mainWindow, new REpiceaFileFilterList(FileType.SVG.getFileFilter()));
 		this.saveAsButton = saveAsButton;
 		this.saveAsButton.addActionListener(this);
 		this.componentToExport = componentToExport;

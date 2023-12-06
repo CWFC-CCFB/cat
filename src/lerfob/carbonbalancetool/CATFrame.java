@@ -21,7 +21,6 @@
 package lerfob.carbonbalancetool;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Event;
 import java.awt.FlowLayout;
@@ -41,7 +40,6 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.CancellationException;
 
 import javax.imageio.ImageIO;
@@ -64,7 +62,6 @@ import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
-import javax.swing.filechooser.FileFilter;
 
 import lerfob.carbonbalancetool.CATSettings.AssessmentReport;
 import lerfob.carbonbalancetool.CATTask.Task;
@@ -92,7 +89,8 @@ import repicea.gui.components.REpiceaSlider.Position;
 import repicea.gui.dnd.AcceptableDropComponent;
 import repicea.gui.dnd.DropTargetImpl;
 import repicea.gui.dnd.LocatedEvent;
-import repicea.io.GFileFilter;
+import repicea.io.REpiceaFileFilter;
+import repicea.io.REpiceaFileFilterList;
 import repicea.util.BrowserCaller;
 import repicea.util.ObjectUtility;
 import repicea.util.REpiceaTranslator;
@@ -103,7 +101,7 @@ import repicea.util.REpiceaTranslator.TextableEnum;
  * CarbonAccountingTool class. 
  * @author M. Fortin - June 2010
  */
-@SuppressWarnings({"serial", "deprecation"})
+@SuppressWarnings({"serial"})
 public class CATFrame extends REpiceaFrame implements PropertyChangeListener, ItemListener,
 																		Refreshable, 
 																		AcceptableDropComponent<ArrayList<CATCompatibleStand>> {
@@ -488,8 +486,7 @@ public class CATFrame extends REpiceaFrame implements PropertyChangeListener, It
 	private void constructYieldTable() {
 		String yieldTableFilename = caller.getSettingMemory().getProperty("lerfobcat.yieldTableFilename", "");
 		try {
-			Vector<FileFilter> fileFilters = new Vector<FileFilter>();
-			fileFilters.add(GFileFilter.CSV);
+			REpiceaFileFilterList fileFilters = new REpiceaFileFilterList(REpiceaFileFilter.CSV);
 			FileChooserOutput fileChooserOutput = CommonGuiUtility.browseAction(this, 
 					JFileChooser.FILES_ONLY, 
 					yieldTableFilename,
@@ -518,8 +515,7 @@ public class CATFrame extends REpiceaFrame implements PropertyChangeListener, It
 	private void constructStandListFromGrowthSimulation() {
 		String growthSimulationFilename = caller.getSettingMemory().getProperty("lerfobcat.growthSimulationFilename", "");
 		try {
-			Vector<FileFilter> fileFilters = new Vector<FileFilter>();
-			fileFilters.add(GFileFilter.CSV);
+			REpiceaFileFilterList fileFilters = new REpiceaFileFilterList(REpiceaFileFilter.CSV);
 			FileChooserOutput fileChooserOutput = CommonGuiUtility.browseAction(this, 
 					JFileChooser.FILES_ONLY, 
 					growthSimulationFilename,
