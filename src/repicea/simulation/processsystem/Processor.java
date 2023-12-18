@@ -32,14 +32,13 @@ import javax.swing.JTextField;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 
-import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONReader;
 import repicea.gui.REpiceaPanel;
 import repicea.gui.REpiceaUIObject;
 import repicea.gui.REpiceaUIObjectWithParent;
 
 @SuppressWarnings("serial")
 public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, CaretListener, Serializable {
-	
+
 	private Point originalLocation;
 	protected transient ProcessorButton guiInterface;
 	
@@ -70,6 +69,7 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 		this.name = name;
 	}
 	
+	
 	/**
 	 * A terminal processor cannot have any subprocessor by definition. This method returns true if the processor belong to 
 	 * this category.
@@ -77,21 +77,25 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 	 */
 	public boolean isTerminalProcessor() {return isTerminal;}
 	
+	
+	/**
+	 * Process the ProcessUnit through this processor and eventually its subprocessors.
+	 * @param inputUnits a List of ProcessUnit instances sent to this Processor instance
+	 */
 	@SuppressWarnings("rawtypes")
 	public Collection<ProcessUnit> doProcess(List<ProcessUnit> inputUnits) {
 		Collection<ProcessUnit> coll = new ArrayList<ProcessUnit>();
 		
-		for (ProcessUnit inputUnit : inputUnits) {
+		for (ProcessUnit inputUnit : inputUnits) {	// check if some input units are TestProcessUnit instances
 			if (inputUnit instanceof TestProcessUnit) {
 				if (((TestProcessUnit) inputUnit).recordProcessor(this)) {
 					coll.add(inputUnit);		// it stops the recursive method here
 				}
 			}
 		}		
-		
 		inputUnits.removeAll(coll); // and make sure that they won't follow the recursive method further on
 		
-		for (Processor subProcessor : getSubProcessorIntakes().keySet()) {
+		for (Processor subProcessor : getSubProcessorIntakes().keySet()) { // split the units into sub units and send them to subprocessors if any
 			Number intake = getSubProcessorIntakes().get(subProcessor);
 			for (ProcessUnit inputUnit : inputUnits) {
 				coll.addAll(subProcessor.doProcess(subProcessor.createProcessUnits(inputUnit, intake)));
@@ -291,4 +295,5 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 	protected void setPartOfEndlessLoop(boolean bool) {
 		this.markedAsPartOfEndlessLoop = bool;
 	}
+
 }

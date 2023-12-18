@@ -33,11 +33,14 @@ import repicea.gui.permissions.DefaultREpiceaGUIPermission;
 import repicea.gui.permissions.REpiceaGUIPermission;
 import repicea.gui.permissions.REpiceaGUIPermissionProvider;
 import repicea.io.IOUserInterfaceableObject;
+import repicea.io.REpiceaFileFilter;
+import repicea.io.REpiceaFileFilter.FileType;
 import repicea.io.REpiceaFileFilterList;
 import repicea.serial.Memorizable;
 import repicea.serial.MemorizerPackage;
+import repicea.serial.json.JSONDeserializer;
+import repicea.serial.json.JSONSerializer;
 import repicea.serial.xml.XmlDeserializer;
-import repicea.serial.xml.XmlMarshallException;
 import repicea.serial.xml.XmlSerializer;
 import repicea.util.ObjectUtility;
 
@@ -100,37 +103,48 @@ public class SystemManager implements ListManager<Processor>,
 
 	@Override
 	public void load(String filename) throws IOException {
-		XmlDeserializer deserializer;
-		try {
-			deserializer = new XmlDeserializer(filename);
-		} catch (Exception e) {
-//			InputStream is = ClassLoader.getSystemResourceAsStream(filename);
-			InputStream is = getClass().getResourceAsStream("/" + filename);
-			if (is == null) {
-				throw new IOException("The filename is not a file and cannot be converted into a stream!");
-			} else {
-				deserializer = new XmlDeserializer(is);
-			}
-		}
 		SystemManager newManager;
-		try {
+		if (REpiceaFileFilter.getFileType(filename) == FileType.JSON) {
+			JSONDeserializer deserializer;
+			try {
+				deserializer = new JSONDeserializer(filename);
+			} catch (Exception e) {
+				InputStream is = getClass().getResourceAsStream("/" + filename);
+				if (is == null) {
+					throw new IOException("The filename is not a file and cannot be converted into a stream!");
+				} else {
+					deserializer = new JSONDeserializer(is);
+				}
+			}
 			newManager = (SystemManager) deserializer.readObject();
-			newManager.setFilename(filename);
-			unpackMemorizerPackage(newManager.getMemorizerPackage());
-		} catch (XmlMarshallException e) {
-			throw new IOException("A XmlMarshallException occurred while loading the file!");
+		} else {	// assuming xml file
+			XmlDeserializer deserializer;
+			try {
+				deserializer = new XmlDeserializer(filename);
+			} catch (Exception e) {
+				InputStream is = getClass().getResourceAsStream("/" + filename);
+				if (is == null) {
+					throw new IOException("The filename is not a file and cannot be converted into a stream!");
+				} else {
+					deserializer = new XmlDeserializer(is);
+				}
+			}
+			newManager = (SystemManager) deserializer.readObject();
 		}
+		newManager.setFilename(filename);
+		unpackMemorizerPackage(newManager.getMemorizerPackage());
 	}
 
 	
 	@Override
 	public void save(String filename) throws IOException {
 		setFilename(filename);
-		XmlSerializer serializer = new XmlSerializer(filename);
-		try {
+		if (REpiceaFileFilter.getFileType(filename) == FileType.JSON) {
+			JSONSerializer serializer = new JSONSerializer(filename, false);	// false: disable compression
 			serializer.writeObject(this);
-		} catch (XmlMarshallException e) {
-			throw new IOException("A XmlMarshallException occurred while saving the file!");
+		} else {
+			XmlSerializer serializer = new XmlSerializer(filename);
+			serializer.writeObject(this);
 		}
 	}
 
@@ -166,7 +180,7 @@ public class SystemManager implements ListManager<Processor>,
 		return null;
 	}
 
-	private void setFilename(String filename) {this.filename = filename;}
+	protected final void setFilename(String filename) {this.filename = filename;}
 	
 	@Override
 	public String getFilename() {return filename;}

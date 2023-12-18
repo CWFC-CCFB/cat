@@ -25,7 +25,7 @@ import repicea.math.Matrix;
 import repicea.math.SymmetricMatrix;
 import repicea.math.utility.GaussianUtility;
 import repicea.serial.xml.XmlDeserializer;
-import repicea.serial.xml.XmlSerializerChangeMonitor;
+import repicea.serial.SerializerChangeMonitor;
 import repicea.stats.Distribution.Type;
 import repicea.stats.estimates.Estimate;
 import repicea.stats.estimates.MonteCarloEstimate;
@@ -36,7 +36,7 @@ import repicea.util.ObjectUtility;
 public class CarbonAccountingToolTest {
 
 	static {
-		XmlSerializerChangeMonitor.registerClassNameChange("repicea.stats.distributions.NonparametricDistribution", "repicea.stats.distributions.EmpiricalDistribution");
+		SerializerChangeMonitor.registerClassNameChange("repicea.stats.distributions.NonparametricDistribution", "repicea.stats.distributions.EmpiricalDistribution");
 	}
 	
 	

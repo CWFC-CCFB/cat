@@ -50,21 +50,16 @@ public class WoodyDebrisProcessor extends LeftHandSideProcessor {
 		}
 
 	}
-
 	
-	protected WoodyDebrisProcessorID wdpID;
+	protected final WoodyDebrisProcessorID wdpID;
 	
 	protected WoodyDebrisProcessor(WoodyDebrisProcessorID wdpID) {
-//		setName(wdpID.toString());
 		this.wdpID = wdpID;
 	}
 	
+	
 	@Override
-	public String getName() {
-		return wdpID.toString();
-	}
-	
-	
+	public String getName() {return wdpID.toString();}
 	
 	@Override
 	public ProcessorButton getUI(Container container) {

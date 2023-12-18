@@ -54,7 +54,7 @@ public class LeftInForestProcessor extends AbstractProductionLineProcessor {
 	
 	
 	/**
-	 * Constructor.
+	 * Constructor in GUI mode.
 	 */
 	protected LeftInForestProcessor() {
 		super();
@@ -62,7 +62,6 @@ public class LeftInForestProcessor extends AbstractProductionLineProcessor {
 		woodProductFeature = new CarbonUnitFeature(this);
 		isTerminal = true;
 	}
-	
 	
 	@Override
 	public ProcessorButton getUI(Container container) {

@@ -27,9 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
-import javax.swing.SwingUtilities;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -178,6 +176,7 @@ public class ProcessSystemTest {
 		Thread t = robot.showWindow(man);
 		
 		robot.clickThisButton(UIControlManager.CommonMenuTitle.File.name()); 
+		robot.clickThisButton(MessageID.ExportMenu.name()); 
 		
 		Runnable toRun = new Runnable() {
 			public void run() {

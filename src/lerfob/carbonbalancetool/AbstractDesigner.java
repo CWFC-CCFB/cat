@@ -31,7 +31,6 @@ import repicea.io.Workspaceable;
 import repicea.serial.Memorizable;
 import repicea.serial.MemorizerPackage;
 import repicea.serial.xml.XmlDeserializer;
-import repicea.serial.xml.XmlMarshallException;
 import repicea.serial.xml.XmlSerializer;
 import repicea.simulation.Parameterizable;
 
@@ -155,17 +154,13 @@ public abstract class AbstractDesigner<C>
 	public void load(String filename) throws IOException {
 		XmlDeserializer deserializer = new XmlDeserializer(filename);
 		AbstractDesigner<C> newManager;
-		try {
-			newManager = (AbstractDesigner<C>) deserializer.readObject();
-			newManager.setName(filename);
-			if (newManager.getContent().isEmpty()) {
-				throw new InvalidParameterException("The content of the designer is empty!");
-			}
-			loadFrom(newManager);
-			fireDesignerChangeEvent();
-		} catch (XmlMarshallException e) {
-			throw new IOException("A XmlMarshallException occurred while loading the file!");
+		newManager = (AbstractDesigner<C>) deserializer.readObject();
+		newManager.setName(filename);
+		if (newManager.getContent().isEmpty()) {
+			throw new InvalidParameterException("The content of the designer is empty!");
 		}
+		loadFrom(newManager);
+		fireDesignerChangeEvent();
 	}
 
 	protected abstract void fireDesignerChangeEvent();
@@ -174,12 +169,8 @@ public abstract class AbstractDesigner<C>
 	public void save(String filename) throws IOException {
 		setName(filename);
 		XmlSerializer serializer = new XmlSerializer(filename);
-		try {
-			serializer.writeObject(this);
-			fireDesignerChangeEvent();
-		} catch (XmlMarshallException e) {
-			throw new IOException("A XmlMarshallException occurred while saving the file!");
-		}
+		serializer.writeObject(this);
+		fireDesignerChangeEvent();
 	}
 
 }

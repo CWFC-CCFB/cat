@@ -44,7 +44,7 @@ public class AffiliereJSONWriter {
 		try {
 			FileOutputStream fos = new FileOutputStream(new File(filename));
 			writer = new JsonWriter(fos);
-			writer.write(manager.getLightJSONRepresentation());
+//			writer.write(manager.getMapRepresentation());	
 		} finally {
 			if (writer != null) {
 				writer.close();

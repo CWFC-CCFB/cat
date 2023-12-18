@@ -52,10 +52,9 @@ import repicea.io.IOUserInterfaceableObject;
 import repicea.io.REpiceaFileFilterList;
 import repicea.serial.Memorizable;
 import repicea.serial.MemorizerPackage;
+import repicea.serial.SerializerChangeMonitor;
 import repicea.serial.xml.XmlDeserializer;
-import repicea.serial.xml.XmlMarshallException;
 import repicea.serial.xml.XmlSerializer;
-import repicea.serial.xml.XmlSerializerChangeMonitor;
 import repicea.simulation.MonteCarloSimulationCompliantObject;
 import repicea.simulation.covariateproviders.treelevel.SpeciesTypeProvider.SpeciesType;
 import repicea.util.ExtendedFileFilter;
@@ -94,7 +93,7 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 	}
 	
 	static {
-		XmlSerializerChangeMonitor.registerClassNameChange("lerfob.carbonbalancetool.CarbonToolCompatibleTree$SpeciesType",	
+		SerializerChangeMonitor.registerClassNameChange("lerfob.carbonbalancetool.CarbonToolCompatibleTree$SpeciesType",	
 				"repicea.simulation.covariateproviders.treelevel.SpeciesNameProvider$SpeciesType");
 	}
 	
@@ -344,11 +343,7 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 	public void save(String filename) throws IOException {
 		setFilename(filename);
 		XmlSerializer serializer = new XmlSerializer(filename);
-		try {
-			serializer.writeObject(this);
-		} catch (XmlMarshallException e) {
-			throw new IOException("A XmlMarshallException occurred while saving the file!");
-		}
+		serializer.writeObject(this);
 	}
 
 	public String getName() {
@@ -370,13 +365,9 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 			}
 		}
 		BiomassParameters newManager;
-		try {
-			newManager = (BiomassParameters) deserializer.readObject();
-			newManager.setFilename(filename);
-			unpackMemorizerPackage(newManager.getMemorizerPackage());
-		} catch (XmlMarshallException e) {
-			throw new IOException("A XmlMarshallException occurred while loading the file!");
-		}
+		newManager = (BiomassParameters) deserializer.readObject();
+		newManager.setFilename(filename);
+		unpackMemorizerPackage(newManager.getMemorizerPackage());
 	}
 
 	private void setFilename(String filename) {this.filename = filename;}

@@ -27,27 +27,29 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.cedarsoftware.util.io.JsonObject;
 import com.cedarsoftware.util.io.JsonReader;
 
+import lerfob.carbonbalancetool.productionlines.AbstractProcessor;
 import lerfob.carbonbalancetool.productionlines.ProductionLineProcessor;
+import repicea.simulation.processsystem.Processor;
 
 /**
  * The AffiliereJSONReader class reads a JSON file from AFFILIERE and 
  * converts it into a flux configuration file for CAT.
  * @author Mathieu Fortin - October 2023
  */
-public class AffiliereJSONReader {
+public class AffiliereJSONImportReader {
 
 	private static class FutureLink {
-		final ProductionLineProcessor fatherProcessor;
-		final ProductionLineProcessor childProcessor;
+		final Processor fatherProcessor;
+		final Processor childProcessor;
 		final double value;
 		
-		FutureLink(ProductionLineProcessor fatherProcessor, ProductionLineProcessor childProcessor, double value) {
+		FutureLink(Processor fatherProcessor, Processor childProcessor, double value) {
 			this.fatherProcessor = fatherProcessor;
 			this.childProcessor = childProcessor;
 			this.value = value;
@@ -56,8 +58,8 @@ public class AffiliereJSONReader {
 		
 	protected static int OFFSET = 150;
 	
-	protected final JsonObject<?,?> mappedJSON;
-	protected final Map<String, ProductionLineProcessor> processors;
+	protected final LinkedHashMap<?,?> mappedJSON;
+	protected final Map<String, Processor> processors;
 	protected final List<ProductionLineProcessor> endProductProcessors;
 	
 	/**
@@ -65,7 +67,7 @@ public class AffiliereJSONReader {
 	 * @param file the File instance to be read.
 	 * @throws FileNotFoundException if the file cannot be found.
 	 */
-	public AffiliereJSONReader(File file) throws FileNotFoundException {
+	public AffiliereJSONImportReader(File file) throws FileNotFoundException {
 		this(new FileInputStream(file));
 	}
 
@@ -74,41 +76,44 @@ public class AffiliereJSONReader {
 	 * @param url the url of the file to be read.
 	 * @throws IOException if the url cannot produce an input stream.
 	 */
-	public AffiliereJSONReader(URL url) throws IOException {
+	public AffiliereJSONImportReader(URL url) throws IOException {
 		this(url.openStream());
 	}
 	
 	@SuppressWarnings("unchecked")
-	private AffiliereJSONReader(InputStream is) {
+	private AffiliereJSONImportReader(InputStream is) {
 		JsonReader reader = new JsonReader(is);
-		mappedJSON = (JsonObject<?,?>) reader.readObject();
+		mappedJSON = (LinkedHashMap<?,?>) reader.readObject();
 		reader.close();
-		JsonObject<?,?> processorJSONMap = (JsonObject<?,?>) mappedJSON.get("nodes");
-		JsonObject<?,?> linkJSONMap = (JsonObject<?,?>) mappedJSON.get("links");
-		processors = new HashMap<String, ProductionLineProcessor>();
+		LinkedHashMap<?,?> processorJSONMap = (LinkedHashMap<?,?>) mappedJSON.get("nodes");
+		LinkedHashMap<?,?> linkJSONMap = (LinkedHashMap<?,?>) mappedJSON.get("links");
+		processors = new HashMap<String, Processor>();
 		endProductProcessors = new ArrayList<ProductionLineProcessor>();
 		for (Object o : processorJSONMap.values()) {
-			JsonObject<String,?> oMap = (JsonObject<String,?>) o;
-			String id = (String) oMap.get("idNode");
-			String name = (String) oMap.get("name");
-			int x = ((Number) ((JsonObject<?,?>) o).get("x")).intValue() + OFFSET;
-			int y = ((Number) ((JsonObject<?,?>) o).get("y")).intValue();
-			ProductionLineProcessor p = ProductionLineProcessor.createProductionLineProcessor(name, x, y);
+			LinkedHashMap<String, Object> oMap = (LinkedHashMap<String, Object>) o;
+			String id = oMap.get("idNode").toString();
+			Processor p = AbstractProcessor.createProcessor(oMap);
 			processors.put(id, p);
 		}
 
-		Map<ProductionLineProcessor, List<FutureLink>> linkMap = new HashMap<ProductionLineProcessor, List<FutureLink>>();
+		Map<Processor, List<FutureLink>> linkMap = new HashMap<Processor, List<FutureLink>>();
 		
 		for (String fatherProcessorName : processors.keySet()) {
 			for (Object linkValue : linkJSONMap.values()) {
-				JsonObject<?,?> linkProperties = (JsonObject<?,?>)  linkValue;
+				LinkedHashMap<?,?> linkProperties = (LinkedHashMap<?,?>)  linkValue;
 				if (linkProperties.containsKey("idSource") && linkProperties.get("idSource").equals(fatherProcessorName)) {
-					ProductionLineProcessor fatherProcessor = processors.get(fatherProcessorName);
+					Processor fatherProcessor = processors.get(fatherProcessorName);
 					if (linkProperties.containsKey("idTarget")) {
 						String childProcessorName = (String) linkProperties.get("idTarget");
-						ProductionLineProcessor childProcessor = processors.get(childProcessorName);
+						Processor childProcessor = processors.get(childProcessorName);
 						if (childProcessor != null) {
-							double value = ((Number) ((JsonObject<?,?>) linkProperties.get("value")).get("value")).doubleValue();
+							LinkedHashMap<?, ?> valueMap = (LinkedHashMap<?,?>) linkProperties.get("value"); 
+							double value;
+							if (valueMap.containsKey("proportion")) {
+								value = ((Number) valueMap.get("proportion")).doubleValue();
+							} else {
+								value = ((Number) valueMap.get("value")).doubleValue();
+							}
 							if (!linkMap.containsKey(fatherProcessor)) {
 								linkMap.put(fatherProcessor, new ArrayList<FutureLink>());
 							}
@@ -138,7 +143,7 @@ public class AffiliereJSONReader {
 	 * instances.
 	 * @return a Map
 	 */
-	public Map<String, ProductionLineProcessor> getProcessors() {
+	public Map<String, Processor> getProcessors() {
 		return processors;
 	}
 }

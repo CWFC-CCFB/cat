@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Vector;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 
 import javax.swing.SwingUtilities;
@@ -58,7 +57,7 @@ import repicea.gui.REpiceaShowableUIWithParent;
 import repicea.gui.genericwindows.REpiceaLicenseWindow;
 import repicea.gui.genericwindows.REpiceaSplashWindow;
 import repicea.lang.REpiceaSystem;
-import repicea.serial.xml.XmlSerializerChangeMonitor;
+import repicea.serial.SerializerChangeMonitor;
 import repicea.simulation.covariateproviders.treelevel.TreeStatusProvider.StatusClass;
 import repicea.simulation.treelogger.TreeLoggerCompatibilityCheck;
 import repicea.simulation.treelogger.TreeLoggerDescription;
@@ -82,7 +81,7 @@ import repicea.util.REpiceaTranslator.Language;
 public class CarbonAccountingTool extends AbstractGenericEngine implements REpiceaShowableUIWithParent, REpiceaShowableUI {
 
 	static {
-		XmlSerializerChangeMonitor.registerClassNameChange("repicea.simulation.covariateproviders.treelevel.SpeciesNameProvider$SpeciesType", "repicea.simulation.covariateproviders.treelevel.SpeciesTypeProvider$SpeciesType");
+		SerializerChangeMonitor.registerClassNameChange("repicea.simulation.covariateproviders.treelevel.SpeciesNameProvider$SpeciesType", "repicea.simulation.covariateproviders.treelevel.SpeciesTypeProvider$SpeciesType");
 		
 		TreeLoggerManager.registerTreeLoggerName(BasicTreeLogger.class.getName());
 		TreeLoggerManager.registerTreeLoggerName(CATDiameterBasedTreeLogger.class.getName());

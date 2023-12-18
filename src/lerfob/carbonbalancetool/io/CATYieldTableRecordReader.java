@@ -25,7 +25,7 @@ import lerfob.carbonbalancetool.CATCompatibleStand;
 import lerfob.carbonbalancetool.CATSettings.CATSpecies;
 import repicea.io.tools.ImportFieldElement;
 import repicea.io.tools.ImportFieldElement.FieldType;
-import repicea.serial.xml.XmlSerializerChangeMonitor;
+import repicea.serial.SerializerChangeMonitor;
 import repicea.io.tools.LevelProviderEnum;
 import repicea.io.tools.REpiceaRecordReader;
 import repicea.simulation.covariateproviders.treelevel.TreeStatusProvider.StatusClass;
@@ -36,8 +36,8 @@ import repicea.util.REpiceaTranslator.TextableEnum;
 public class CATYieldTableRecordReader extends REpiceaRecordReader {
 
 	static {
-		XmlSerializerChangeMonitor.registerClassNameChange("lerfob.carbonbalancetool.io.CATRecordReader$CATFieldLevel", "lerfob.carbonbalancetool.io.CATYieldTableRecordReader$CATYieldTableFieldLevel");
-		XmlSerializerChangeMonitor.registerClassNameChange("lerfob.carbonbalancetool.io.CATRecordReader$CATFieldID", "lerfob.carbonbalancetool.io.CATYieldTableRecordReader$CATYieldTableFieldID");
+		SerializerChangeMonitor.registerClassNameChange("lerfob.carbonbalancetool.io.CATRecordReader$CATFieldLevel", "lerfob.carbonbalancetool.io.CATYieldTableRecordReader$CATYieldTableFieldLevel");
+		SerializerChangeMonitor.registerClassNameChange("lerfob.carbonbalancetool.io.CATRecordReader$CATFieldID", "lerfob.carbonbalancetool.io.CATYieldTableRecordReader$CATYieldTableFieldID");
 	}
 	
 	protected static enum MessageID implements TextableEnum {

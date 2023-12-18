@@ -80,8 +80,7 @@ public class EndUseWoodProductCarbonUnitFeature extends CarbonUnitFeature implem
 		}
 	}
 	
-	
-	
+
 	@Deprecated
 	private boolean disposable;
 	@Deprecated
@@ -106,9 +105,8 @@ public class EndUseWoodProductCarbonUnitFeature extends CarbonUnitFeature implem
 	private LifeCycleAnalysis lca;
 
 	
-	
 	/**
-	 * The empty constructor is handled by the interface.
+	 * Constructor in GUI mode.
 	 */
 	protected EndUseWoodProductCarbonUnitFeature(ProductionLineProcessor processor) {
 		super(processor);

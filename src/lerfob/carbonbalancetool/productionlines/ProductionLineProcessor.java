@@ -19,7 +19,6 @@
 package lerfob.carbonbalancetool.productionlines;
 
 import java.awt.Container;
-import java.awt.Point;
 import java.io.Serializable;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
@@ -75,7 +74,7 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 	
 	
 	/**
-	 * Official constructor.
+	 * Official constructor in GUI mode.
 	 */
 	protected ProductionLineProcessor() {
 		super();
@@ -120,19 +119,6 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 		this.fatherProcessor = fatherProcessor;
 	}
 
-	/**
-	 * Create a ProductionLineProcessor.<p>
-	 * 
-	 * Used for JSON deserialization from AF-Filiere.
-	 * @param name the name of the processor
-	 * @return a ProductionLineProcessor instance
-	 */
-	public static ProductionLineProcessor createProductionLineProcessor(String name, int x, int y) {
-		ProductionLineProcessor p = new ProductionLineProcessor();
-		p.setName(name);
-		p.setOriginalLocation(new Point(x,y));
-		return p;
-	}
 	
 	List<AbstractExtractionProcessor> getExtractionProcessors() {
 		if (extractionProcessors == null) {
