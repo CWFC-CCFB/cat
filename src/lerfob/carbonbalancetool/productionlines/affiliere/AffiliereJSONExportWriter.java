@@ -22,16 +22,15 @@ package lerfob.carbonbalancetool.productionlines.affiliere;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 
 import com.cedarsoftware.util.io.JsonWriter;
-
-import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager;
 
 /**
  * The AffiliereJSONReader class produces a JSON file from a ProductionProcessorManager instance.
  * @author Mathieu Fortin - November 2023
  */
-public class AffiliereJSONWriter {
+public class AffiliereJSONExportWriter {
 
 	/**
 	 * Write a JSON representation of a ProductionProcessorManager instance to file.
@@ -39,12 +38,12 @@ public class AffiliereJSONWriter {
 	 * @param filename the filename
 	 * @throws IOException if an error occurs while writing the file
 	 */
-	public AffiliereJSONWriter(ProductionProcessorManager manager, String filename) throws IOException {
+	public AffiliereJSONExportWriter(LinkedHashMap<String, Object> managerRep, String filename) throws IOException {
 		JsonWriter writer = null;
 		try {
 			FileOutputStream fos = new FileOutputStream(new File(filename));
 			writer = new JsonWriter(fos);
-//			writer.write(manager.getMapRepresentation());	
+			writer.write(managerRep);	
 		} finally {
 			if (writer != null) {
 				writer.close();

@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
+import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONImportReader;
 import repicea.simulation.processsystem.AmountMap;
 import repicea.simulation.processsystem.ProcessUnit;
 import repicea.simulation.processsystem.Processor;
@@ -88,14 +89,24 @@ public abstract class AbstractProcessor extends Processor {
 //			}
 //		} else { // likely imported from AFFiliere
 			ProductionLineProcessor p = new ProductionLineProcessor();
-			String name = (String) oMap.get("name");
-			int x = ((Number) oMap.get("x")).intValue(); // + OFFSET;
-			int y = ((Number) oMap.get("y")).intValue();
+			String name = (String) oMap.get(AffiliereJSONImportReader.NameTag);
+			int x = ((Number) oMap.get(AffiliereJSONImportReader.XTag)).intValue(); // + OFFSET;
+			int y = ((Number) oMap.get(AffiliereJSONImportReader.YTag)).intValue();
 			p.setName(name);
 			p.setOriginalLocation(new Point(x,y));
 			return p;
 //		}
 	}
+	
+	protected LinkedHashMap<String, Object> getMapRepresentation() {
+		LinkedHashMap<String, Object> oMap = new LinkedHashMap<String, Object>();
+		oMap.put(AffiliereJSONImportReader.NameTag, getName());
+		Point loc = getOriginalLocation();
+		oMap.put(AffiliereJSONImportReader.XTag, loc.x);
+		oMap.put(AffiliereJSONImportReader.YTag, loc.y);
+		return oMap;
+	}
+	
 
 //	/*
 //	 * For extended visibility.

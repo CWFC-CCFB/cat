@@ -44,6 +44,12 @@ import repicea.simulation.processsystem.Processor;
  */
 public class AffiliereJSONImportReader {
 
+	public static final String NameTag = "name";
+	public static final String XTag = "x";
+	public static final String YTag = "y";
+	
+	
+	
 	private static class FutureLink {
 		final Processor fatherProcessor;
 		final Processor childProcessor;

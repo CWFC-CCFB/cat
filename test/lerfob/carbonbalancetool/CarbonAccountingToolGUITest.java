@@ -353,7 +353,7 @@ public class CarbonAccountingToolGUITest {
 
 		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportTest.class) + "EtudesAvecEtiquette4.json";
 		ROBOT.fillThisTextField("Filename", filename);
-		ROBOT.clickThisButton(CommonControlID.Open.name(), CATAWTProperty.AffiliereImportSuccessfull);
+		ROBOT.clickThisButton(CommonControlID.Open.name(), CATAWTProperty.AffiliereImportSuccessful);
 		
 		int nbProcesses = CAT.getCarbonToolSettings().getCurrentProductionProcessorManager().getList().size();
 		Assert.assertEquals("Comparing number of processes", 94, nbProcesses);

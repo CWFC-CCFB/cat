@@ -46,6 +46,7 @@ import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManagerDialog.MessageID;
 import lerfob.carbonbalancetool.productionlines.WoodyDebrisProcessor.WoodyDebrisProcessorID;
+import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONExportWriter;
 import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONImportReader;
 import lerfob.treelogger.basictreelogger.BasicTreeLogger;
 import lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLogger;
@@ -229,6 +230,10 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		AFFILIERE;
 	}
 
+	public static enum ExportFormat {
+		AFFILIERE;
+	}
+
 	private transient final Vector<TreeLoggerParameters<?>> availableTreeLoggerParameters;
 
 	@SuppressWarnings("rawtypes")
@@ -285,8 +290,8 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	 * @throws FileNotFoundException 
 	 */
 	public void importFrom(String filename, ImportFormat iFormat) throws FileNotFoundException {
-		if (iFormat == null) {
-			throw new InvalidParameterException("The iFormat argument cannot be null!");
+		if (iFormat == null || filename == null) {
+			throw new InvalidParameterException("The filename and iFormat arguments must be non null!");
 		}
 		switch(iFormat) {
 		case AFFILIERE:
@@ -301,47 +306,63 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		}
 	}
 	
-//	@Override
-//	public LinkedHashMap<String, Object> getMapRepresentation() {
-//		int idDispenser = 1;
-//		Map<String, LinkedHashMap<String, Object>> nodeMap = new LinkedHashMap<String, LinkedHashMap<String, Object>>();
-//		Map<Processor, String> processorToIdMap = new HashMap<Processor, String>();
-//		for (Processor p : getList()) {
-//			String idNode = "node" + idDispenser++;
-//			LinkedHashMap<String, Object> nodeRep = p.getMapRepresentation();
-//			nodeRep.put("idNode", idNode);
-//			nodeMap.put(idNode, nodeRep);
-//			processorToIdMap.put(p, idNode);
-//		}
-//		Map<String, Object> linkMap = new LinkedHashMap<String, Object>();
-//		for (Processor source : getList()) {
-//			for (Processor target : source.getSubProcessors()) {
-//				String idLink = "link" + idDispenser++;
-//				linkMap.put(idLink, getLinkMapRepresentation(idLink, false, source, target, processorToIdMap)); // false: a typical production processor (not end of life)
-//			}
-//			if (source instanceof ProductionLineProcessor) {
-//				if (((ProductionLineProcessor) source).disposedToProcessor != null) {
-//					String idLink = "link" + idDispenser++;
-//					linkMap.put(idLink, getLinkMapRepresentation(idLink, true, source,
-//							((ProductionLineProcessor) source).disposedToProcessor, processorToIdMap)); // end of life
-//																										// processor
-//				}
-//			}
-//		}
-//		LinkedHashMap<String, Object> outputMap = new LinkedHashMap<String, Object>();
-//		outputMap.put("nodes", nodeMap);
-//		outputMap.put("links", linkMap);
-//		outputMap.put("treeLoggerParameters", selectedTreeLoggerParameters.getMapRepresentation());
-//		return outputMap;
-//	}
+	/**
+	 * Export a flux configuration to a particular file under a given format.
+	 * @param filename the name of the file
+	 * @param eFormat an ExportFormat enum that defines the expected format
+	 * @throws IOException if an IO error occurs
+	 */
+	public void exportTo(String filename, ExportFormat eFormat) throws IOException {
+		if (eFormat == null || filename == null) {
+			throw new InvalidParameterException("The filename and eFormat arguments must be non null!");
+		}
+		switch(eFormat) {
+		case AFFILIERE:
+			new AffiliereJSONExportWriter(getMapRepresentation(), filename);
+			break;
+		default:
+			throw new InvalidParameterException("The export format " + eFormat.name() + " is not implemented yet!");
+		}
+	}
+
+	
+	private LinkedHashMap<String, Object> getMapRepresentation() {
+		int idDispenser = 1;
+		Map<String, LinkedHashMap<String, Object>> nodeMap = new LinkedHashMap<String, LinkedHashMap<String, Object>>();
+		Map<Processor, String> processorToIdMap = new HashMap<Processor, String>();
+		for (Processor p : getList()) {
+			String idNode = "node" + idDispenser++;
+			LinkedHashMap<String, Object> nodeRep = ((AbstractProcessor) p).getMapRepresentation();
+			nodeRep.put("idNode", idNode);
+			nodeMap.put(idNode, nodeRep);
+			processorToIdMap.put(p, idNode);
+		}
+		Map<String, Object> linkMap = new LinkedHashMap<String, Object>();
+		for (Processor source : getList()) {
+			for (Processor target : source.getSubProcessors()) {
+				String idLink = "link" + idDispenser++;
+				linkMap.put(idLink, getLinkMapRepresentation(idLink, false, source, target, processorToIdMap)); // false: a typical production processor (not end of life)
+			}
+			if (source instanceof ProductionLineProcessor) {
+				if (((ProductionLineProcessor) source).disposedToProcessor != null) {
+					String idLink = "link" + idDispenser++;
+					linkMap.put(idLink, getLinkMapRepresentation(idLink, true, source,
+							((ProductionLineProcessor) source).disposedToProcessor, processorToIdMap)); // end of life
+																										// processor
+				}
+			}
+		}
+		LinkedHashMap<String, Object> outputMap = new LinkedHashMap<String, Object>();
+		outputMap.put("nodes", nodeMap);
+		outputMap.put("links", linkMap);
+		return outputMap;
+	}
 
 	private static LinkedHashMap<String, Object> getLinkMapRepresentation(String idLink, 
 			boolean endOfLife, 
 			Processor source, 
 			Processor target,
 			Map<Processor, String> processorToIdMap) {
-
-		
 		LinkedHashMap<String, Object> oMap = new LinkedHashMap<String, Object>();
 		oMap.put("idLink", idLink);
 		oMap.put("idSource", processorToIdMap.get(source));
