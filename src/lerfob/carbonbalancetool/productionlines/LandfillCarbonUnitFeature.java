@@ -27,6 +27,10 @@ import javax.swing.event.ChangeListener;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
 
+/**
+ * A CarbonUnitFeature class derived for Landfill features.
+ * @author Mathieu Fortin 
+ */
 public class LandfillCarbonUnitFeature extends CarbonUnitFeature implements ChangeListener, ItemListener {
 
 	private static final long serialVersionUID = 20101118L;
@@ -70,14 +74,13 @@ public class LandfillCarbonUnitFeature extends CarbonUnitFeature implements Chan
 	
 	
 	/**
-	 * The empty constructor is handled by the interface.
+	 * Constructor for GUI mode.
 	 */
 	protected LandfillCarbonUnitFeature(AbstractProductionLineProcessor processor) {
 		super(processor);
 		setAverageLifetime(33);	// Default value in IPCC 2006 Waste p.3.17
 	}
 
-		
 	@Override
 	public LandfillCarbonUnitFeaturePanel getUI() {
 		if (getUserInterfacePanel() == null) {
@@ -113,19 +116,6 @@ public class LandfillCarbonUnitFeature extends CarbonUnitFeature implements Chan
 		}
 	}
 	
-//	@Override
-//	public boolean equals(Object obj) {
-//		if (!(obj instanceof LandfillCarbonUnitFeature)) {
-//			return false;
-//		} else {
-//			LandfillCarbonUnitFeature cuf = (LandfillCarbonUnitFeature) obj;
-//			if (cuf.degradableOrganicCarbonFraction != degradableOrganicCarbonFraction) {
-//				return false;
-//			}
-//		}
-//		return super.equals(obj);
-//	}
-
 	@Override
 	public void itemStateChanged(ItemEvent e) {
 		if (e.getSource().equals(getUserInterfacePanel().landFillTypeComboBox)) {
@@ -144,5 +134,4 @@ public class LandfillCarbonUnitFeature extends CarbonUnitFeature implements Chan
 		return landfillType;
 	}
 
-	
 }

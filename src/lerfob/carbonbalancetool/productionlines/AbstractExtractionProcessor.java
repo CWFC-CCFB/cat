@@ -34,6 +34,7 @@ import repicea.simulation.processsystem.SystemPanel;
  * the ElementUnit instance (e.g. debarking).
  * @author Mathieu Fortin - September 2020
  */
+@SuppressWarnings("serial")
 public abstract class AbstractExtractionProcessor extends AbstractProcessor {
 
 	
@@ -84,6 +85,7 @@ public abstract class AbstractExtractionProcessor extends AbstractProcessor {
 
 	}
 	
+	@SuppressWarnings("rawtypes")
 	protected Collection<ProcessUnit> extractAndProcess(Processor fatherProcessor, List<ProcessUnit> processUnits) {
 		List<ProcessUnit> extractedUnits = extract(processUnits);
 		if (!extractedUnits.isEmpty()) {
@@ -99,6 +101,7 @@ public abstract class AbstractExtractionProcessor extends AbstractProcessor {
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
 	protected abstract List<ProcessUnit> extract(List<ProcessUnit> processUnits);
 	
 }

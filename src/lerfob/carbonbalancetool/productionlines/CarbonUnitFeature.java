@@ -33,10 +33,15 @@ import repicea.simulation.MonteCarloSimulationCompliantObject;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
 
+/**
+ * The CarbonUnitFeature class defines some characteristics of carbon units contained in a wood piece. <p>
+ * It contains the lifetime, use class, and others characteristics. 
+ * @author Mathieu Fortin - 2012
+ */
 public class CarbonUnitFeature implements Serializable, REpiceaUIObject, NumberFieldListener, ItemListener {
 
 	private static final long serialVersionUID = 20101118L;
-	
+
 	private static final double HALFLIFE_TO_MEANLIFETIME_CONSTANT = 1d / Math.log(2d);
 
 	protected static enum LifetimeMode implements TextableEnum {
@@ -70,6 +75,10 @@ public class CarbonUnitFeature implements Serializable, REpiceaUIObject, NumberF
 
 	private LifetimeMode lifetimeMode;
 
+	/**
+	 * Constructor for GUI mode.
+	 * @param processor an AbstractProductionLineProcessor instance, which hosts this CarbonUnitFeature instance.
+	 */
 	protected CarbonUnitFeature(AbstractProductionLineProcessor processor) {
 		setProcessor(processor);
 		lifetimeMode = LifetimeMode.HALFLIFE; // default value
@@ -166,5 +175,5 @@ public class CarbonUnitFeature implements Serializable, REpiceaUIObject, NumberF
 			}
 		}	
 	}
-	
+
 }

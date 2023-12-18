@@ -49,12 +49,12 @@ import repicea.gui.Resettable;
 import repicea.gui.permissions.DefaultREpiceaGUIPermission;
 import repicea.gui.permissions.REpiceaGUIPermission;
 import repicea.io.IOUserInterfaceableObject;
+import repicea.io.REpiceaFileFilterList;
 import repicea.serial.Memorizable;
 import repicea.serial.MemorizerPackage;
+import repicea.serial.SerializerChangeMonitor;
 import repicea.serial.xml.XmlDeserializer;
-import repicea.serial.xml.XmlMarshallException;
 import repicea.serial.xml.XmlSerializer;
-import repicea.serial.xml.XmlSerializerChangeMonitor;
 import repicea.simulation.MonteCarloSimulationCompliantObject;
 import repicea.simulation.covariateproviders.treelevel.SpeciesTypeProvider.SpeciesType;
 import repicea.util.ExtendedFileFilter;
@@ -93,11 +93,11 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 	}
 	
 	static {
-		XmlSerializerChangeMonitor.registerClassNameChange("lerfob.carbonbalancetool.CarbonToolCompatibleTree$SpeciesType",	
+		SerializerChangeMonitor.registerClassNameChange("lerfob.carbonbalancetool.CarbonToolCompatibleTree$SpeciesType",	
 				"repicea.simulation.covariateproviders.treelevel.SpeciesNameProvider$SpeciesType");
 	}
 	
-	private static class BiomassParametersFileFilter extends FileFilter implements ExtendedFileFilter {
+	public static class BiomassParametersFileFilter extends FileFilter implements ExtendedFileFilter {
 
 		private String extension = ".bpf";
 		
@@ -119,7 +119,7 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 		public String getExtension() {return extension;}
 	}
 
-	private static final BiomassParametersFileFilter MyFileFilter = new BiomassParametersFileFilter();
+	public static final BiomassParametersFileFilter BiomassParameterFileFilter = new BiomassParametersFileFilter();
 	
 	protected final HashMap<SpeciesType, Double> branchExpansionFactors;
 	protected final HashMap<SpeciesType, Double> rootExpansionFactors;
@@ -264,7 +264,7 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 	
 
 	@Override
-	public FileFilter getFileFilter() {return MyFileFilter;}
+	public REpiceaFileFilterList getFileFilters() {return new REpiceaFileFilterList(BiomassParameterFileFilter);}
 
 
 	@Override
@@ -343,11 +343,7 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 	public void save(String filename) throws IOException {
 		setFilename(filename);
 		XmlSerializer serializer = new XmlSerializer(filename);
-		try {
-			serializer.writeObject(this);
-		} catch (XmlMarshallException e) {
-			throw new IOException("A XmlMarshallException occurred while saving the file!");
-		}
+		serializer.writeObject(this);
 	}
 
 	public String getName() {
@@ -369,13 +365,9 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 			}
 		}
 		BiomassParameters newManager;
-		try {
-			newManager = (BiomassParameters) deserializer.readObject();
-			newManager.setFilename(filename);
-			unpackMemorizerPackage(newManager.getMemorizerPackage());
-		} catch (XmlMarshallException e) {
-			throw new IOException("A XmlMarshallException occurred while loading the file!");
-		}
+		newManager = (BiomassParameters) deserializer.readObject();
+		newManager.setFilename(filename);
+		unpackMemorizerPackage(newManager.getMemorizerPackage());
 	}
 
 	private void setFilename(String filename) {this.filename = filename;}

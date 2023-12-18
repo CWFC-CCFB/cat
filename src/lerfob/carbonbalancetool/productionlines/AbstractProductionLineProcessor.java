@@ -36,7 +36,10 @@ public abstract class AbstractProductionLineProcessor extends AbstractProcessor 
 
 	protected CarbonUnitFeature getEndProductFeature() {return woodProductFeature;}
 
-	
+	/**
+	 * Regular constructor for GUI.
+	 */
+	protected AbstractProductionLineProcessor() {}
 	
 	@Override
 	protected REpiceaPanel getProcessFeaturesPanel() {
@@ -50,5 +53,6 @@ public abstract class AbstractProductionLineProcessor extends AbstractProcessor 
 	@SuppressWarnings("rawtypes")
 	@Override
 	protected abstract List<ProcessUnit> createProcessUnitsFromThisProcessor(ProcessUnit unit, Number intake);
+	
 	
 }

@@ -60,7 +60,8 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 	public static enum MessageID implements TextableEnum {
 		SliderTitle("Output flux", "Flux sortant"),
 		Unnamed("Unnamed", "SansNom"),
-		ExportToSVG("Export to SVG", "Exporter au format SVG");
+		ExportMenu("Export", "Exporter"),
+		ExportToSVG("As SVG image", "Image SVG");
 
 		MessageID(String englishText, String frenchText) {
 			setText(englishText, frenchText);
@@ -86,15 +87,13 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 	protected JMenuItem load;
 	protected JMenuItem save;
 	protected JMenuItem saveAs;
+	protected JMenu export;
 	protected JMenuItem exportAsSVG;
 	protected JMenuItem close;
 	protected JMenuItem reset;
 	protected JMenuItem help;
 	protected JMenuItem undo;
 	protected JMenuItem redo;
-//	protected JCheckBoxMenuItem enlarge;
-//	protected Dimension previousDimension;
-//	protected Point previousLocation;
 	protected JSlider zoomSlider;
 	
 	protected final WindowSettings windowSettings;
@@ -126,6 +125,7 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 		new REpiceaIOFileHandlerUI(this, caller, save, saveAs, load);
 
 		if (isBatikExtensionAvailable()) {	// The handler should not be instantiated before checking if batik is available otherwise this throws an exception
+			export = UIControlManager.createCommonMenu(MessageID.ExportMenu);
 			exportAsSVG = UIControlManager.createCommonMenuItem(MessageID.ExportToSVG);
 			new REpiceaOSVGFileHandlerUI(this, exportAsSVG, systemPanel.getInternalPanel());
 		}
@@ -139,7 +139,6 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 		
 		new REpiceaMemorizerHandler(this, undo, redo);
 		
-//		enlarge = new JCheckBoxMenuItem(CommonControlID.FullScreen.toString());
 		zoomSlider = createZoomSlider();
 		zoomSlider.addChangeListener(systemPanel);
 	}
@@ -172,7 +171,8 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 		file.add(saveAs);
 		file.add(new JSeparator());
 		if (isBatikExtensionAvailable()) {
-			file.add(exportAsSVG);
+			export.add(exportAsSVG);
+			file.add(export);
 			file.add(new JSeparator());
 		}
 		file.add(close);
@@ -219,7 +219,6 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 	 */
 	protected SystemManager getCaller() {return caller;}
 	
-//	@Override
 	protected void initUI() {
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
@@ -232,8 +231,6 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 		menuBar.add(editMenu);
 		editMenu.setEnabled(getCaller().getGUIPermission().isEnablingGranted());
 		
-//		menuBar.add(createViewMenu());
-				
 		menuBar.add(createAboutMenu());
 
 		JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -254,7 +251,6 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 		reset.addActionListener(this);
 		close.addActionListener(this);
 		help.addActionListener(this);
-//		enlarge.addItemListener(this);
 	}
 
 	@Override
@@ -262,7 +258,6 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 		reset.removeActionListener(this);
 		close.removeActionListener(this);
 		help.removeActionListener(this);
-//		enlarge.removeItemListener(this);
 	}
 
 	@Override

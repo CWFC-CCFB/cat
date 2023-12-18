@@ -197,6 +197,7 @@ public class ProductionLinesTest {
 
 	
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private static void testBiomassBalanceInProductionLinesWithNewImplementationAndDebarkingUsingThisFile(String filename) {
 		try {
 			ProductionProcessorManager processorManager = new ProductionProcessorManager();
@@ -396,5 +397,96 @@ public class ProductionLinesTest {
 	}
 
 	
+	private static List<CarbonUnit> runSimpleSimulationWithThisFile(String filename) throws IOException {
+		ProductionProcessorManager processorManager = new ProductionProcessorManager();
+		processorManager.load(filename);
+
+		double volume = 100d;
+		double carbonContent = .5;
+		double basicWoodDensity = .5;
+
+		AmountMap<Element> amountMap = new AmountMap<Element>();
+		amountMap.put(Element.Volume, volume);
+		amountMap.put(Element.Biomass, volume * basicWoodDensity);
+		amountMap.put(Element.C, volume * basicWoodDensity * carbonContent);
+		Map<BiomassType, AmountMap<Element>> amountMaps = new HashMap<BiomassType, AmountMap<Element>>();
+		amountMaps.put(BiomassType.Wood, amountMap);
+
+		List<Processor> processors = processorManager.getPrimaryProcessors();
+		int i = processors.size() - 1;
+		LogCategoryProcessor sawingProcessor = null;
+		while (i >= 0) {
+			Processor p = processors.get(i);
+			if (p instanceof LogCategoryProcessor) {
+				sawingProcessor = (LogCategoryProcessor) p;
+				break;
+			}
+			i--;
+		}
+
+		processorManager.processWoodPiece(sawingProcessor.logCategory, 2015, "", amountMaps, "Unknown");
+		List<CarbonUnit> endProducts = new ArrayList<CarbonUnit>();
+		for (CarbonUnitStatus status : CarbonUnitStatus.values()) {
+			endProducts.addAll(processorManager.getCarbonUnits(status));
+		}
+		return endProducts;
+	}
 	
+	/*
+	 * Here we test the same flux configuration except that one of the end-use product has its biomass of the functional 
+	 * unit and associated emissions are set to 1 in the Processor instance. Since this is a end-use product, there should
+	 * not be any emissions on that front because they are accounted for in the CarbonUnitFeature instance. This can happen 
+	 * if the Processor was initially an intermediate processor and then became a final processor.
+	 */
+	@Test
+	public void testEmissionsFromFunctionalUnit() throws IOException {
+		String filename = ObjectUtility.getRelativePackagePath(ProductionProcessorManager.class) + "library" + ObjectUtility.PathSeparator + "hardwood_recycling_en.prl";
+		Collection<CarbonUnit> endProducts = runSimpleSimulationWithThisFile(filename);
+		Assert.assertTrue("Checking collection is not empty", !endProducts.isEmpty());
+		double sumEmissionsCO2 = 0;
+		for (CarbonUnit cu : endProducts) {
+			sumEmissionsCO2 += cu.getTotalNonRenewableCarbonEmissionsMgCO2Eq();
+		}
+		System.out.println("Emissions = " + sumEmissionsCO2);
+		Assert.assertEquals("Testing if emissions are null", 0d, sumEmissionsCO2, 1E-8);
+		
+		String modifiedFilename = ObjectUtility.getPackagePath(getClass()) + "hardwood_recycling_enModified.prl";
+		endProducts = runSimpleSimulationWithThisFile(modifiedFilename);
+		Assert.assertTrue("Checking collection is not empty", !endProducts.isEmpty());
+		double sumEmissionsCO2_2 = 0;
+		for (CarbonUnit cu : endProducts) {
+			sumEmissionsCO2_2 += cu.getTotalNonRenewableCarbonEmissionsMgCO2Eq();
+		}
+		System.out.println("Emissions = " + sumEmissionsCO2_2);
+		Assert.assertEquals("Testing if emissions are null", 0d, sumEmissionsCO2_2, 1E-8);
+	}
+
+	/*
+	 * Here we test if the XML and JSON deserializations
+	 * yield the same carbon units.
+	 */
+	@Test
+	public void testMatterBalanceFromXmlSerializationVsJSONSerialization() throws IOException {
+		String filename = ObjectUtility.getRelativePackagePath(ProductionProcessorManager.class) + "library" + ObjectUtility.PathSeparator + "hardwood_recycling_en.prl";
+		List<CarbonUnit> endProductsXML = runSimpleSimulationWithThisFile(filename);
+		Assert.assertEquals("Testing list size", 2, endProductsXML.size());
+		
+		double sum1 = 0d;
+		for (CarbonUnit unit : endProductsXML) {
+			sum1 += unit.getInitialCarbon();
+		}
+		
+		String modifiedFilename = ObjectUtility.getPackagePath(getClass()) + "hardwood_recycling_en.json";
+		List<CarbonUnit> endProductsJSON = runSimpleSimulationWithThisFile(modifiedFilename);
+		Assert.assertEquals("Testing list size", 2, endProductsJSON.size());
+
+		double sum2 = 0d;
+		for (CarbonUnit unit : endProductsJSON) {
+			sum2 += unit.getInitialCarbon();
+		}
+
+		Assert.assertEquals("Checking sum of initial carbons", sum1, sum2, 1E-8);
+		
+	}
+
 }

@@ -27,7 +27,7 @@ import java.util.Map;
 
 import lerfob.carbonbalancetool.productionlines.CarbonUnit;
 import repicea.math.Matrix;
-import repicea.serial.xml.XmlSerializerChangeMonitor;
+import repicea.serial.SerializerChangeMonitor;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
 
@@ -40,7 +40,7 @@ import repicea.util.REpiceaTranslator.TextableEnum;
 public class CATCompartment implements Comparable {
 	
 	static {
-		XmlSerializerChangeMonitor.registerEnumNameChange("lerfob.carbonbalancetool.CATCompartment$CompartmentInfo", 
+		SerializerChangeMonitor.registerEnumNameChange("lerfob.carbonbalancetool.CATCompartment$CompartmentInfo", 
 				"TotalBiomass",
 				"LivingBiomass");
 	}

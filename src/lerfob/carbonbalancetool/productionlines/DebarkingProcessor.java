@@ -65,6 +65,7 @@ public class DebarkingProcessor extends AbstractExtractionProcessor {
 	}
 
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	protected List<ProcessUnit> extract(List<ProcessUnit> processUnits) {
 		List<ProcessUnit> extractedUnits = new ArrayList<ProcessUnit>();
@@ -78,7 +79,7 @@ public class DebarkingProcessor extends AbstractExtractionProcessor {
 						processUnits.remove(p);
 					} catch (Exception e) {
 						e.printStackTrace();
-						int u = 0;
+//						int u = 0;
 					}
 				}
 			}

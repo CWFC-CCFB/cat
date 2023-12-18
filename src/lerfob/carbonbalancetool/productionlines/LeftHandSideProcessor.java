@@ -84,5 +84,6 @@ public abstract class LeftHandSideProcessor extends AbstractProcessor {
 	}
 	
 	
+	protected LeftHandSideProcessor() {}
 	
 }

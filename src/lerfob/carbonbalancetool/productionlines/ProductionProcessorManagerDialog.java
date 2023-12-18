@@ -30,12 +30,16 @@ import java.util.Vector;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
+import lerfob.carbonbalancetool.CATAWTProperty;
 import lerfob.carbonbalancetool.productionlines.LandfillProcessor.LandfillProcessorButton;
 import lerfob.carbonbalancetool.productionlines.LeftInForestProcessor.LeftInForestProcessorButton;
 import lerfob.carbonbalancetool.productionlines.LogCategoryProcessor.LogCategoryProcessorButton;
+import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager.ExportFormat;
+import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager.ImportFormat;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorToolPanel.CreateEndOfLifeLinkButton;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorToolPanel.CreateLandfillProcessorButton;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorToolPanel.CreateLeftInForestProcessorButton;
@@ -43,10 +47,14 @@ import lerfob.carbonbalancetool.productionlines.ProductionProcessorToolPanel.Cre
 import lerfob.carbonbalancetool.productionlines.WoodyDebrisProcessor.WoodyDebrisProcessorButton;
 import repicea.gui.AutomatedHelper;
 import repicea.gui.CommonGuiUtility;
+import repicea.gui.CommonGuiUtility.FileChooserOutput;
 import repicea.gui.OwnedWindow;
+import repicea.gui.REpiceaAWTEvent;
 import repicea.gui.REpiceaAWTProperty;
 import repicea.gui.UIControlManager;
 import repicea.gui.components.REpiceaComboBoxOpenButton;
+import repicea.io.REpiceaFileFilter;
+import repicea.io.REpiceaFileFilterList;
 import repicea.simulation.processsystem.SystemLayout;
 import repicea.simulation.processsystem.SystemManagerDialog;
 import repicea.simulation.processsystem.SystemPanel;
@@ -93,7 +101,11 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 		LeftInForestButtonToolTip("Leave on forest floor", "Laisser en for\u00EAt"),
 		EndOfLifeLinkButtonToolTip("End of life destination", "Destination en fin de vie"),
 		IncompatibleTreeLogger("The tree logger is incompatible and will be replaced by the default tree logger!", "Le module de billonnage est incompatible et sera remplac\u00E9 par le module de billonnage par d\u00E9faut!"),
-		ExamplesOfFluxConfigurations("Examples of flux configurations", "Exemples de configurations de flux");
+		ExamplesOfFluxConfigurations("Examples of flux configurations", "Exemples de configurations de flux"),
+		ImportFromOtherSources("Import", "Importer"),
+		ImportFromAFFiliere("From AFFiliere (.json)", "A partir d'AFFili\u00E8ere (.json)"),
+		ErrorImportFromAffiliere("An error occurred while importing data from AFFiliere", "Une erreur est survenue lors de l'importation des donn\u00E9es depuis AFFili\u00E8re"),
+		ExportToAFFiliere("To AFFiliere (.json)", "Vers AFFili\u00E8ere (.json)");
 		
 		MessageID(String englishText, String frenchText) {
 			setText(englishText, frenchText);
@@ -122,6 +134,9 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 	private JComboBox<TreeLoggerParameters<?>> treeLoggerComboBox;
 	
 	protected JMenuItem downloadExamplesMenuItem;
+	protected JMenu importFromOtherSourcesMenu;
+	protected JMenuItem importFromAFFiliere;
+	protected JMenuItem exportToAFFiliere;
 	
 	
 	/**
@@ -145,6 +160,9 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 		comboBoxPanel = new REpiceaComboBoxOpenButton<TreeLoggerParameters<?>>(MessageID.BuckingModelLabel, getCaller().getGUIPermission());
 		treeLoggerComboBox = comboBoxPanel.getComboBox();
 		downloadExamplesMenuItem = new JMenuItem(MessageID.ExamplesOfFluxConfigurations.toString());
+		importFromOtherSourcesMenu = UIControlManager.createCommonMenu(MessageID.ImportFromOtherSources);
+		importFromAFFiliere = UIControlManager.createCommonMenuItem(MessageID.ImportFromAFFiliere);
+		exportToAFFiliere = UIControlManager.createCommonMenuItem(MessageID.ExportToAFFiliere);
 	}
 
 	@Override
@@ -165,6 +183,15 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 				w.setEnabled(true);
 			}
 		}
+	}
+	
+	@Override
+	protected JMenu createFileMenu() {
+		JMenu fileMenu = super.createFileMenu();
+		export.add(this.exportToAFFiliere);
+		importFromOtherSourcesMenu.add(importFromAFFiliere);
+		fileMenu.insert(importFromOtherSourcesMenu, 4);
+		return fileMenu;
 	}
 	
 	@Override
@@ -201,6 +228,8 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 		treeLoggerComboBox.addItemListener(this);
 		comboBoxPanel.addComboBoxEntryPropertyListener(this);
 		downloadExamplesMenuItem.addActionListener(this);
+		importFromAFFiliere.addActionListener(this);
+		exportToAFFiliere.addActionListener(this);
 	}
 	
 	@Override
@@ -209,6 +238,8 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 		treeLoggerComboBox.removeItemListener(this);
 		comboBoxPanel.removeComboBoxEntryPropertyListener(this);
 		downloadExamplesMenuItem.removeActionListener(this);
+		importFromAFFiliere.removeActionListener(this);
+		exportToAFFiliere.removeActionListener(this);
 	}
 
 	@Override
@@ -217,8 +248,6 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 			getCaller().setSelectedTreeLogger((TreeLoggerParameters<?>) treeLoggerComboBox.getSelectedItem());
 			firePropertyChange(REpiceaAWTProperty.SynchronizeWithOwner, null, this);
 			firePropertyChange(REpiceaAWTProperty.ActionPerformed, null, this);
-//		} else {
-//			super.itemStateChanged(arg0);
 		}
 	}
 	
@@ -226,6 +255,36 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 	public void actionPerformed(ActionEvent evt) {
 		if (evt.getSource().equals(downloadExamplesMenuItem)) {
 			downloadExamplesAction();
+		} else if (evt.getSource().equals(importFromAFFiliere)) {
+			FileChooserOutput fileChooserOutput = CommonGuiUtility.browseAction(this,
+					JFileChooser.FILES_ONLY,
+					"", // TODO find a way to add memorizer here
+					new REpiceaFileFilterList(REpiceaFileFilter.JSON),
+					JFileChooser.OPEN_DIALOG);
+			if (fileChooserOutput.isValid()) {
+				try {
+					getCaller().importFrom(fileChooserOutput.getFilename(), ImportFormat.AFFILIERE);
+					REpiceaAWTEvent.fireEvent(new REpiceaAWTEvent(this, CATAWTProperty.AffiliereImportSuccessful));
+					synchronizeUIWithOwner();
+				} catch (Exception e) {
+					CommonGuiUtility.showErrorMessage(MessageID.ErrorImportFromAffiliere.toString() + System.lineSeparator() + e.getMessage(), this);
+				}
+			}
+		} else if (evt.getSource().equals(exportToAFFiliere)) {
+			FileChooserOutput fileChooserOutput = CommonGuiUtility.browseAction(this,
+					JFileChooser.FILES_ONLY,
+					"", // TODO find a way to add memorizer here
+					new REpiceaFileFilterList(REpiceaFileFilter.JSON),
+					JFileChooser.SAVE_DIALOG);
+			if (fileChooserOutput.isValid()) {
+				try {
+					getCaller().exportTo(fileChooserOutput.getFilename(), ExportFormat.AFFILIERE);
+					REpiceaAWTEvent.fireEvent(new REpiceaAWTEvent(this, CATAWTProperty.AffiliereExportSuccessful));
+				} catch (Exception e) {
+					CommonGuiUtility.showErrorMessage(MessageID.ErrorImportFromAffiliere.toString() + System.lineSeparator() + e.getMessage(), this);
+				}
+			}
+			
 		} else {
 			super.actionPerformed(evt);
 		} 

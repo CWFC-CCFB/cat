@@ -28,12 +28,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.filechooser.FileFilter;
 
 import lerfob.carbonbalancetool.AbstractDesigner;
-import lerfob.carbonbalancetool.CATFrame;
 import lerfob.carbonbalancetool.CATCompartmentManager;
+import lerfob.carbonbalancetool.CATFrame;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
 import lerfob.carbonbalancetool.productionlines.EndUseWoodProductCarbonUnitFeature.UseClass;
-import repicea.serial.xml.XmlSerializerChangeMonitor;
+import repicea.io.REpiceaFileFilterList;
+import repicea.serial.SerializerChangeMonitor;
 import repicea.simulation.processsystem.AmountMap;
 import repicea.simulation.processsystem.Processor;
 import repicea.util.ExtendedFileFilter;
@@ -49,19 +50,19 @@ public final class ProductionLineManager extends AbstractDesigner<ProductionLine
 	private static final long serialVersionUID = 20130127L;
 
 	static {
-		XmlSerializerChangeMonitor.registerClassNameChange("marketmodel.WoodProductMarketManager", 	"lerfob.carbonbalancetool.productionlines.ProductionLineManager");
-		XmlSerializerChangeMonitor.registerClassNameChange("marketmodel.WoodProductMarketModel", 	"lerfob.carbonbalancetool.productionlines.ProductionLine");
-		XmlSerializerChangeMonitor.registerClassNameChange("marketmodel.WoodProductProcessor",		"lerfob.carbonbalancetool.productionlines.ProductionLineProcessor");
-		XmlSerializerChangeMonitor.registerClassNameChange("marketmodel.MarketTreeStructure", 		"lerfob.carbonbalancetool.productionlines.ProductionLineStructure");
-		XmlSerializerChangeMonitor.registerClassNameChange("marketmodel.LifeCycleAnalysis", 		"lerfob.carbonbalancetool.productionlines.LifeCycleAnalysis");
-		XmlSerializerChangeMonitor.registerClassNameChange("marketmodel.LandfillCarbonUnitFeature", "lerfob.carbonbalancetool.productionlines.LandfillCarbonUnitFeature");
-		XmlSerializerChangeMonitor.registerClassNameChange("marketmodel.LandfillCarbonUnit", 		"lerfob.carbonbalancetool.productionlines.LandfillCarbonUnit");
-		XmlSerializerChangeMonitor.registerClassNameChange("marketmodel.EndUseWoodProductCarbonUnitFeature", "lerfob.carbonbalancetool.productionlines.EndUseWoodProductCarbonUnitFeature");
-		XmlSerializerChangeMonitor.registerClassNameChange("marketmodel.EndUseWoodProductCarbonUnit", "lerfob.carbonbalancetool.productionlines.EndUseWoodProductCarbonUnit");
-		XmlSerializerChangeMonitor.registerClassNameChange("marketmodel.CarbonUnitList", 			"lerfob.carbonbalancetool.productionlines.CarbonUnitList");
-		XmlSerializerChangeMonitor.registerClassNameChange("marketmodel.CarbonUnitFeature", 		"lerfob.carbonbalancetool.productionlines.CarbonUnitFeature");
-		XmlSerializerChangeMonitor.registerClassNameChange("marketmodel.CarbonUnit", 				"lerfob.carbonbalancetool.productionlines.CarbonUnit");
-		XmlSerializerChangeMonitor.registerClassNameChange("marketmodel.EndUseWoodProductCarbonUnitFeature$UseClass", "lerfob.carbonbalancetool.productionlines.EndUseWoodProductCarbonUnitFeature$UseClass");
+		SerializerChangeMonitor.registerClassNameChange("marketmodel.WoodProductMarketManager", 	"lerfob.carbonbalancetool.productionlines.ProductionLineManager");
+		SerializerChangeMonitor.registerClassNameChange("marketmodel.WoodProductMarketModel", 	"lerfob.carbonbalancetool.productionlines.ProductionLine");
+		SerializerChangeMonitor.registerClassNameChange("marketmodel.WoodProductProcessor",		"lerfob.carbonbalancetool.productionlines.ProductionLineProcessor");
+		SerializerChangeMonitor.registerClassNameChange("marketmodel.MarketTreeStructure", 		"lerfob.carbonbalancetool.productionlines.ProductionLineStructure");
+		SerializerChangeMonitor.registerClassNameChange("marketmodel.LifeCycleAnalysis", 		"lerfob.carbonbalancetool.productionlines.LifeCycleAnalysis");
+		SerializerChangeMonitor.registerClassNameChange("marketmodel.LandfillCarbonUnitFeature", "lerfob.carbonbalancetool.productionlines.LandfillCarbonUnitFeature");
+		SerializerChangeMonitor.registerClassNameChange("marketmodel.LandfillCarbonUnit", 		"lerfob.carbonbalancetool.productionlines.LandfillCarbonUnit");
+		SerializerChangeMonitor.registerClassNameChange("marketmodel.EndUseWoodProductCarbonUnitFeature", "lerfob.carbonbalancetool.productionlines.EndUseWoodProductCarbonUnitFeature");
+		SerializerChangeMonitor.registerClassNameChange("marketmodel.EndUseWoodProductCarbonUnit", "lerfob.carbonbalancetool.productionlines.EndUseWoodProductCarbonUnit");
+		SerializerChangeMonitor.registerClassNameChange("marketmodel.CarbonUnitList", 			"lerfob.carbonbalancetool.productionlines.CarbonUnitList");
+		SerializerChangeMonitor.registerClassNameChange("marketmodel.CarbonUnitFeature", 		"lerfob.carbonbalancetool.productionlines.CarbonUnitFeature");
+		SerializerChangeMonitor.registerClassNameChange("marketmodel.CarbonUnit", 				"lerfob.carbonbalancetool.productionlines.CarbonUnit");
+		SerializerChangeMonitor.registerClassNameChange("marketmodel.EndUseWoodProductCarbonUnitFeature$UseClass", "lerfob.carbonbalancetool.productionlines.EndUseWoodProductCarbonUnitFeature$UseClass");
 	}
 
 	private static class ProductionLineFileFilter extends FileFilter implements ExtendedFileFilter {
@@ -421,7 +422,9 @@ public final class ProductionLineManager extends AbstractDesigner<ProductionLine
 	@Override
 	public FileFilter getFileFilter() {return MyFileFilter;}
 
-
+	@Override
+	public REpiceaFileFilterList getFileFilters() {return new REpiceaFileFilterList(MyFileFilter);}
+ 
 	@Override
 	public boolean equals(Object obj) {
 		if (!(obj instanceof ProductionLineManager)) {

@@ -52,7 +52,7 @@ public class LandfillProcessor extends AbstractProductionLineProcessor {
 	}
 	
 	/**
-	 * Constructor.
+	 * Constructor in GUI mode.
 	 */
 	protected LandfillProcessor() {
 		super();
@@ -60,7 +60,6 @@ public class LandfillProcessor extends AbstractProductionLineProcessor {
 		woodProductFeature = new LandfillCarbonUnitFeature(this);
 		isTerminal = true;
 	}
-	
 	
 	@Override
 	public ProcessorButton getUI(Container container) {

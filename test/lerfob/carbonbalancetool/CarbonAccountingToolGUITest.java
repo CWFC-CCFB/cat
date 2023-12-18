@@ -31,17 +31,22 @@ import javax.swing.SwingUtilities;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+//import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import lerfob.carbonbalancetool.CATUtility.ProductionManagerName;
 import lerfob.carbonbalancetool.CarbonAccountingTool.CATMode;
 import lerfob.carbonbalancetool.io.CATGrowthSimulationRecordReader;
 import lerfob.carbonbalancetool.io.CATSpeciesSelectionDialog;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManagerDialog;
+import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONImportTest;
 import repicea.gui.REpiceaAWTProperty;
 import repicea.gui.REpiceaGUITestRobot;
 import repicea.gui.UIControlManager;
 import repicea.gui.UIControlManager.CommonControlID;
+import repicea.gui.UIControlManager.CommonMenuTitle;
 import repicea.gui.components.REpiceaMatchSelectorDialog;
 import repicea.gui.genericwindows.REpiceaLicenseWindow;
 import repicea.io.tools.ImportFieldManagerDialog;
@@ -49,6 +54,7 @@ import repicea.simulation.processsystem.SystemManagerDialog.MessageID;
 import repicea.util.ObjectUtility;
 import repicea.util.REpiceaLogManager;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CarbonAccountingToolGUITest {
 	
 	static CarbonAccountingTool CAT;
@@ -94,7 +100,7 @@ public class CarbonAccountingToolGUITest {
 	}
 
 	@Test
-	public void testSVGExportHappyPath() throws Exception {
+	public void test04SVGExportHappyPath() throws Exception {
 		if (System.getProperty("os.name").toLowerCase().contains("mac")) {
 			System.out.println("Test will be skipped because Mac does not support Times font.");
 			return;
@@ -115,9 +121,13 @@ public class CarbonAccountingToolGUITest {
 				} catch (InvocationTargetException | InterruptedException e) {}
 			}
 		};
-		ROBOT.startGUI(toRun, ProductionProcessorManagerDialog.class);
+		Thread t = new Thread(toRun);
+		t.start();
+		
+		ROBOT.letDispatchThreadProcess();
 		
 		ROBOT.clickThisButton(UIControlManager.CommonMenuTitle.File.name()); 
+		ROBOT.clickThisButton(MessageID.ExportMenu.name()); 
 		
 		toRun = new Runnable() {
 			public void run() {
@@ -143,7 +153,7 @@ public class CarbonAccountingToolGUITest {
 	}
 	
 	@Test
-	public void testImportAndSimulateYieldTableHappyPath() throws Exception {
+	public void test02ImportAndSimulateYieldTableHappyPath() throws Exception {
 		if (System.getProperty("os.name").toLowerCase().contains("mac")) {
 			System.out.println("Test will be skipped because Mac does not support Times font.");
 			return;
@@ -178,7 +188,7 @@ public class CarbonAccountingToolGUITest {
 	
 //	@Ignore
 	@Test
-	public void testImportAndSimulateGrowthSimulationHappyPath() throws Exception {
+	public void test03ImportAndSimulateGrowthSimulationHappyPath() throws Exception {
 		if (System.getProperty("os.name").toLowerCase().contains("mac")) {
 			System.out.println("Test will be skipped because Mac does not support Times font.");
 			return;
@@ -234,7 +244,7 @@ public class CarbonAccountingToolGUITest {
 	
 	
 	@Test
-	public void testImportAndSimulateGrowthSimulationSinglePlotHappyPath() throws Exception {
+	public void test01ImportAndSimulateGrowthSimulationSinglePlotHappyPath() throws Exception {
 		if (System.getProperty("os.name").toLowerCase().contains("mac")) {
 			System.out.println("Test will be skipped because Mac does not support Times font.");
 			return;
@@ -300,6 +310,76 @@ public class CarbonAccountingToolGUITest {
 
 	}
 
-	
+	@Test
+	public void test05AFFiliereImportHappyPath() throws Exception {
+		if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+			System.out.println("Test will be skipped because Mac does not support Times font.");
+			return;
+		}
+		JComboBox b = (JComboBox) ROBOT.findComponentWithThisName(CATFrame.MessageID.HWP_Parameters.name() + "_ComboBox");
+		Runnable toRun = new Runnable() {
+			public void run() {
+				b.getModel().setSelectedItem(CAT.getCarbonCompartmentManager().getCarbonToolSettings().productionManagerMap.get(ProductionManagerName.customized));
+			}
+		};
+		SwingUtilities.invokeLater(toRun);
+		ROBOT.letDispatchThreadProcess();
+		
+		ROBOT.clickThisButton(CATFrame.MessageID.HWP_Parameters.name());
+		ROBOT.letDispatchThreadProcess();
+		
+//		toRun = new Runnable() {
+//			public void run() {
+//				try {
+//					ROBOT.clickThisButton(CATFrame.MessageID.HWP_Parameters.name());
+//				} catch (InvocationTargetException | InterruptedException e) {}
+//			}
+//		};
+//		Thread t = new Thread(toRun);
+//		ROBOT.letDispatchThreadProcess();
+//		ROBOT.startGUI(toRun, ProductionProcessorManagerDialog.class);
+		
+		ROBOT.clickThisButton(UIControlManager.CommonMenuTitle.File.name()); 
+		ROBOT.clickThisButton(ProductionProcessorManagerDialog.MessageID.ImportFromOtherSources.name()); 
+		
+		toRun = new Runnable() {
+			public void run() {
+				try {
+					ROBOT.clickThisButton(ProductionProcessorManagerDialog.MessageID.ImportFromAFFiliere.name(), JDialog.class);
+				} catch (InvocationTargetException | InterruptedException e) {} 
+			}
+		};
+		ROBOT.startGUI(toRun, JDialog.class);
+
+		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportTest.class) + "EtudesAvecEtiquette4.json";
+		ROBOT.fillThisTextField("Filename", filename);
+		ROBOT.clickThisButton(CommonControlID.Open.name(), CATAWTProperty.AffiliereImportSuccessful);
+		
+		int nbProcesses = CAT.getCarbonToolSettings().getCurrentProductionProcessorManager().getList().size();
+		Assert.assertEquals("Comparing number of processes", 94, nbProcesses);
+
+		ROBOT.clickThisButton(CommonMenuTitle.File.name());
+
+		toRun = new Runnable() {
+			public void run() {
+				try {
+					ROBOT.clickThisButton(CommonControlID.Open.name());
+				} catch (InvocationTargetException | InterruptedException e) {} 
+			}
+		};
+		Thread t = new Thread(toRun);
+		t.start();
+		ROBOT.letDispatchThreadProcess();
+
+		filename = ObjectUtility.getPackagePath(AffiliereJSONImportTest.class) + "hardwood_recycling_en.prl";
+		ROBOT.fillThisTextField("Filename", filename);
+		ROBOT.clickThisButton(CommonControlID.Open.name());
+		ROBOT.letDispatchThreadProcess();
+		
+		ROBOT.clickThisButton(CommonMenuTitle.File.name());
+		ROBOT.clickThisButton(CommonControlID.Close.name());
+
+	}
+
 
 }

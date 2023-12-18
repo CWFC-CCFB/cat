@@ -46,7 +46,6 @@ import repicea.simulation.treelogger.TreeLogger;
 import repicea.simulation.treelogger.TreeLoggerDescription;
 import repicea.simulation.treelogger.TreeLoggerParameters;
 import repicea.simulation.treelogger.TreeLoggerWrapper;
-import repicea.util.ExtendedFileFilter;
 import repicea.util.ObjectUtility;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
@@ -262,7 +261,8 @@ public final class CATSettings {
 			} else {
 				try {
 					biomassParameters = new BiomassParameters(new DefaultREpiceaGUIPermission(false));
-					String filename = relativePathname + biomassParameterNames.name().toLowerCase() + ((ExtendedFileFilter) biomassParameters.getFileFilter()).getExtension(); 
+					String filename = relativePathname + biomassParameterNames.name().toLowerCase() + 
+							BiomassParameters.BiomassParameterFileFilter.getExtension(); 
 					biomassParameters.load(filename);
 					biomassParametersMap.put(biomassParameterNames, new BiomassParametersWrapper(biomassParameterNames, biomassParameters));
 				} catch (Exception e) {}
@@ -281,7 +281,9 @@ public final class CATSettings {
 			} else {
 				try {
 					productionProcessorManager = new ProductionProcessorManager(new DefaultREpiceaGUIPermission(false));
-					String filename = relativePathname + processorManagerName.name().toLowerCase() + "_" + REpiceaTranslator.getCurrentLanguage().getCode() + ((ExtendedFileFilter) productionProcessorManager.getFileFilter()).getExtension(); 
+					String filename = relativePathname + processorManagerName.name().toLowerCase() + 
+							"_" + REpiceaTranslator.getCurrentLanguage().getCode() + 
+							ProductionProcessorManager.ProductionProcessorManagerFileFilter.getExtension(); 
 					productionProcessorManager.load(filename);
 					productionManagerMap.put(processorManagerName, new ProductionProcessorManagerWrapper(processorManagerName, productionProcessorManager));
 				} catch (Exception e) {

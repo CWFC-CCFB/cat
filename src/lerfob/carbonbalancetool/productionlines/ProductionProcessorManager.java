@@ -21,6 +21,7 @@ package lerfob.carbonbalancetool.productionlines;
 import java.awt.Container;
 import java.awt.Window;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
@@ -45,16 +46,18 @@ import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManagerDialog.MessageID;
 import lerfob.carbonbalancetool.productionlines.WoodyDebrisProcessor.WoodyDebrisProcessorID;
-import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONReader;
-import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONWriter;
+import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONExportWriter;
+import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONImportReader;
 import lerfob.treelogger.basictreelogger.BasicTreeLogger;
 import lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLogger;
 import lerfob.treelogger.maritimepine.MaritimePineBasicTreeLogger;
 import repicea.gui.UIControlManager;
 import repicea.gui.permissions.DefaultREpiceaGUIPermission;
+import repicea.io.REpiceaFileFilter;
+import repicea.io.REpiceaFileFilterList;
 import repicea.serial.Memorizable;
 import repicea.serial.MemorizerPackage;
-import repicea.serial.xml.XmlSerializerChangeMonitor;
+import repicea.serial.SerializerChangeMonitor;
 import repicea.simulation.processsystem.AmountMap;
 import repicea.simulation.processsystem.ProcessUnit;
 import repicea.simulation.processsystem.Processor;
@@ -86,52 +89,50 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	}
 
 	static {
-		XmlSerializerChangeMonitor.registerClassNameChange(
+		SerializerChangeMonitor.registerClassNameChange(
 				"lerfob.carbonbalancetool.defaulttreelogger.CATDefaultLogCategory",
 				"repicea.treelogger.basictreelogger.BasicLogCategory");
-		XmlSerializerChangeMonitor.registerClassNameChange(
+		SerializerChangeMonitor.registerClassNameChange(
 				"lerfob.carbonbalancetool.defaulttreelogger.CATDefaultTreeLogger",
 				"repicea.treelogger.basictreelogger.BasicTreeLogger");
-		XmlSerializerChangeMonitor.registerClassNameChange(
+		SerializerChangeMonitor.registerClassNameChange(
 				"lerfob.carbonbalancetool.defaulttreelogger.CATDefaultTreeLoggerParameters",
 				"repicea.treelogger.basictreelogger.BasicTreeLoggerParameters");
-		XmlSerializerChangeMonitor.registerClassNameChange(
+		SerializerChangeMonitor.registerClassNameChange(
 				"lerfob.carbonbalancetool.defaulttreelogger.CATDefaultTreeLoggerParametersDialog",
 				"repicea.treelogger.basictreelogger.BasicTreeLoggerParametersDialog");
-		XmlSerializerChangeMonitor.registerClassNameChange("lerfob.carbonbalancetool.defaulttreelogger.CATWoodPiece",
+		SerializerChangeMonitor.registerClassNameChange("lerfob.carbonbalancetool.defaulttreelogger.CATWoodPiece",
 				"repicea.treelogger.basictreelogger.BasicTreeLoggerWoodPiece");
 
-		XmlSerializerChangeMonitor.registerClassNameChange("repicea.treelogger.basictreelogger.BasicTreeLogger",
+		SerializerChangeMonitor.registerClassNameChange("repicea.treelogger.basictreelogger.BasicTreeLogger",
 				"lerfob.treelogger.basictreelogger.BasicTreeLogger");
-		XmlSerializerChangeMonitor.registerClassNameChange(
+		SerializerChangeMonitor.registerClassNameChange(
 				"repicea.treelogger.basictreelogger.BasicTreeLoggerParameters",
 				"lerfob.treelogger.basictreelogger.BasicTreeLoggerParameters");
-		XmlSerializerChangeMonitor.registerClassNameChange("repicea.treelogger.basictreelogger.BasicLogCategory",
+		SerializerChangeMonitor.registerClassNameChange("repicea.treelogger.basictreelogger.BasicLogCategory",
 				"lerfob.treelogger.basictreelogger.BasicLogCategory");
-
-		XmlSerializerChangeMonitor.registerClassNameChange(
+		SerializerChangeMonitor.registerClassNameChange(
 				"repicea.treelogger.europeanbeech.EuropeanBeechBasicTreeLogger",
 				"lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLogger");
-		XmlSerializerChangeMonitor.registerClassNameChange(
+		SerializerChangeMonitor.registerClassNameChange(
 				"repicea.treelogger.europeanbeech.EuropeanBeechBasicTreeLoggerParameters",
 				"lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLoggerParameters");
-		XmlSerializerChangeMonitor.registerClassNameChange(
+		SerializerChangeMonitor.registerClassNameChange(
 				"repicea.treelogger.europeanbeech.EuropeanBeechBasicTreeLogCategory",
 				"lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLogCategory");
-		XmlSerializerChangeMonitor.registerClassNameChange(
+		SerializerChangeMonitor.registerClassNameChange(
 				"repicea.treelogger.europeanbeech.EuropeanBeechBasicTreeLoggerParameters$Grade",
 				"lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLoggerParameters$Grade");
-
-		XmlSerializerChangeMonitor.registerClassNameChange(
+		SerializerChangeMonitor.registerClassNameChange(
 				"repicea.treelogger.maritimepine.MaritimePineBasicTreeLogger",
 				"lerfob.treelogger.maritimepine.MaritimePineBasicTreeLogger");
-		XmlSerializerChangeMonitor.registerClassNameChange(
+		SerializerChangeMonitor.registerClassNameChange(
 				"repicea.treelogger.maritimepine.MaritimePineBasicTreeLoggerParameters",
 				"lerfob.treelogger.maritimepine.MaritimePineBasicTreeLoggerParameters");
-		XmlSerializerChangeMonitor.registerClassNameChange(
+		SerializerChangeMonitor.registerClassNameChange(
 				"repicea.treelogger.maritimepine.MaritimePineBasicTreeLogCategory",
 				"lerfob.treelogger.maritimepine.MaritimePineBasicTreeLogCategory");
-		XmlSerializerChangeMonitor.registerClassNameChange(
+		SerializerChangeMonitor.registerClassNameChange(
 				"repicea.treelogger.maritimepine.MaritimePineBasicTreeLoggerParameters$Grade",
 				"lerfob.treelogger.maritimepine.MaritimePineBasicTreeLoggerParameters$Grade");
 	}
@@ -141,7 +142,7 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	 * 
 	 * @author Mathieu Fortin - May 2014
 	 */
-	private static class ProductionLineFileFilter extends FileFilter implements ExtendedFileFilter {
+	public static class ProductionLineFileFilter extends FileFilter implements ExtendedFileFilter {
 
 		private String extension = ".prl";
 
@@ -208,53 +209,11 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 
 	}
 
-	public static class LightJSONNodeRepresentation {
-		@SuppressWarnings("unused")
-		private final String idNode;
-		@SuppressWarnings("unused")
-		private final String name;
-		@SuppressWarnings("unused")
-		private final int x;
-		@SuppressWarnings("unused")
-		private final int y;
 
-		LightJSONNodeRepresentation(String idNode, Processor p) {
-			this.idNode = idNode;
-			name = p.getName();
-			x = p.getOriginalLocation().x;
-			y = p.getOriginalLocation().y;
-		}
-	}
-
-	public static class LightJSONLinkRepresentation {
-		@SuppressWarnings("unused")
-		private final String idLink;
-		@SuppressWarnings("unused")
-		private final String idSource;
-		@SuppressWarnings("unused")
-		private final String idTarget;
-		@SuppressWarnings("unused")
-		private final String linkType;
-		private final LinkedHashMap<String, Double> value;
-
-		LightJSONLinkRepresentation(String idLink, boolean endOfLife, Processor source, Processor target,
-				Map<Processor, String> processorToIdMap) {
-			this.idLink = idLink;
-			this.linkType = endOfLife ? "EndOfLife" : "Production";
-			idSource = processorToIdMap.get(source);
-			idTarget = processorToIdMap.get(target);
-			value = new LinkedHashMap<String, Double>();
-			if (endOfLife) {
-				value.put("proportion", 1d);
-			} else {
-				value.put("proportion", source.getSubProcessorIntakes().get(target).doubleValue() * .01);
-			}
-		}
-	}
 
 	protected static List<LeftHandSideProcessor> DefaultLeftHandSideProcessors;
 
-	protected static final ProductionLineFileFilter MyFileFilter = new ProductionLineFileFilter();
+	public static final ProductionLineFileFilter ProductionProcessorManagerFileFilter = new ProductionLineFileFilter();
 
 	/**
 	 * The VERY_SMALL value serves as threshold when dealing with small quantities.
@@ -265,6 +224,14 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 
 	protected static enum EnhancedMode {
 		CreateEndOfLifeLinkLine
+	}
+	
+	public static enum ImportFormat {
+		AFFILIERE;
+	}
+
+	public static enum ExportFormat {
+		AFFILIERE;
 	}
 
 	private transient final Vector<TreeLoggerParameters<?>> availableTreeLoggerParameters;
@@ -309,55 +276,110 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		setAvailableTreeLoggers(defaultTreeLoggerDescriptions);
 	}
 
+	/**
+	 * Constructor with all permissions allowed.
+	 */
 	public ProductionProcessorManager() {
 		this(new DefaultREpiceaGUIPermission(true));
 	}
 
 	/**
-	 * Produce a JSON representation before parsing.
-	 * 
-	 * @return a Map instance that contains all the information to be converted in
-	 *         JSON format
+	 * Import a flux configuration from a particular file under a given format.
+	 * @param filename the name of the file
+	 * @param iFormat an ImportFormat enum that defines the expected format
+	 * @throws FileNotFoundException 
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public Map<?, ?> getLightJSONRepresentation() {
+	public void importFrom(String filename, ImportFormat iFormat) throws FileNotFoundException {
+		if (iFormat == null || filename == null) {
+			throw new InvalidParameterException("The filename and iFormat arguments must be non null!");
+		}
+		switch(iFormat) {
+		case AFFILIERE:
+			AffiliereJSONImportReader reader = new AffiliereJSONImportReader(new File(filename));
+			reset();
+			for (Processor p : reader.getProcessors().values()) {
+				registerObject(p);
+			}
+			break;
+		default:
+			throw new InvalidParameterException("The import format " + iFormat.name() + " is not implemented yet!");
+		}
+	}
+	
+	/**
+	 * Export a flux configuration to a particular file under a given format.
+	 * @param filename the name of the file
+	 * @param eFormat an ExportFormat enum that defines the expected format
+	 * @throws IOException if an IO error occurs
+	 */
+	public void exportTo(String filename, ExportFormat eFormat) throws IOException {
+		if (eFormat == null || filename == null) {
+			throw new InvalidParameterException("The filename and eFormat arguments must be non null!");
+		}
+		switch(eFormat) {
+		case AFFILIERE:
+			new AffiliereJSONExportWriter(getMapRepresentation(), filename);
+			break;
+		default:
+			throw new InvalidParameterException("The export format " + eFormat.name() + " is not implemented yet!");
+		}
+	}
+
+	
+	private LinkedHashMap<String, Object> getMapRepresentation() {
 		int idDispenser = 1;
-		Map<String, LightJSONNodeRepresentation> nodeMap = new LinkedHashMap<String, LightJSONNodeRepresentation>();
+		Map<String, LinkedHashMap<String, Object>> nodeMap = new LinkedHashMap<String, LinkedHashMap<String, Object>>();
 		Map<Processor, String> processorToIdMap = new HashMap<Processor, String>();
 		for (Processor p : getList()) {
 			String idNode = "node" + idDispenser++;
-			nodeMap.put(idNode, new LightJSONNodeRepresentation(idNode, p));
+			LinkedHashMap<String, Object> nodeRep = ((AbstractProcessor) p).getMapRepresentation();
+			nodeRep.put("idNode", idNode);
+			nodeMap.put(idNode, nodeRep);
 			processorToIdMap.put(p, idNode);
 		}
-		Map<String, LightJSONLinkRepresentation> linkMap = new LinkedHashMap<String, LightJSONLinkRepresentation>();
+		Map<String, Object> linkMap = new LinkedHashMap<String, Object>();
 		for (Processor source : getList()) {
 			for (Processor target : source.getSubProcessors()) {
 				String idLink = "link" + idDispenser++;
-				linkMap.put(idLink, new LightJSONLinkRepresentation(idLink, false, source, target, processorToIdMap)); // false:
-																														// a
-																														// typical
-																														// production
-																														// processor
-																														// (not
-																														// end
-																														// of
-																														// life)
+				linkMap.put(idLink, getLinkMapRepresentation(idLink, false, source, target, processorToIdMap)); // false: a typical production processor (not end of life)
 			}
 			if (source instanceof ProductionLineProcessor) {
 				if (((ProductionLineProcessor) source).disposedToProcessor != null) {
 					String idLink = "link" + idDispenser++;
-					linkMap.put(idLink, new LightJSONLinkRepresentation(idLink, true, source,
+					linkMap.put(idLink, getLinkMapRepresentation(idLink, true, source,
 							((ProductionLineProcessor) source).disposedToProcessor, processorToIdMap)); // end of life
 																										// processor
 				}
 			}
 		}
-		Map outputMap = new LinkedHashMap();
+		LinkedHashMap<String, Object> outputMap = new LinkedHashMap<String, Object>();
 		outputMap.put("nodes", nodeMap);
 		outputMap.put("links", linkMap);
 		return outputMap;
 	}
 
+	private static LinkedHashMap<String, Object> getLinkMapRepresentation(String idLink, 
+			boolean endOfLife, 
+			Processor source, 
+			Processor target,
+			Map<Processor, String> processorToIdMap) {
+		LinkedHashMap<String, Object> oMap = new LinkedHashMap<String, Object>();
+		oMap.put("idLink", idLink);
+		oMap.put("idSource", processorToIdMap.get(source));
+		oMap.put("idTarget", processorToIdMap.get(target));
+		oMap.put("linkType", endOfLife ? "EndOfLife" : "Production");
+
+		LinkedHashMap<String, Object> value = new LinkedHashMap<String, Object>();
+		oMap.put("value", value);
+		if (endOfLife) {
+			value.put("proportion", 1d);
+		} else {
+			value.put("proportion", source.getSubProcessorIntakes().get(target).doubleValue() * .01);
+		}
+		return oMap;
+	}
+
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public TreeLogger getSelectedTreeLogger() {
 		TreeLoggerParameters<?> parms = getSelectedTreeLoggerParameters();
@@ -444,8 +466,8 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	}
 
 	@Override
-	public FileFilter getFileFilter() {
-		return MyFileFilter;
+	public REpiceaFileFilterList getFileFilters() {
+		return new REpiceaFileFilterList(ProductionProcessorManagerFileFilter, REpiceaFileFilter.JSON);
 	}
 
 	@Override
@@ -478,28 +500,12 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	@Override
 	public void load(String filename) throws IOException {
 		try {
-			if (filename.endsWith(".json")) {
-				AffiliereJSONReader reader = new AffiliereJSONReader(new File(filename));
-				for (ProductionLineProcessor p : reader.getProcessors().values()) {
-					registerObject(p);
-				}
-
-			} else {
-				super.load(filename);
-			}
+			super.load(filename);
 		} catch (TreeLoggerInstanceCompatibilityException e) {
 			handleTreeLoggerChange(true);	// enable warning because the tree logger instance is not available for this simulation
 		}
 	}
 
-	@Override
-	public void save(String filename) throws IOException {
-		if (filename.endsWith(".json")) {
-			new AffiliereJSONWriter(this, filename);
-		} else {
-			super.save(filename);
-		}
-	}
 
 	private void handleTreeLoggerChange(boolean enableWarning) {
 		if (enableWarning) {

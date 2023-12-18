@@ -26,7 +26,10 @@ public class CATAWTProperty extends REpiceaAWTProperty {
 	
 	public static final CATAWTProperty StandListProperlySet = new CATAWTProperty("StandListProperlySet");
 	public static final CATAWTProperty CarbonCalculationSuccessful = new CATAWTProperty("CarbonCalculationSuccessful");
-	
+	public static final CATAWTProperty AffiliereImportSuccessful = new CATAWTProperty("AffiliereImportSuccessful");
+	public static final CATAWTProperty FluxConfigurationProperlyLoaded = new CATAWTProperty("FluxConfigurationProperlyLoaded");
+	public static final CATAWTProperty AffiliereExportSuccessful = new CATAWTProperty("AffiliereExportSuccessful");
+
 	private CATAWTProperty(String propertyName) {
 		super(propertyName);
 	}
