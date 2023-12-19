@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Vector;
 
 import lerfob.carbonbalancetool.CATCompartment.CompartmentInfo;
+import lerfob.carbonbalancetool.CATSettings.CATSpecies;
 import lerfob.carbonbalancetool.CATSimulationDifference;
 import lerfob.carbonbalancetool.CATSimulationResult;
 import lerfob.carbonbalancetool.CATTimeTable;
@@ -184,12 +185,13 @@ public class CATExportTool extends REpiceaExportTool {
 				for (UseClass useClass : UseClass.values()) {
 					if (innerMap.containsKey(useClass)) {
 						SpeciesMonteCarloEstimateMap smcem = innerMap.get(useClass);
-						for (String speciesName : getSpeciesList(smcem)) {
+						for (CATSpecies species : getSpeciesList(smcem)) {
 							MonteCarloEstimateMap carrier;
-							if (speciesName.equals(AllSpecies)) {
+							boolean isAllSpecies = species == null;
+							if (isAllSpecies) {
 								carrier = smcem.getSumAcrossSpecies();
 							} else {
-								carrier = smcem.get(speciesName);
+								carrier = smcem.get(species);
 							}
 							MonteCarloEstimate volumeEstimate = carrier.get(Element.Volume);
 							if (volumeEstimate.getMean().getValueAt(0, 0) > 0d) {
@@ -200,7 +202,7 @@ public class CATExportTool extends REpiceaExportTool {
 									r.addField(standIDField);
 									r.addField(dateIDField);
 									r.addField(new GExportFieldDetails("UseClass", useClass.name()));
-									r.addField(new GExportFieldDetails("Species", speciesName));
+									r.addField(new GExportFieldDetails("Species", isAllSpecies ? AllSpecies : species.toString()));
 									r.addField(new GExportFieldDetails("Volume_m3ha", volumeEstimate.getRealizations().get(j).getValueAt(0, 0)));
 									r.addField(new GExportFieldDetails("Biomass_kgha", biomassEstimate.getRealizations().get(j).getValueAt(0, 0) * 1000));
 									if (nbRealizations > 0) {
@@ -294,10 +296,11 @@ public class CATExportTool extends REpiceaExportTool {
 		}
 		
 		
-		private List<String> getSpeciesList(SpeciesMonteCarloEstimateMap smcem) {
-			List<String> speciesList = new ArrayList<String>(smcem.keySet());
+		private List<CATSpecies> getSpeciesList(SpeciesMonteCarloEstimateMap smcem) {
+			List<CATSpecies> speciesList = new ArrayList<CATSpecies>(smcem.keySet());
 			Collections.sort(speciesList);
-			speciesList.add(AllSpecies);
+			speciesList.add(null); // null stands for all species
+//			speciesList.add(AllSpecies);
 			return speciesList;
 		}
 		
@@ -324,13 +327,14 @@ public class CATExportTool extends REpiceaExportTool {
 					for (UseClass useClass : UseClass.values()) {
 						if (innerVolumeMap.containsKey(useClass)) {
 							smcem = innerVolumeMap.get(useClass);
-							List<String> speciesList = getSpeciesList(smcem);
+							List<CATSpecies> speciesList = getSpeciesList(smcem);
 							MonteCarloEstimateMap carrier;
-							for (String speciesName : speciesList) {
-								if (speciesName.equals(AllSpecies)) {
+							for (CATSpecies species : speciesList) {
+								boolean isAllSpecies = species == null;
+								if (isAllSpecies) {
 									carrier = smcem.getSumAcrossSpecies();
 								} else {
-									carrier = smcem.get(speciesName);
+									carrier = smcem.get(species);
 								}
 								MonteCarloEstimate volumeEstimate = carrier.get(Element.Volume);
 								if (volumeEstimate.getMean().getValueAt(0, 0) > 0d) {
@@ -341,7 +345,7 @@ public class CATExportTool extends REpiceaExportTool {
 										r.addField(standIDField);
 										r.addField(new GExportFieldDetails("Type", type.name()));
 										r.addField(new GExportFieldDetails("Class", useClass.toString()));
-										r.addField(new GExportFieldDetails("Species", speciesName));
+										r.addField(new GExportFieldDetails("Species", isAllSpecies ? AllSpecies : species.toString()));
 										r.addField(new GExportFieldDetails("Volume_m3ha", volumeEstimate.getRealizations().get(j).getValueAt(0, 0)));
 										r.addField(new GExportFieldDetails("Biomass_Mgha", biomassEstimate.getRealizations().get(j).getValueAt(0, 0)));
 										for (Element nutrient : Element.getNutrients()) {
@@ -387,12 +391,13 @@ public class CATExportTool extends REpiceaExportTool {
 					for (UseClass useClass : UseClass.values()) {
 						if (innerVolumeMap.containsKey(useClass)) {
 							SpeciesMonteCarloEstimateMap smcem = innerVolumeMap.get(useClass);
-							for (String speciesName : getSpeciesList(smcem)) {
+							for (CATSpecies species : getSpeciesList(smcem)) {
 								MonteCarloEstimateMap carrier;
-								if (speciesName.equals(AllSpecies)) {
+								boolean isAllSpecies = species == null;
+								if (isAllSpecies) {
 									carrier = smcem.getSumAcrossSpecies();
 								} else {
-									carrier = smcem.get(speciesName);
+									carrier = smcem.get(species);
 								}
 								MonteCarloEstimate volumeEstimate = carrier.get(Element.Volume);
 								if (volumeEstimate.getMean().getValueAt(0, 0) > 0d) {
@@ -403,7 +408,7 @@ public class CATExportTool extends REpiceaExportTool {
 										r.addField(standIDField);
 										r.addField(new GExportFieldDetails("Type", type.name()));
 										r.addField(new GExportFieldDetails("Class", useClass.toString()));
-										r.addField(new GExportFieldDetails("Species", speciesName));
+										r.addField(new GExportFieldDetails("Species", isAllSpecies ? AllSpecies : species.toString()));
 										r.addField(new GExportFieldDetails("Volume_m3hayr", volumeEstimate.getRealizations().get(j).getValueAt(0, 0) * annualFactor));
 										r.addField(new GExportFieldDetails("Biomass_kghayr", biomassEstimate.getRealizations().get(j).getValueAt(0, 0) * 1000 * annualFactor));
 										for (Element nutrient : Element.getNutrients()) {
@@ -443,13 +448,14 @@ public class CATExportTool extends REpiceaExportTool {
 			
 			for (String logName : logNames) {
 				SpeciesMonteCarloEstimateMap smcem = caller.summary.getLogGradePerHa().get(logName);
-				List<String> speciesList = getSpeciesList(smcem);
-				for (String speciesName : speciesList) {
+				List<CATSpecies> speciesList = getSpeciesList(smcem);
+				for (CATSpecies species : speciesList) {
 					MonteCarloEstimateMap carrier;
-					if (speciesName.equals(AllSpecies)) {
+					boolean isAllSpecies = species == null;
+					if (isAllSpecies) {
 						carrier = smcem.getSumAcrossSpecies();
 					} else {
-						carrier = smcem.get(speciesName);
+						carrier = smcem.get(species);
 					}
 					MonteCarloEstimate volumeEstimate = carrier.get(Element.Volume);
 					if (volumeEstimate.getMean().getValueAt(0, 0) > 0d) {
@@ -459,7 +465,7 @@ public class CATExportTool extends REpiceaExportTool {
 							r = new GExportRecord();
 							r.addField(standIDField);
 							r.addField(new GExportFieldDetails("LogCategory", logName));
-							r.addField(new GExportFieldDetails("Species", speciesName));
+							r.addField(new GExportFieldDetails("Species", isAllSpecies ? AllSpecies : species.toString()));
 							r.addField(new GExportFieldDetails("Volume_m3ha", volumeEstimate.getRealizations().get(j).getValueAt(0, 0)));
 							r.addField(new GExportFieldDetails("Biomass_kgha", biomassEstimate.getRealizations().get(j).getValueAt(0, 0) * 1000));
 							if (nbRealizations > 0) {

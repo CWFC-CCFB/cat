@@ -1,7 +1,8 @@
 /*
- * This file is part of the lerfob-forestools library.
+ * This file is part of the CAT library.
  *
- * Copyright (C) 2020 Mathieu Fortin for Canadian Forest Service
+ * Copyright (C) 2023 His Majesty the King in Right of Canada
+ * Author: Mathieu Fortin for Canadian Forest Service
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,23 +19,25 @@
  */
 package lerfob.carbonbalancetool.productionlines;
 
-import java.awt.Container;
 import java.util.ArrayList;
 import java.util.List;
 
-import lerfob.carbonbalancetool.productionlines.CarbonUnit.BiomassType;
+import lerfob.carbonbalancetool.CATSettings.CATSpecies;
+import repicea.simulation.covariateproviders.treelevel.SpeciesTypeProvider.SpeciesType;
 import repicea.simulation.processsystem.ProcessUnit;
-import repicea.simulation.processsystem.ProcessorButton;
-import repicea.simulation.processsystem.SystemPanel;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
 
+/**
+ * A special processor for extracting wood pieces from broadleaved species.
+ * @author Mathieu Fortin - December 2023
+ */
 @SuppressWarnings("serial")
-public class DebarkingProcessor extends AbstractExtractionProcessor {
+public class BroadleavedExtractionProcessor extends AbstractExtractionProcessor {
 
 	private enum MessageID implements TextableEnum {
 
-		Debarking("Debarking", "Ecor\u00E7age");
+		ExtractBroadleaved("Extract broadleaved species", "Extraire les esp\u00E8ces de feuillus");
 
 		MessageID(String englishText, String frenchText) {
 			setText(englishText, frenchText);
@@ -51,19 +54,10 @@ public class DebarkingProcessor extends AbstractExtractionProcessor {
 	
 	
 	
-	protected DebarkingProcessor() {
+	protected BroadleavedExtractionProcessor() {
 		super();
-		setName(MessageID.Debarking.toString());		// default name
+		setName(MessageID.ExtractBroadleaved.toString());		// default name
 	}
-
-	@Override
-	public ProcessorButton getUI(Container container) {
-		if (guiInterface == null) {
-			guiInterface = new ExtractionProcessorButton((SystemPanel) container, this);
-		}
-		return guiInterface;
-	}
-
 
 	@SuppressWarnings("rawtypes")
 	@Override
@@ -72,23 +66,15 @@ public class DebarkingProcessor extends AbstractExtractionProcessor {
 		List<ProcessUnit> copyList = new ArrayList<ProcessUnit>();
 		copyList.addAll(processUnits);
 		for (ProcessUnit p : copyList) {
-			if (p instanceof BiomassTypeProvider) {
-				if (((BiomassTypeProvider) p).getBiomassType() == BiomassType.Bark) {
-					try {
-						extractedUnits.add(p);
-						processUnits.remove(p);
-					} catch (Exception e) {
-						e.printStackTrace();
-//						int u = 0;
-					}
+			if (p instanceof CarbonUnit) {
+				CATSpecies species = ((CarbonUnit) p).getSpecies();
+				if (species.getSpeciesType() == SpeciesType.BroadleavedSpecies) {
+					extractedUnits.add(p);
+					processUnits.remove(p);
 				}
 			}
 		}
 		return extractedUnits;
 	}
-
-
-
-
 
 }

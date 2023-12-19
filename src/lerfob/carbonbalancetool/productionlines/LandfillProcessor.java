@@ -88,7 +88,7 @@ public class LandfillProcessor extends AbstractProductionLineProcessor {
 				carbonUnit.samplingUnitID, 
 				lfcuf, 
 				landFillMapTmp, 
-				carbonUnit.getSpeciesName(), 
+				carbonUnit.getSpecies(), 
 				carbonUnit.getBiomassType(),
 				CarbonUnitStatus.LandFillDegradable);
 		outputUnits.add(woodProduct);
@@ -98,7 +98,7 @@ public class LandfillProcessor extends AbstractProductionLineProcessor {
 				carbonUnit.samplingUnitID, 
 				lfcuf, 
 				landFillMapTmp, 
-				carbonUnit.getSpeciesName(),
+				carbonUnit.getSpecies(),
 				carbonUnit.getBiomassType(),
 				CarbonUnitStatus.LandFillNonDegradable); 
 		outputUnits.add(woodProduct);

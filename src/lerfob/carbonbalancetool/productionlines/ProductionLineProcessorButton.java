@@ -1,7 +1,9 @@
 /*
  * This file is part of the lerfob-forestools library.
  *
- * Copyright (C) 2010-2014 Mathieu Fortin for LERFOB AgroParisTech/INRA, 
+ * Copyright (C) 2010-2014 Mathieu Fortin for LERFOB AgroParisTech/INRA 
+ * Copyright (C) 2020-2023 His Majesty the King in Right of Canada
+ * Author: Mathieu Fortin, Canadian Forest Service
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,6 +28,7 @@ import java.awt.dnd.DragGestureRecognizer;
 import java.awt.dnd.DragSource;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.security.InvalidParameterException;
 
 import javax.swing.JMenuItem;
 
@@ -65,15 +68,20 @@ public class ProductionLineProcessorButton extends AbstractProcessorButton imple
 		ExtractionPopupMenu() {
 			super(ProductionLineProcessorButton.this, 
 					ProductionLineProcessorButton.this.addDebarkerItem,
-					ProductionLineProcessorButton.this.removeDebarkerItem);
+					ProductionLineProcessorButton.this.removeDebarkerItem,
+					ProductionLineProcessorButton.this.addBroadleavedSortingItem,
+					ProductionLineProcessorButton.this.removeBroadleavedSortingItem);
 		}
 
 		@Override
 		public void refreshInterface() {
 			ProductionLineProcessor owner = (ProductionLineProcessor) ProductionLineProcessorButton.this.getOwner();
-			ProductionLineProcessorButton.this.addDebarkerItem.setEnabled(!owner.containsExtractionProcessorOfThisKind(DebarkingProcessor.class));
-			ProductionLineProcessorButton.this.removeDebarkerItem.setEnabled(owner.containsExtractionProcessorOfThisKind(DebarkingProcessor.class));
+			ProductionLineProcessorButton.this.addDebarkerItem.setEnabled(owner.getExtractionProcessor() == null);
+			ProductionLineProcessorButton.this.removeDebarkerItem.setEnabled(owner.getExtractionProcessor() instanceof BarkExtractionProcessor);
+			ProductionLineProcessorButton.this.addBroadleavedSortingItem.setEnabled(owner.getExtractionProcessor() == null);
+			ProductionLineProcessorButton.this.removeBroadleavedSortingItem.setEnabled(owner.getExtractionProcessor() instanceof BroadleavedExtractionProcessor);
 		}
+			
 		
 		@Override
 		public void setVisible(boolean bool) {
@@ -87,7 +95,9 @@ public class ProductionLineProcessorButton extends AbstractProcessorButton imple
 	
 	static enum MessageID implements TextableEnum {
 		AddDebarkerMessage("Add debarking", "Ajouter \u00E9cor\u00E7age"),
-		RemoveDebarkerMessage("Remove debarking", "Enlever \u00E9cor\u00E7age");
+		RemoveDebarkerMessage("Remove debarking", "Eliminer \u00E9cor\u00E7age"),
+		AddBroadleavedSortingMessage("Add broadleaved sorting", "Ajouter tri des feuillus"),
+		RemoveBroadleavedSortingMessage("Remove broadleaved sorting", "Eliminer tri des feuillus");
 
 		MessageID(String englishText, String frenchText) {
 			setText(englishText, frenchText);
@@ -110,6 +120,9 @@ public class ProductionLineProcessorButton extends AbstractProcessorButton imple
 	
 	final JMenuItem addDebarkerItem;
 	final JMenuItem removeDebarkerItem;
+	final JMenuItem addBroadleavedSortingItem;
+	final JMenuItem removeBroadleavedSortingItem;
+	
 	
 	
 	/**
@@ -124,6 +137,8 @@ public class ProductionLineProcessorButton extends AbstractProcessorButton imple
 		createEndOfLifeLinkRecognizer.setComponent(null);
 		addDebarkerItem = new JMenuItem(MessageID.AddDebarkerMessage.toString());
 		removeDebarkerItem = new JMenuItem(MessageID.RemoveDebarkerMessage.toString());
+		addBroadleavedSortingItem = new JMenuItem(MessageID.AddBroadleavedSortingMessage.toString());
+		removeBroadleavedSortingItem = new JMenuItem(MessageID.RemoveBroadleavedSortingMessage.toString());
 		setExtractionPopupMenu();
 	}
 	
@@ -166,24 +181,61 @@ public class ProductionLineProcessorButton extends AbstractProcessorButton imple
 		super.paint(g);
 	}
 
+	private enum ExtractionType {
+		Debarking(BarkExtractionProcessor.class), 
+		BroadleavedSorting(BroadleavedExtractionProcessor.class);
+		
+		final Class<? extends AbstractExtractionProcessor> clazz;
+		
+		ExtractionType(Class<? extends AbstractExtractionProcessor> clazz) {
+			this.clazz = clazz;
+		}
+	}
+		
+	private void addExtractionProcessor(ExtractionType type) {
+		ProductionLineProcessor parentProcessor = (ProductionLineProcessor) getOwner();
+		Point upperStreamProcessorLocation = parentProcessor.getLocation();
+		Point newLocation = new Point(upperStreamProcessorLocation.x + 50, upperStreamProcessorLocation.y - 50);
+		AbstractExtractionProcessor extProc = createExtractionProcessor(type);
+		LocatedEvent evt = new LocatedEvent(this, newLocation);
+		ExtendedSystemPanel panel = (ExtendedSystemPanel) CommonGuiUtility.getParentComponent(this, SystemPanel.class);
+		panel.addLinkLine(new ExtractionLinkLine(panel, parentProcessor, extProc));
+		panel.acceptThisObject(extProc, evt);
+	}
 
-	@Override
-	public void actionPerformed(ActionEvent arg0) {
-		if (arg0.getSource().equals(addDebarkerItem)) {
-			ProductionLineProcessor parentProcessor = (ProductionLineProcessor) getOwner();
-			Point upperStreamProcessorLocation = parentProcessor.getLocation();
-			Point newLocation = new Point(upperStreamProcessorLocation.x + 50, upperStreamProcessorLocation.y - 50);
-			DebarkingProcessor debarkingProcessor = new DebarkingProcessor();
-			LocatedEvent evt = new LocatedEvent(this, newLocation);
-			ExtendedSystemPanel panel = (ExtendedSystemPanel) CommonGuiUtility.getParentComponent(this, SystemPanel.class);
-			panel.addLinkLine(new ExtractionLinkLine(panel, parentProcessor, debarkingProcessor));
-			panel.acceptThisObject(debarkingProcessor, evt);
-		} else if (arg0.getSource().equals(removeDebarkerItem)) {
-			ProductionLineProcessor parentProcessor = (ProductionLineProcessor) getOwner();
-			AbstractExtractionProcessor forkProcessor = parentProcessor.getExtractionProcessorOfThisKind(DebarkingProcessor.class) ;
+	private AbstractExtractionProcessor createExtractionProcessor(ExtractionType type) {
+		switch(type) {
+		case Debarking:
+			return new BarkExtractionProcessor();
+		case BroadleavedSorting:
+			return new BroadleavedExtractionProcessor();
+		default:
+			throw new InvalidParameterException("Extraction type " + type.name() + " has not been implemented yet!" );
+		}
+	}
+
+	private void removeExtractionProcessor(ExtractionType type) {
+		ProductionLineProcessor parentProcessor = (ProductionLineProcessor) getOwner();
+		if (parentProcessor.getExtractionProcessor() != null && 
+				type.clazz.isAssignableFrom(parentProcessor.getExtractionProcessor().getClass())) {
+			AbstractExtractionProcessor forkProcessor = parentProcessor.getExtractionProcessor();
 			ExtendedSystemPanel panel = (ExtendedSystemPanel) CommonGuiUtility.getParentComponent(this, SystemPanel.class);
 			panel.deleteFeature(forkProcessor.getUI());
 		}
+
+	}
+	
+	@Override
+	public void actionPerformed(ActionEvent arg0) {
+		if (arg0.getSource().equals(addDebarkerItem)) {
+			addExtractionProcessor(ExtractionType.Debarking);
+		} else if (arg0.getSource().equals(removeDebarkerItem)) {
+			removeExtractionProcessor(ExtractionType.Debarking);
+		} else if (arg0.getSource().equals(this.addBroadleavedSortingItem)) {
+			addExtractionProcessor(ExtractionType.BroadleavedSorting);
+		} else if (arg0.getSource().equals(removeBroadleavedSortingItem)) {
+			removeExtractionProcessor(ExtractionType.BroadleavedSorting);
+		} 
 	}
 
 	

@@ -9,6 +9,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import lerfob.carbonbalancetool.CATBasicWoodDensityProvider.AverageBasicDensity;
+import lerfob.carbonbalancetool.CATSettings.CATSpecies;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.BiomassType;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
@@ -85,7 +86,7 @@ public class PythonAccessMaritimePineTest {
 		MaritimePineBasicTreeLoggerParameters loggerParams = (MaritimePineBasicTreeLoggerParameters) treeLogger.getTreeLoggerParameters();
 		for (DiameterBasedTreeLogCategory logCategory : loggerParams.getLogCategoryList()) {
 			manager.resetCarbonUnitMap();
-			manager.processWoodPiece(logCategory, 0, "", amountMaps, "Unknown");
+			manager.processWoodPiece(logCategory, 0, "", amountMaps, CATSpecies.PINUS_PINASTER);
 			double volume = 0;
 			for (CarbonUnitStatus type : CarbonUnitStatus.values()) {
 				CarbonUnitList list = manager.getCarbonUnits(type);

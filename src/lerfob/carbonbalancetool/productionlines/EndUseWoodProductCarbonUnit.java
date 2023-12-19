@@ -24,6 +24,7 @@ import java.util.List;
 
 import lerfob.carbonbalancetool.CATCompartmentManager;
 import lerfob.carbonbalancetool.CATSettings;
+import lerfob.carbonbalancetool.CATSettings.CATSpecies;
 import lerfob.carbonbalancetool.productionlines.EndUseWoodProductCarbonUnitFeature.UseClass;
 import repicea.simulation.processsystem.AmountMap;
 import repicea.simulation.processsystem.ProcessUnit;
@@ -54,8 +55,8 @@ public class EndUseWoodProductCarbonUnit extends CarbonUnit {
 			int dateIndex,
 			EndUseWoodProductCarbonUnitFeature carbonUnitFeature,
 			AmountMap<Element> amountMap,
-			String speciesName) {
-		super(dateIndex, "", carbonUnitFeature, amountMap, speciesName, BiomassType.Wood);
+			CATSpecies species) {
+		super(dateIndex, "", carbonUnitFeature, amountMap, species, BiomassType.Wood);
 		this.rawRoundWoodVolume = initialVolumeBeforeFirstTransformation;
 	}
 	
@@ -72,9 +73,9 @@ public class EndUseWoodProductCarbonUnit extends CarbonUnit {
 			String sampleUnitID,
 			EndUseWoodProductCarbonUnitFeature carbonUnitFeature,
 			AmountMap<Element> amountMap,
-			String speciesName,
+			CATSpecies species,
 			BiomassType biomassType) {
-		super(dateIndex, sampleUnitID, carbonUnitFeature, amountMap, speciesName, biomassType);
+		super(dateIndex, sampleUnitID, carbonUnitFeature, amountMap, species, biomassType);
 		addStatus(CarbonUnitStatus.EndUseWoodProduct);
 		AbstractProcessor.updateProcessEmissions(getAmountMap(), carbonUnitFeature.getBiomassOfFunctionalUnitMg(), carbonUnitFeature.getEmissionsMgCO2ByFunctionalUnit());
 	}
@@ -122,7 +123,7 @@ public class EndUseWoodProductCarbonUnit extends CarbonUnit {
 				AbstractProductionLineProcessor disposedToProcessor = (AbstractProductionLineProcessor) ((ProductionLineProcessor) getCarbonUnitFeature().getProcessor()).disposedToProcessor;
 				if (updatedMap.get(Element.Volume) > 0) {
 					if (disposedToProcessor != null) { // new implementation
-						CarbonUnit newUnit = new CarbonUnit(i, samplingUnitID, null, updatedMap, getSpeciesName(), getBiomassType());
+						CarbonUnit newUnit = new CarbonUnit(i, samplingUnitID, null, updatedMap, getSpecies(), getBiomassType());
 						newUnit.getAmountMap().put(Element.EmissionsCO2Eq, 0d);		// reset the emissions to 0 after useful lifetime - otherwise there is a double count
 						List<ProcessUnit> disposedUnits = disposedToProcessor.createProcessUnitsFromThisProcessor(newUnit, 100);
 						Collection<CarbonUnit> processedUnits = (Collection) disposedToProcessor.doProcess(disposedUnits);
@@ -133,7 +134,7 @@ public class EndUseWoodProductCarbonUnit extends CarbonUnit {
 						}
 						compartmentManager.getCarbonToolSettings().getCurrentProductionProcessorManager().getCarbonUnitMap().add(processedUnits);
 					} else {	// former implementation
-						((ProductionLineProcessor) getCarbonUnitFeature().getProcessor()).getProductionLine().getManager().sendToTheLandfill(i, updatedMap);	
+						((ProductionLineProcessor) getCarbonUnitFeature().getProcessor()).getProductionLine().getManager().sendToTheLandfill(i, getSpecies(), updatedMap);	
 					}
 				}
 			}

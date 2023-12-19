@@ -32,6 +32,7 @@ import repicea.simulation.processsystem.ValidProcessorLinkLine;
  * in a different manner than the wood.
  * @author Mathieu Fortin - September 2020
  */
+@SuppressWarnings("serial")
 public class ExtractionLinkLine extends ValidProcessorLinkLine {
 
 	protected static final Stroke ExtractionLinkLineStrokeDefault = new BasicStroke(2, 
@@ -47,7 +48,7 @@ public class ExtractionLinkLine extends ValidProcessorLinkLine {
 		super(panel, fatherProcessor.getUI(panel), sonProcessor.getUI(panel));
 		setAnchorPositions(AnchorPosition.TOP, AnchorPosition.LEFT);
 
-		((ProductionLineProcessor) fatherProcessor).addExtractionProcessor(sonProcessor);
+		((ProductionLineProcessor) fatherProcessor).setExtractionProcessor(sonProcessor);
 		sonProcessor.getUI(panel).addComponentListener(this);
 		setBackground(Color.LIGHT_GRAY);
 		setBorderPainted(false);
@@ -60,7 +61,8 @@ public class ExtractionLinkLine extends ValidProcessorLinkLine {
 	protected void finalize() {
 		super.finalize();
 		ProductionLineProcessor fatherProcessor =  (ProductionLineProcessor) getFatherAnchor().getOwner();
-		fatherProcessor.removeExtractionProcessor((AbstractExtractionProcessor) getSonAnchor().getOwner());
+//		fatherProcessor.removeExtractionProcessor((AbstractExtractionProcessor) getSonAnchor().getOwner());
+		fatherProcessor.setExtractionProcessor(null);
 	}
 
 	@Override

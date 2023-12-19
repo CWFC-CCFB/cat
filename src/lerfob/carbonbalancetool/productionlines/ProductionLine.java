@@ -21,6 +21,7 @@ package lerfob.carbonbalancetool.productionlines;
 import java.io.Serializable;
 import java.util.Vector;
 
+import lerfob.carbonbalancetool.CATSettings.CATSpecies;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
 import repicea.simulation.processsystem.AmountMap;
@@ -91,8 +92,8 @@ public class ProductionLine implements 	Serializable {
 //	}
 
 	@Deprecated
-	protected CarbonUnitMap<CarbonUnitStatus> createCarbonUnitFromAWoodPiece(int dateIndex, AmountMap<Element> amountMap) throws Exception {
-		return primaryProcessor.processWoodPiece(dateIndex, amountMap);
+	protected CarbonUnitMap<CarbonUnitStatus> createCarbonUnitFromAWoodPiece(int dateIndex, CATSpecies species, AmountMap<Element> amountMap) throws Exception {
+		return primaryProcessor.processWoodPiece(dateIndex, species, amountMap);
 	}
 	
 	@Override
