@@ -11,6 +11,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import lerfob.carbonbalancetool.CATSettings.CATSpecies;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.BiomassType;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
@@ -149,7 +150,7 @@ public class PythonAccessDouglasFirTest {
 		DouglasFCBATreeLoggerParameters loggerParams = (DouglasFCBATreeLoggerParameters) treeLogger.getTreeLoggerParameters();
 		for (DouglasFCBALogCategory logCategory : loggerParams.getLogCategoryList()) {
 			manager.resetCarbonUnitMap();
-			manager.processWoodPiece(logCategory, 0, "", amountMaps, "Unknown");
+			manager.processWoodPiece(logCategory, 0, "", amountMaps, CATSpecies.PSEUDOTSUGA_MENZIESII);
 			double volume = 0;
 			for (CarbonUnitStatus type : CarbonUnitStatus.values()) {
 				CarbonUnitList list = manager.getCarbonUnits(type);

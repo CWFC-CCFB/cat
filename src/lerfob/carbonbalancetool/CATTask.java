@@ -326,7 +326,7 @@ public class CATTask extends AbstractGenericTask {
 										currentDateIndex - i, 
 										samplingUnitID, 
 										amountMaps, 
-										woodPiece.getTreeFromWhichComesThisPiece().getSpeciesName());
+										((CATCompatibleTree) woodPiece.getTreeFromWhichComesThisPiece()).getCATSpecies());
 
 							}
 						} else {
@@ -334,7 +334,7 @@ public class CATTask extends AbstractGenericTask {
 									currentDateIndex, 
 									samplingUnitID, 
 									amountMaps, 
-									woodPiece.getTreeFromWhichComesThisPiece().getSpeciesName());
+									((CATCompatibleTree) woodPiece.getTreeFromWhichComesThisPiece()).getCATSpecies());
 						}
 
 					}
@@ -441,10 +441,10 @@ public class CATTask extends AbstractGenericTask {
 
 			if (shouldBeBrokenDownAnnually(applicationScale, nbYearsToPreviousMeasurement)) {
 				for (int i = 0; i < nbYearsToPreviousMeasurement; i++) {
-					getProcessorManager().processWoodyDebris(dateIndex - i, samplingUnitID, amountMaps, tree.getSpeciesName(), type);
+					getProcessorManager().processWoodyDebris(dateIndex - i, samplingUnitID, amountMaps, tree.getCATSpecies(), type);
 				}
 			} else {
-				getProcessorManager().processWoodyDebris(dateIndex, samplingUnitID, amountMaps, tree.getSpeciesName(), type);
+				getProcessorManager().processWoodyDebris(dateIndex, samplingUnitID, amountMaps, tree.getCATSpecies(), type);
 			}
 		}
 	}

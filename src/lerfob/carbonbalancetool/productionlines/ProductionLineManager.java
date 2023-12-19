@@ -30,6 +30,7 @@ import javax.swing.filechooser.FileFilter;
 import lerfob.carbonbalancetool.AbstractDesigner;
 import lerfob.carbonbalancetool.CATCompartmentManager;
 import lerfob.carbonbalancetool.CATFrame;
+import lerfob.carbonbalancetool.CATSettings.CATSpecies;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
 import lerfob.carbonbalancetool.productionlines.EndUseWoodProductCarbonUnitFeature.UseClass;
@@ -240,8 +241,8 @@ public final class ProductionLineManager extends AbstractDesigner<ProductionLine
 	 * @param amountMap a Map which contains the amounts of the different elements
 	 * @throws Exception
 	 */
-	public void processWoodPiece(String marketName,	int creationDate, AmountMap<Element> amountMap) throws Exception {
-		CarbonUnitMap<CarbonUnitStatus> carbonUnits = processWoodPieceIntoThisProductionLine(marketName, creationDate, amountMap);
+	public void processWoodPiece(String marketName,	int creationDate, CATSpecies species, AmountMap<Element> amountMap) throws Exception {
+		CarbonUnitMap<CarbonUnitStatus> carbonUnits = processWoodPieceIntoThisProductionLine(marketName, creationDate, species, amountMap);
 		getCarbonUnitMap().add(carbonUnits);
 	}
 	
@@ -254,7 +255,7 @@ public final class ProductionLineManager extends AbstractDesigner<ProductionLine
 	 * @return a CarbonUnitMap instance
 	 * @throws Exception
 	 */
-	protected CarbonUnitMap<CarbonUnitStatus> processWoodPieceIntoThisProductionLine(String productionLineName, int dateIndex, AmountMap<Element> amountMap) throws Exception {
+	protected CarbonUnitMap<CarbonUnitStatus> processWoodPieceIntoThisProductionLine(String productionLineName, int dateIndex, CATSpecies species, AmountMap<Element> amountMap) throws Exception {
 		CarbonUnitMap<CarbonUnitStatus> carbonUnits = new CarbonUnitMap<CarbonUnitStatus>(CarbonUnitStatus.EndUseWoodProduct);
 		try {
 			int index = getProductionLineNames().indexOf(productionLineName);
@@ -263,11 +264,11 @@ public final class ProductionLineManager extends AbstractDesigner<ProductionLine
 			} else {
 				ProductionLine model = getContent().get(index);
 				if (model.isLandfillSite()) {
-					sendToTheLandfill(dateIndex, amountMap);
+					sendToTheLandfill(dateIndex, species, amountMap);
 				} else if (model.isLeftInForestModel()) {
-					leftThisPieceInTheForest(dateIndex, amountMap);
+					leftThisPieceInTheForest(dateIndex, species, amountMap);
 				} else {
-					carbonUnits.add(model.createCarbonUnitFromAWoodPiece(dateIndex, amountMap));
+					carbonUnits.add(model.createCarbonUnitFromAWoodPiece(dateIndex, species, amountMap));
 				}
 				return carbonUnits;
 			}
@@ -282,8 +283,8 @@ public final class ProductionLineManager extends AbstractDesigner<ProductionLine
 	 * @param amountMap a Map which contains the amounts of the different elements
 	 * @throws Exception
 	 */
-	protected void sendToTheLandfill(int dateIndex, AmountMap<Element> amountMap) throws Exception {
-		CarbonUnitMap<CarbonUnitStatus> carbonUnits = landfillModel.createCarbonUnitFromAWoodPiece(dateIndex, amountMap);
+	protected void sendToTheLandfill(int dateIndex, CATSpecies species, AmountMap<Element> amountMap) throws Exception {
+		CarbonUnitMap<CarbonUnitStatus> carbonUnits = landfillModel.createCarbonUnitFromAWoodPiece(dateIndex, species, amountMap);
 
 		for (CarbonUnitStatus type : carbonUnits.keySet()) {
 			if (type != CarbonUnitStatus.EndUseWoodProduct && type != CarbonUnitStatus.IndustrialLosses) {
@@ -302,8 +303,8 @@ public final class ProductionLineManager extends AbstractDesigner<ProductionLine
 	 * @param amountMap a Map which contains the amounts of the different elements
 	 * @throws Exception
 	 */
-	public void leftThisPieceInTheForest(int dateIndex, AmountMap<Element> amountMap) throws Exception {
-		leftInTheForestModel.createCarbonUnitFromAWoodPiece(dateIndex, amountMap);
+	public void leftThisPieceInTheForest(int dateIndex, CATSpecies species, AmountMap<Element> amountMap) throws Exception {
+		leftInTheForestModel.createCarbonUnitFromAWoodPiece(dateIndex, species, amountMap);
 	}
 	
 	@Override

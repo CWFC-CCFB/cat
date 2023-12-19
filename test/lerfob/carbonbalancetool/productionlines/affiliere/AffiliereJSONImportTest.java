@@ -65,7 +65,7 @@ public class AffiliereJSONImportTest {
 	public static void main(String[] args) throws IOException {
 		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportTest.class) + "EtudesAvecEtiquette4.json";
 		ProductionProcessorManager manager = new ProductionProcessorManager();
-		manager.load(filename);
+		manager.importFrom(filename, ImportFormat.AFFILIERE);
 		manager.showUI(null);
 		
 	}

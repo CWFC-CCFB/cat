@@ -39,6 +39,7 @@ import javax.swing.filechooser.FileFilter;
 import lerfob.carbonbalancetool.CATCompartmentManager;
 import lerfob.carbonbalancetool.CATDecayFunction;
 import lerfob.carbonbalancetool.CATExponentialFunction;
+import lerfob.carbonbalancetool.CATSettings.CATSpecies;
 import lerfob.carbonbalancetool.CarbonAccountingTool;
 import lerfob.carbonbalancetool.catdiameterbasedtreelogger.CATDiameterBasedTreeLogger;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.BiomassType;
@@ -89,6 +90,9 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	}
 
 	static {
+		SerializerChangeMonitor.registerClassNameChange(
+				"lerfob.carbonbalancetool.productionlines.DebarkingProcessor",
+				"lerfob.carbonbalancetool.productionlines.BarkExtractionProcessor");
 		SerializerChangeMonitor.registerClassNameChange(
 				"lerfob.carbonbalancetool.defaulttreelogger.CATDefaultLogCategory",
 				"repicea.treelogger.basictreelogger.BasicLogCategory");
@@ -615,9 +619,9 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	 * @param amountMap   a Map which contains the amounts of the different elements
 	 */
 	public void processWoodPiece(LogCategory logCategory, int dateIndex, String samplingUnitID,
-			Map<BiomassType, AmountMap<Element>> amountMaps, String speciesName) {
+			Map<BiomassType, AmountMap<Element>> amountMaps, CATSpecies species) {
 		Processor processor = findLeftHandSideProcessor(logCategory);
-		processAmountMap(processor, dateIndex, samplingUnitID, amountMaps, speciesName);
+		processAmountMap(processor, dateIndex, samplingUnitID, amountMaps, species);
 	}
 
 	/**
@@ -628,18 +632,18 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	 * @param type      a WoodyDebrisProcessorID enum variable
 	 */
 	public void processWoodyDebris(int dateIndex, String samplingUnitID,
-			Map<BiomassType, AmountMap<Element>> amountMaps, String speciesName, WoodyDebrisProcessorID type) {
+			Map<BiomassType, AmountMap<Element>> amountMaps, CATSpecies species, WoodyDebrisProcessorID type) {
 		Processor processor = findWoodyDebrisProcessor(type);
-		processAmountMap(processor, dateIndex, samplingUnitID, amountMaps, speciesName);
+		processAmountMap(processor, dateIndex, samplingUnitID, amountMaps, species);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private Collection<CarbonUnit> processAmountMap(Processor processor, int dateIndex, String samplingUnitID,
-			Map<BiomassType, AmountMap<Element>> amountMaps, String speciesName) {
+			Map<BiomassType, AmountMap<Element>> amountMaps, CATSpecies species) {
 		List<ProcessUnit> inputUnits = new ArrayList<ProcessUnit>();
 		if (!amountMaps.isEmpty()) {
 			for (BiomassType bt : amountMaps.keySet()) {
-				inputUnits.add(new CarbonUnit(dateIndex, samplingUnitID, null, amountMaps.get(bt), speciesName, bt));
+				inputUnits.add(new CarbonUnit(dateIndex, samplingUnitID, null, amountMaps.get(bt), species, bt));
 			}
 			Collection<CarbonUnit> processedUnits = (Collection) processor.doProcess(inputUnits);
 			getCarbonUnitMap().add(processedUnits);

@@ -128,7 +128,7 @@ public class PythonAccessOakTest {
 		CATDiameterBasedTreeLoggerParameters loggerParams = (CATDiameterBasedTreeLoggerParameters) treeLogger.getTreeLoggerParameters();
 		for (DiameterBasedTreeLogCategory logCategory : loggerParams.getLogCategoryList()) {
 			manager.resetCarbonUnitMap();
-			manager.processWoodPiece(logCategory, 0, "", amountMaps, "Unknown");
+			manager.processWoodPiece(logCategory, 0, "", amountMaps, CATSpecies.QUERCUS);
 			double volume = 0;
 			for (CarbonUnitStatus type : CarbonUnitStatus.values()) {
 				CarbonUnitList list = manager.getCarbonUnits(type);

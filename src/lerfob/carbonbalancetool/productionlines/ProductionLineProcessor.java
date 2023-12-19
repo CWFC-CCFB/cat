@@ -27,11 +27,13 @@ import java.util.List;
 
 import javax.swing.event.CaretEvent;
 
+import lerfob.carbonbalancetool.CATSettings.CATSpecies;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.BiomassType;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
 import lerfob.carbonbalancetool.productionlines.EndUseWoodProductCarbonUnitFeature.UseClass;
 import repicea.gui.REpiceaUIObject;
+import repicea.serial.xml.PostXmlUnmarshalling;
 import repicea.simulation.processsystem.AmountMap;
 import repicea.simulation.processsystem.ProcessUnit;
 import repicea.simulation.processsystem.Processor;
@@ -46,7 +48,7 @@ import repicea.util.REpiceaTranslator;
  * whether or not the residual from this processor can be used for energy.
  * @author M. Fortin - September 2010
  */
-public final class ProductionLineProcessor extends AbstractProductionLineProcessor implements Serializable, REpiceaUIObject {
+public final class ProductionLineProcessor extends AbstractProductionLineProcessor implements Serializable, REpiceaUIObject, PostXmlUnmarshalling {
 	
 	private static final long serialVersionUID = 20101018L;
 	
@@ -57,17 +59,18 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 	private double averageYield;
 	@Deprecated
 	private boolean sentToAnotherMarket;
-	
 	@Deprecated
 	private int selectedMarketToBeSentTo;
 	@Deprecated
 	private String selectedMarketToBeSentToStr;
 	@Deprecated
 	private ProductionLineProcessor fatherProcessor;
+	@Deprecated
+	private List<AbstractExtractionProcessor> extractionProcessors;
 
 	protected Processor disposedToProcessor;
-	
-	private List<AbstractExtractionProcessor> extractionProcessors;
+		
+	private AbstractExtractionProcessor extractionProcessor;
 	
 	@Deprecated
 	private ProductionLine market;
@@ -120,21 +123,16 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 	}
 
 	
-	List<AbstractExtractionProcessor> getExtractionProcessors() {
-		if (extractionProcessors == null) {
-			extractionProcessors = new ArrayList<AbstractExtractionProcessor>();
-		}
-		return extractionProcessors;
+	AbstractExtractionProcessor getExtractionProcessor() {
+		return extractionProcessor;
 	}
 	
 	@SuppressWarnings("rawtypes")
 	@Override
 	public Collection<ProcessUnit> doProcess(List<ProcessUnit> inputUnits) {
 		Collection<ProcessUnit> resultingUnits = new ArrayList<ProcessUnit>();
-		if (!getExtractionProcessors().isEmpty()) {
-			for (AbstractExtractionProcessor p : getExtractionProcessors()) {
-				resultingUnits.addAll(p.extractAndProcess(this, inputUnits));
-			}
+		if (extractionProcessor != null) {
+			resultingUnits.addAll(extractionProcessor.extractAndProcess(this, inputUnits));
 		}
 		if (!inputUnits.isEmpty()) {
 			resultingUnits.addAll(super.doProcess(inputUnits));
@@ -142,34 +140,35 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 		return resultingUnits;
 	}
 	
-	void addExtractionProcessor(AbstractExtractionProcessor p) {
-		if (!containsExtractionProcessorOfThisKind(p.getClass())) {
-			getExtractionProcessors().add(p);
-		}
+	void setExtractionProcessor(AbstractExtractionProcessor p) {
+		extractionProcessor = p;
+//		if (!containsExtractionProcessorOfThisKind(p.getClass())) {
+//			getExtractionProcessors().add(p);
+//		}
 	}
 	
-	void removeExtractionProcessor(AbstractExtractionProcessor p) {
-		getExtractionProcessors().remove(p);
-	}
+//	void removeExtractionProcessor(AbstractExtractionProcessor p) {
+//		getExtractionProcessors().remove(p);
+//	}
 
-	boolean containsExtractionProcessorOfThisKind(Class<? extends AbstractExtractionProcessor> clazz) {
-		return getExtractionProcessorOfThisKind(clazz) != null;
-	}
+//	boolean containsExtractionProcessorOfThisKind(Class<? extends AbstractExtractionProcessor> clazz) {
+//		return getExtractionProcessorOfThisKind(clazz) != null;
+//	}
 
-	AbstractExtractionProcessor getExtractionProcessorOfThisKind(Class<? extends AbstractExtractionProcessor> clazz) {
-		for (AbstractExtractionProcessor p : getExtractionProcessors()) {
-			if (clazz.isInstance(p)) {
-				return p;
-			}
-		}
-		return null;
-	}
+//	AbstractExtractionProcessor getExtractionProcessorOfThisKind(Class<? extends AbstractExtractionProcessor> clazz) {
+//		for (AbstractExtractionProcessor p : getExtractionProcessors()) {
+//			if (clazz.isInstance(p)) {
+//				return p;
+//			}
+//		}
+//		return null;
+//	}
 	
-	protected void patchXmlSerializerBug() {
-		if (!hasSubProcessors()) {
-			this.subProcessors = new ArrayList<Processor>();
-		}
-	}
+//	protected void patchXmlSerializerBug() {
+//		if (!hasSubProcessors()) {
+//			this.subProcessors = new ArrayList<Processor>();
+//		}
+//	}
 	
 	/**
 	 * This method returns the average intake (from 0 to 1) taken from the father processor.
@@ -279,7 +278,7 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 					carbonUnit.samplingUnitID, 
 					null, 
 					processedAmountMap, 
-					carbonUnit.getSpeciesName(),
+					carbonUnit.getSpecies(),
 					carbonUnit.getBiomassType());
 			outputUnits.add(woodProduct);
 			return outputUnits;
@@ -288,7 +287,7 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 					carbonUnit.samplingUnitID, 
 					(EndUseWoodProductCarbonUnitFeature) woodProductFeature,
 					processedAmountMap,
-					carbonUnit.getSpeciesName(),
+					carbonUnit.getSpecies(),
 					carbonUnit.getBiomassType());
 			outputUnits.add(woodProduct);
 			return outputUnits;
@@ -303,7 +302,7 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 	 * @return a collection of EndProduct instances (Collection) 
 	 */
 	@Deprecated
-	protected CarbonUnitMap<CarbonUnitStatus> processWoodPiece(int dateIndex, AmountMap<Element> amountMap) throws Exception {
+	protected CarbonUnitMap<CarbonUnitStatus> processWoodPiece(int dateIndex, CATSpecies species, AmountMap<Element> amountMap) throws Exception {
 
 		CarbonUnitMap<CarbonUnitStatus> outputMap = new CarbonUnitMap<CarbonUnitStatus>(CarbonUnitStatus.EndUseWoodProduct);
 
@@ -323,7 +322,7 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 							dateIndex, 
 							(EndUseWoodProductCarbonUnitFeature) woodProductFeature,
 							processedAmountMap,
-							"Unknown");
+							species);
 					outputMap.get(CarbonUnitStatus.EndUseWoodProduct).add(woodProduct);
 
 				} else if (isLandfillProcessor()) {
@@ -331,33 +330,46 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 					double docf = lfcuf.getDegradableOrganicCarbonFraction();
 					
 					AmountMap<Element> landFillMapTmp = processedAmountMap.multiplyByAScalar(docf);
-					woodProduct = new LandfillCarbonUnit(dateIndex, sampleUnitID, lfcuf, landFillMapTmp, "Unknown", BiomassType.Wood, CarbonUnitStatus.LandFillDegradable);
+					woodProduct = new LandfillCarbonUnit(dateIndex, 
+							sampleUnitID, 
+							lfcuf, 
+							landFillMapTmp, 
+							species, 
+							BiomassType.Wood, 
+							CarbonUnitStatus.LandFillDegradable);
 					getProductionLine().getManager().getCarbonUnits(CarbonUnitStatus.LandFillDegradable).add((LandfillCarbonUnit) woodProduct); 
 					
 					landFillMapTmp = processedAmountMap.multiplyByAScalar(1 - docf);
-					woodProduct = new LandfillCarbonUnit(dateIndex, sampleUnitID, lfcuf, landFillMapTmp, "Unknown", BiomassType.Wood, CarbonUnitStatus.LandFillNonDegradable); 
+					woodProduct = new LandfillCarbonUnit(dateIndex, 
+							sampleUnitID, 
+							lfcuf, 
+							landFillMapTmp, 
+							species, 
+							BiomassType.Wood, 
+							CarbonUnitStatus.LandFillNonDegradable); 
 					getProductionLine().getManager().getCarbonUnits(CarbonUnitStatus.LandFillNonDegradable).add((LandfillCarbonUnit) woodProduct); 
 					
 				} else {				// is left in the forest
-					woodProduct = new CarbonUnit(dateIndex, sampleUnitID, woodProductFeature, processedAmountMap, "Unknown", BiomassType.Wood);
+					woodProduct = new CarbonUnit(dateIndex, sampleUnitID, woodProductFeature, processedAmountMap, species, BiomassType.Wood);
 					getProductionLine().getManager().getCarbonUnits(CarbonUnitStatus.DeadWood).add(woodProduct);
 				}
 
 			} else if (hasSubProcessors()) {
 				for (Processor subProcessor : getSubProcessors()) {
 					AmountMap<Element> subProcessedMap = processedAmountMap.multiplyByAScalar(((ProductionLineProcessor) subProcessor).getAverageIntake());
-					outputMap.add(((ProductionLineProcessor) subProcessor).processWoodPiece(dateIndex, subProcessedMap));
+					outputMap.add(((ProductionLineProcessor) subProcessor).processWoodPiece(dateIndex, species, subProcessedMap));
 				}
 			} else if (isSentToAnotherMarket()) {
 				outputMap.add(getProductionLine().getManager().processWoodPieceIntoThisProductionLine(getProductionLineToBeSentTo(), 
 						dateIndex,
+						species,
 						processedAmountMap));
 			}
 		}
 		
 		if (somethingIsLoss) {
 			AmountMap<Element> lossAmountMap = amountMap.multiplyByAScalar(1 - averageYield);
-			CarbonUnitMap<CarbonUnitStatus> tmpMap = getLossProcessor().processWoodPiece(dateIndex, lossAmountMap);
+			CarbonUnitMap<CarbonUnitStatus> tmpMap = getLossProcessor().processWoodPiece(dateIndex, species, lossAmountMap);
 			for (Collection<CarbonUnit> carbonUnits : tmpMap.values()) {
 				outputMap.get(CarbonUnitStatus.IndustrialLosses).addAll(carbonUnits);
 			}
@@ -459,6 +471,14 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 			feature.setUseClass(UseClass.NONE);
 		}
 		return LossProductionLineProcessor; 
+	}
+
+
+	@Override
+	public void postUnmarshallingAction() {
+		if (extractionProcessors != null  && !extractionProcessors.isEmpty()) {
+			extractionProcessor = extractionProcessors.get(0);
+		}
 	}
 	
 

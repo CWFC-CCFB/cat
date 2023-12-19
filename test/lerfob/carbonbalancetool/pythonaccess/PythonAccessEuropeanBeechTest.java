@@ -9,12 +9,13 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import lerfob.carbonbalancetool.CATBasicWoodDensityProvider.AverageBasicDensity;
+import lerfob.carbonbalancetool.CATSettings.CATSpecies;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit;
-import lerfob.carbonbalancetool.productionlines.CarbonUnitList;
-import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.BiomassType;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
+import lerfob.carbonbalancetool.productionlines.CarbonUnitList;
+import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager;
 import lerfob.treelogger.diameterbasedtreelogger.DiameterBasedTreeLogCategory;
 import lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLogger;
 import lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLoggerParameters;
@@ -108,7 +109,7 @@ public class PythonAccessEuropeanBeechTest {
 		EuropeanBeechBasicTreeLoggerParameters loggerParams = (EuropeanBeechBasicTreeLoggerParameters) treeLogger.getTreeLoggerParameters();
 		for (DiameterBasedTreeLogCategory logCategory : loggerParams.getLogCategoryList()) {
 			manager.resetCarbonUnitMap();
-			manager.processWoodPiece(logCategory, 0, "", amountMaps, "Unknown");
+			manager.processWoodPiece(logCategory, 0, "", amountMaps, CATSpecies.FAGUS_SYLVATICA);
 			double volume = 0;
 			for (CarbonUnitStatus type : CarbonUnitStatus.values()) {
 				CarbonUnitList list = manager.getCarbonUnits(type);

@@ -19,6 +19,7 @@
 package lerfob.carbonbalancetool.productionlines;
 
 import lerfob.carbonbalancetool.CATSettings;
+import lerfob.carbonbalancetool.CATSettings.CATSpecies;
 import repicea.simulation.processsystem.AmountMap;
 
 
@@ -38,10 +39,10 @@ public class LandfillCarbonUnit extends CarbonUnit {
 							String sampleUnitID,
 							LandfillCarbonUnitFeature landfillCarbonUnitFeature,
 							AmountMap<Element> amountMap,
-							String speciesName,
+							CATSpecies species,
 							BiomassType biomassType,
 							CarbonUnitStatus landfillStatus) {
-		super(dateIndex, sampleUnitID, landfillCarbonUnitFeature, amountMap, speciesName, biomassType);
+		super(dateIndex, sampleUnitID, landfillCarbonUnitFeature, amountMap, species, biomassType);
 		addStatus(landfillStatus);
 	}
 	
