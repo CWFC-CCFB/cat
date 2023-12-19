@@ -24,6 +24,8 @@ import java.io.Serializable;
 
 import javax.swing.JComboBox;
 
+import lerfob.carbonbalancetool.CATDecayFunction;
+import lerfob.carbonbalancetool.CATExponentialDecayFunction;
 import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettings;
 import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettings.VariabilitySource;
 import repicea.gui.REpiceaUIObject;
@@ -69,6 +71,8 @@ public class CarbonUnitFeature implements Serializable, REpiceaUIObject, NumberF
 	 */
 	protected double averageLifetime;
 
+	private CATDecayFunction decayFunction;
+	
 	private AbstractProductionLineProcessor processor;
 	
 	private transient CarbonUnitFeaturePanel userInterfacePanel;
@@ -91,6 +95,13 @@ public class CarbonUnitFeature implements Serializable, REpiceaUIObject, NumberF
 		return lifetimeMode;
 	}
 
+	protected CATDecayFunction getDecayFunction() {
+		if (decayFunction == null) {
+			decayFunction = new CATExponentialDecayFunction();
+		} 
+		return decayFunction;
+	}
+	
 	/*
 	 * Accessors
 	 */

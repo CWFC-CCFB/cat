@@ -19,21 +19,34 @@
 package lerfob.carbonbalancetool;
 
 /**
- * The decay function interface is designated for lifetime decreasing functions. This interface serves 
- * to actualize the EndProduct instance throughout their useful lifetime. 
- * @author Mathieu Fortin - October 2010
+ * This class provides an exponential function to act as 
+ * decay function in the calculation of end product lifetime.
+ * @author Mathieu Fortin - July 2010
  */
-public interface CATDecayFunction {
+public class CATExponentialDecayFunction implements CATDecayFunction {
 
-	
+	private double averageLifetimeYr;
+
 	/**
-	 * This method returns the value of the infinite integral of the decay function.
-	 * @return the value of the infinite integral (double)
+	 * Constructor
 	 */
-	public abstract double getInfiniteIntegral();
+	public CATExponentialDecayFunction() {}
+	
+	@Override
+	public double getInfiniteIntegral() {
+		return averageLifetimeYr;
+	}
 
-	public abstract void setAverageLifetimeYr(double averageLifetimeYr);
-	
-	public abstract double getValueAtTime(double timeYr);
-	
+
+	@Override
+	public void setAverageLifetimeYr(double averageLifetimeYr) {
+		this.averageLifetimeYr = averageLifetimeYr;
+	}
+
+	@Override
+	public double getValueAtTime(double timeYr) {
+		return Math.exp(- timeYr / averageLifetimeYr);
+	}
 }
+
+

@@ -23,7 +23,6 @@ import java.util.List;
 
 import lerfob.carbonbalancetool.CATCompartmentManager;
 import lerfob.carbonbalancetool.CATDecayFunction;
-import lerfob.carbonbalancetool.CATExponentialFunction;
 import lerfob.carbonbalancetool.CATSettings.CATSpecies;
 import lerfob.carbonbalancetool.CATTimeTable;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
@@ -185,12 +184,15 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 	}
 
 	/**
-	 * This method calculates the average carbon by integrating the carbon contained in 
-	 * this product over its lifetime.
+	 * Calculate the average carbon by integrating the carbon contained in 
+	 * this product over its useful lifetime.
+	 * @param subject a MonteCarloSimulationCompliantObject instance typically the CATCompartmentManager instance 
+	 * which provides Monte Carlo realization id in case of stochastic simulation
 	 * @return the integrated carbon in tC (double)
 	 */
-	public double getIntegratedCarbon(CATExponentialFunction decayFunction, MonteCarloSimulationCompliantObject subject) {
-		decayFunction.setParameterValue(0, getCarbonUnitFeature().getAverageLifetime(subject));
+	public double getIntegratedCarbon(MonteCarloSimulationCompliantObject subject) {
+		CATDecayFunction decayFunction = getCarbonUnitFeature().getDecayFunction();
+		decayFunction.setAverageLifetimeYr(getCarbonUnitFeature().getAverageLifetime(subject));
 		return getInitialCarbon() * decayFunction.getInfiniteIntegral(); //	0d : unnecessary parameter
 	}
 
@@ -202,26 +204,29 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 	 * @throws Exception
 	 */
 	protected void actualizeCarbon(CATCompartmentManager compartmentManager) throws Exception {
-		CATDecayFunction decayFunction = compartmentManager.getCarbonToolSettings().getDecayFunction();
+		CATDecayFunction decayFunction = getCarbonUnitFeature().getDecayFunction();
 		CATTimeTable timeScale = compartmentManager.getTimeTable();
 		setTimeTable(timeScale);
 		currentCarbonArray = new double[timeScale.size()];
 
-		double lambdaValue = getCarbonUnitFeature().getAverageLifetime(compartmentManager);
+		double averageLifetimeYr = getCarbonUnitFeature().getAverageLifetime(compartmentManager);
+		decayFunction.setAverageLifetimeYr(averageLifetimeYr);
 		double currentCarbon = getInitialCarbon();
 
 		double formerCarbon;
 		double factor;
 		int date;
-		double formerDate;
 		
 		for (int i = dateIndex; i < timeScale.size(); i++) {
 			date = timeScale.getDateYrAtThisIndex(i);
 			if (date > getCreationDate() && currentCarbon > ProductionProcessorManager.VERY_SMALL) {
-				formerDate = timeScale.getDateYrAtThisIndex(i - 1);
-				decayFunction.setParameterValue(0, lambdaValue);
-				decayFunction.setVariableValue(0, date - formerDate);
-				factor = decayFunction.getValue();	// last parameter is unnecessary			
+				if (averageLifetimeYr > 0) {	// calculate the proportion only if lifetime is greater than 0
+					double thisRemains = decayFunction.getValueAtTime(date - getCreationDate());
+					double thatRemained = decayFunction.getValueAtTime(timeScale.getDateYrAtThisIndex(i - 1) - getCreationDate());
+					factor = thisRemains / thatRemained;	
+				} else { // otherwise all the carbon is gone
+					factor = 0d;
+				}
 				formerCarbon = currentCarbonArray[i - 1];
 				currentCarbon =  formerCarbon * factor;
 				currentCarbonArray[i] = currentCarbon;

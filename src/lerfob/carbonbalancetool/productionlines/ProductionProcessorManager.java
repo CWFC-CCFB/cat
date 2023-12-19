@@ -38,7 +38,7 @@ import javax.swing.filechooser.FileFilter;
 
 import lerfob.carbonbalancetool.CATCompartmentManager;
 import lerfob.carbonbalancetool.CATDecayFunction;
-import lerfob.carbonbalancetool.CATExponentialFunction;
+import lerfob.carbonbalancetool.CATExponentialDecayFunction;
 import lerfob.carbonbalancetool.CATSettings.CATSpecies;
 import lerfob.carbonbalancetool.CarbonAccountingTool;
 import lerfob.carbonbalancetool.catdiameterbasedtreelogger.CATDiameterBasedTreeLogger;
@@ -694,7 +694,7 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 
 	protected CATDecayFunction getDecayFunction() {
 		if (decayFunction == null) {
-			decayFunction = new CATExponentialFunction();
+			decayFunction = new CATExponentialDecayFunction();
 		}
 		return decayFunction;
 	}
