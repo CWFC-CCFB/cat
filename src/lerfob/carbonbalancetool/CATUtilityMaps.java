@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import lerfob.carbonbalancetool.CATSettings.CATSpecies;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
 import lerfob.carbonbalancetool.productionlines.CarbonUnitList;
@@ -49,9 +48,9 @@ public class CATUtilityMaps {
 	@SuppressWarnings("serial")
 	public static class CATUseClassSpeciesAmountMap extends HashMap<UseClass, CATSpeciesAmountMap> {
 
-		private final List<CATSpecies> speciesList;
+		private final List<String> speciesList;
 		
-		protected CATUseClassSpeciesAmountMap(List<CATSpecies> speciesList) {
+		protected CATUseClassSpeciesAmountMap(List<String> speciesList) {
 			this.speciesList = speciesList;
 			for (UseClass uc : UseClass.values()) {
 				put(uc, new CATSpeciesAmountMap(speciesList));
@@ -118,13 +117,13 @@ public class CATUtilityMaps {
 	 * @author Mathieu Fortin - May 2019
 	 */
 	@SuppressWarnings("serial")
-	public static class CATSpeciesAmountMap extends HashMap<CATSpecies, AmountMap<Element>> implements Cloneable {
+	public static class CATSpeciesAmountMap extends HashMap<String, AmountMap<Element>> implements Cloneable {
 
-		private final List<CATSpecies> speciesList;
+		private final List<String> speciesList;
 		
-		CATSpeciesAmountMap(List<CATSpecies> speciesList) {
+		CATSpeciesAmountMap(List<String> speciesList) {
 			this.speciesList = speciesList;
-			for (CATSpecies speciesName : speciesList) {
+			for (String speciesName : speciesList) {
 				put(speciesName, getNewAmountMap());
 			}
 		}
@@ -151,15 +150,15 @@ public class CATUtilityMaps {
 			}
 			CATSpeciesAmountMap outputMap = new CATSpeciesAmountMap(speciesList);
 			AmountMap<Element> newAmountMap;
-			for (CATSpecies species : keySet()) {
+			for (String speciesName : keySet()) {
 				newAmountMap = new AmountMap<Element>();
-				newAmountMap.putAll(get(species));
-				if (otherMap.containsKey(species)) {
-					newAmountMap.putAll(otherMap.get(species));
+				newAmountMap.putAll(get(speciesName));
+				if (otherMap.containsKey(speciesName)) {
+					newAmountMap.putAll(otherMap.get(speciesName));
 				} 
-				outputMap.put(species, newAmountMap);
+				outputMap.put(speciesName, newAmountMap);
 			}
-			for (CATSpecies speciesName : otherMap.keySet()) {
+			for (String speciesName : otherMap.keySet()) {
 				if (!outputMap.containsKey(speciesName)) {
 					newAmountMap = new AmountMap<Element>();
 					newAmountMap.putAll(otherMap.get(speciesName));
@@ -173,8 +172,8 @@ public class CATUtilityMaps {
 		@Override
 		public CATSpeciesAmountMap clone() {
 			CATSpeciesAmountMap outputMap = new CATSpeciesAmountMap(speciesList);
-			for (CATSpecies species : keySet()) {
-				outputMap.put(species, get(species).clone());
+			for (String speciesName : keySet()) {
+				outputMap.put(speciesName, get(speciesName).clone());
 			}
 			return outputMap;
 		}
@@ -185,8 +184,8 @@ public class CATUtilityMaps {
 		 */
 		AmountMap<Element> getSum() {
 			AmountMap<Element> amountMap = new AmountMap<Element>();
-			for (CATSpecies species : keySet()) {
-				AmountMap<Element> am = get(species);
+			for (String speciesName : keySet()) {
+				AmountMap<Element> am = get(speciesName);
 				amountMap.putAll(am);
 			}
 			return amountMap;
@@ -194,12 +193,12 @@ public class CATUtilityMaps {
 
 		
 		void recordAsRealization(SpeciesMonteCarloEstimateMap map) {
-			for (CATSpecies species : keySet()) {
-				if (!map.containsKey(species)) {
-					map.put(species, new MonteCarloEstimateMap());
+			for (String speciesName : keySet()) {
+				if (!map.containsKey(speciesName)) {
+					map.put(speciesName, new MonteCarloEstimateMap());
 				}
-				Map<Element, MonteCarloEstimate> innerEstimateMap = map.get(species);
-				AmountMap<Element> amountMap = get(species);
+				Map<Element, MonteCarloEstimate> innerEstimateMap = map.get(speciesName);
+				AmountMap<Element> amountMap = get(speciesName);
 				for (Element e : amountMap.keySet()) {
 					if (!innerEstimateMap.containsKey(e)) {
 						innerEstimateMap.put(e, new MonteCarloEstimate());
@@ -224,17 +223,17 @@ public class CATUtilityMaps {
 	 * An additional key is also set in the map. That is the all-species amount map.
 	 * @return a Map instance
 	 */
-	public static CATSpeciesAmountMap convertToSpeciesMap(CarbonUnitList list, List<CATSpecies> speciesList) {
+	public static CATSpeciesAmountMap convertToSpeciesMap(CarbonUnitList list, List<String> speciesList) {
 		CATSpeciesAmountMap outputMap = new CATSpeciesAmountMap(speciesList);
 		for (CarbonUnit carbonUnit : list) {
-			CATSpecies species = carbonUnit.getSpecies();
+			String speciesName = carbonUnit.getSpeciesName();
 //			if (!outputMap.containsKey(CarbonUnit.AllSpecies)) {
 //				outputMap.put(CarbonUnit.AllSpecies, new AmountMap<Element>());
 //			}
-			if (!outputMap.containsKey(species)) {
-				outputMap.put(species, new AmountMap<Element>());
+			if (!outputMap.containsKey(speciesName)) {
+				outputMap.put(speciesName, new AmountMap<Element>());
 			}
-			AmountMap<Element> carrier = outputMap.get(species);
+			AmountMap<Element> carrier = outputMap.get(speciesName);
 			carrier.putAll(carbonUnit.getAmountMap());
 //			AmountMap<Element> allSpeciesCarrier = outputMap.get(CarbonUnit.AllSpecies);
 //			allSpeciesCarrier.putAll(carbonUnit.getAmountMap());
@@ -281,21 +280,21 @@ public class CATUtilityMaps {
 	 * @author Mathieu Fortin - May 2019
 	 */
 	@SuppressWarnings("serial")
-	public static class SpeciesMonteCarloEstimateMap extends TreeMap<CATSpecies, MonteCarloEstimateMap> { 
+	public static class SpeciesMonteCarloEstimateMap extends TreeMap<String, MonteCarloEstimateMap> { 
 		
 		SpeciesMonteCarloEstimateMap mergeWith(SpeciesMonteCarloEstimateMap otherMap) {
 			if (otherMap == null) {
 				throw new InvalidParameterException("The otherMap parameter cannot be null!");
 			}
 			SpeciesMonteCarloEstimateMap outputMap = new SpeciesMonteCarloEstimateMap();
-			for (CATSpecies species : keySet()) {
-				if (otherMap.containsKey(species)) {
-					outputMap.put(species, get(species).mergeWith(otherMap.get(species)));
+			for (String speciesName : keySet()) {
+				if (otherMap.containsKey(speciesName)) {
+					outputMap.put(speciesName, get(speciesName).mergeWith(otherMap.get(speciesName)));
 				} else {
-					outputMap.put(species, get(species));
+					outputMap.put(speciesName, get(speciesName));
 				}
 			}
-			for (CATSpecies speciesName : otherMap.keySet()) {
+			for (String speciesName : otherMap.keySet()) {
 				if (!outputMap.containsKey(speciesName)) {
 					outputMap.put(speciesName, otherMap.get(speciesName));
 				}
@@ -309,7 +308,7 @@ public class CATUtilityMaps {
 		 */
 		public MonteCarloEstimateMap getSumAcrossSpecies() {
 			MonteCarloEstimateMap mcem = new MonteCarloEstimateMap();
-			for (CATSpecies key : keySet()) {
+			for (String key : keySet()) {
 				mcem = mcem.mergeWith(get(key));
 			}
 			return mcem;

@@ -150,7 +150,7 @@ public class PythonAccessDouglasFirTest {
 		DouglasFCBATreeLoggerParameters loggerParams = (DouglasFCBATreeLoggerParameters) treeLogger.getTreeLoggerParameters();
 		for (DouglasFCBALogCategory logCategory : loggerParams.getLogCategoryList()) {
 			manager.resetCarbonUnitMap();
-			manager.processWoodPiece(logCategory, 0, "", amountMaps, CATSpecies.PSEUDOTSUGA_MENZIESII);
+			manager.processWoodPiece(logCategory, 0, "", amountMaps, CATSpecies.PSEUDOTSUGA_MENZIESII.name(), CATSpecies.PSEUDOTSUGA_MENZIESII.getSpeciesType());
 			double volume = 0;
 			for (CarbonUnitStatus type : CarbonUnitStatus.values()) {
 				CarbonUnitList list = manager.getCarbonUnits(type);

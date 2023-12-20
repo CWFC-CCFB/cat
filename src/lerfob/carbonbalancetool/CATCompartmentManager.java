@@ -28,7 +28,6 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 
 import lerfob.carbonbalancetool.CATCompartment.CompartmentInfo;
-import lerfob.carbonbalancetool.CATSettings.CATSpecies;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
 import lerfob.carbonbalancetool.productionlines.CarbonUnitList;
@@ -74,7 +73,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 
 	private final Map<StatusClass, Map<CATCompatibleStand, Map<String, Map<String, Collection<CATCompatibleTree>>>>> treeCollections;
 	private final Map<CATCompatibleTree, CATCompatibleStand> treeRegister;
-	private final List<CATSpecies> speciesList;
+	private final List<String> speciesList;
 
 	private List<CATCompatibleStand> stands;
 	private CATSettings carbonAccountingToolSettings;		// reference to the extractor settings
@@ -100,7 +99,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		this.caller = caller;
 		treeCollections = new HashMap<StatusClass, Map<CATCompatibleStand, Map<String, Map<String, Collection<CATCompatibleTree>>>>>();
 		treeRegister = new HashMap<CATCompatibleTree, CATCompatibleStand>();
-		speciesList = new ArrayList<CATSpecies>();
+		speciesList = new ArrayList<String>();
 		
 		this.carbonAccountingToolSettings = settings;
 		this.carbonCompartments = new TreeMap<CompartmentInfo, CATCompartment>();	// TreeMap to make sure the merge compartments are not called before the regular compartment
@@ -176,13 +175,13 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		speciesList.clear();
 	}
 
-	protected List<CATSpecies> getSpeciesList() {
+	protected List<String> getSpeciesList() {
 		return speciesList;
 	}
 
 	protected void registerTreeSpecies(CATCompatibleTree tree) {
-		if (!speciesList.contains(tree.getCATSpecies())) {
-			speciesList.add(tree.getCATSpecies());
+		if (!speciesList.contains(tree.getSpeciesName())) {
+			speciesList.add(tree.getSpeciesName());
 		}
 	}
 

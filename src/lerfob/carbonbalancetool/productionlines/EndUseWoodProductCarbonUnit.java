@@ -24,7 +24,6 @@ import java.util.List;
 
 import lerfob.carbonbalancetool.CATCompartmentManager;
 import lerfob.carbonbalancetool.CATSettings;
-import lerfob.carbonbalancetool.CATSettings.CATSpecies;
 import lerfob.carbonbalancetool.productionlines.EndUseWoodProductCarbonUnitFeature.UseClass;
 import repicea.simulation.processsystem.AmountMap;
 import repicea.simulation.processsystem.ProcessUnit;
@@ -49,33 +48,31 @@ public class EndUseWoodProductCarbonUnit extends CarbonUnit {
 	 * @param initialVolumeBeforeFirstTransformation the volume before the processing (double) (m3)
 	 * @param dateIndex the creation date index of the time scale
 	 * @param carbonUnitFeature a EndProductFeature instance that defines the end product
+	 * @deprecated Use the {@link #EndUseWoodProductCarbonUnit(int, EndUseWoodProductCarbonUnitFeature, AmountMap, CarbonUnit)} constructor instead.
 	 */
-	@Deprecated
 	protected EndUseWoodProductCarbonUnit(double initialVolumeBeforeFirstTransformation,
 			int dateIndex,
 			EndUseWoodProductCarbonUnitFeature carbonUnitFeature,
 			AmountMap<Element> amountMap,
-			CATSpecies species) {
-		super(dateIndex, "", carbonUnitFeature, amountMap, species, BiomassType.Wood);
+			String speciesName,
+			SpeciesType speciesType) {
+		super(dateIndex, "", carbonUnitFeature, amountMap, speciesName, speciesType, BiomassType.Wood);
 		this.rawRoundWoodVolume = initialVolumeBeforeFirstTransformation;
 	}
 	
 	
 	/**
-	 * The constructor of this class.
-	 * @param dateIndex
-	 * @param sampleUnitID
-	 * @param carbonUnitFeature
-	 * @param amountMap
-	 * @param speciesName
+	 * Official constructor for this class.
+	 * @param dateIndex the date index
+	 * @param carbonUnitFeature an EndUseWoodProductCarbonUnitFeature instance
+	 * @param amountMap an AmountMap instance
+	 * @param originalCarbonUnit the original CarbonUnit instance from which this EndUseWoodProductCarbonUnit instance is created
 	 */
 	protected EndUseWoodProductCarbonUnit(int dateIndex,
-			String sampleUnitID,
 			EndUseWoodProductCarbonUnitFeature carbonUnitFeature,
 			AmountMap<Element> amountMap,
-			CATSpecies species,
-			BiomassType biomassType) {
-		super(dateIndex, sampleUnitID, carbonUnitFeature, amountMap, species, biomassType);
+			CarbonUnit originalCarbonUnit) {
+		super(dateIndex, carbonUnitFeature, amountMap, originalCarbonUnit);
 		addStatus(CarbonUnitStatus.EndUseWoodProduct);
 		AbstractProcessor.updateProcessEmissions(getAmountMap(), carbonUnitFeature.getBiomassOfFunctionalUnitMg(), carbonUnitFeature.getEmissionsMgCO2ByFunctionalUnit());
 	}
@@ -123,7 +120,7 @@ public class EndUseWoodProductCarbonUnit extends CarbonUnit {
 				AbstractProductionLineProcessor disposedToProcessor = (AbstractProductionLineProcessor) ((ProductionLineProcessor) getCarbonUnitFeature().getProcessor()).disposedToProcessor;
 				if (updatedMap.get(Element.Volume) > 0) {
 					if (disposedToProcessor != null) { // new implementation
-						CarbonUnit newUnit = new CarbonUnit(i, samplingUnitID, null, updatedMap, getSpecies(), getBiomassType());
+						CarbonUnit newUnit = new CarbonUnit(i, null, updatedMap, this);
 						newUnit.getAmountMap().put(Element.EmissionsCO2Eq, 0d);		// reset the emissions to 0 after useful lifetime - otherwise there is a double count
 						List<ProcessUnit> disposedUnits = disposedToProcessor.createProcessUnitsFromThisProcessor(newUnit, 100);
 						Collection<CarbonUnit> processedUnits = (Collection) disposedToProcessor.doProcess(disposedUnits);
@@ -134,7 +131,7 @@ public class EndUseWoodProductCarbonUnit extends CarbonUnit {
 						}
 						compartmentManager.getCarbonToolSettings().getCurrentProductionProcessorManager().getCarbonUnitMap().add(processedUnits);
 					} else {	// former implementation
-						((ProductionLineProcessor) getCarbonUnitFeature().getProcessor()).getProductionLine().getManager().sendToTheLandfill(i, getSpecies(), updatedMap);	
+						((ProductionLineProcessor) getCarbonUnitFeature().getProcessor()).getProductionLine().getManager().sendToTheLandfill(i, getSpeciesName(), getSpeciesType(), updatedMap);	
 					}
 				}
 			}
