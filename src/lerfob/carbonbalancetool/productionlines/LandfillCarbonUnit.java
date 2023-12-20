@@ -19,7 +19,6 @@
 package lerfob.carbonbalancetool.productionlines;
 
 import lerfob.carbonbalancetool.CATSettings;
-import lerfob.carbonbalancetool.CATSettings.CATSpecies;
 import repicea.simulation.processsystem.AmountMap;
 
 
@@ -28,21 +27,42 @@ public class LandfillCarbonUnit extends CarbonUnit {
 	
 	/**
 	 * Constructor.
-	 * @param dateIndex
-	 * @param sampleUnitID
-	 * @param landfillCarbonUnitFeature
-	 * @param amountMap
-	 * @param speciesName
-	 * @param landfillStatus
+	 * @param dateIndex the date index
+	 * @param sampleUnitID the sample unit identifier if any
+	 * @param landfillCarbonUnitFeature a LandfillCarbonUnitFeature instance
+	 * @param amountMap an AmountMap instance
+	 * @param speciesName the name of the species
+	 * @param speciesType the type of species (Broadleaved or Coniferous)
+	 * @param biomassType the type of biomass (wood or bark)
+	 * @param landfillStatus a CarbonUnitStatus enum (either LandFillDegradable or LandFillNonDegradable)
+	 * @deprecated Use the {@link #LandfillCarbonUnit(int, String, LandfillCarbonUnitFeature, AmountMap, CarbonUnit, CarbonUnitStatus)} constructor instead
 	 */
 	protected LandfillCarbonUnit(int dateIndex, 
 							String sampleUnitID,
 							LandfillCarbonUnitFeature landfillCarbonUnitFeature,
 							AmountMap<Element> amountMap,
-							CATSpecies species,
+							String speciesName,
+							SpeciesType speciesType,
 							BiomassType biomassType,
 							CarbonUnitStatus landfillStatus) {
-		super(dateIndex, sampleUnitID, landfillCarbonUnitFeature, amountMap, species, biomassType);
+		super(dateIndex, sampleUnitID, landfillCarbonUnitFeature, amountMap, speciesName, speciesType, biomassType);
+		addStatus(landfillStatus);
+	}
+	
+	/**
+	 * Official constructor
+	 * @param dateIndex the date index
+	 * @param landfillCarbonUnitFeature a LandfillCarbonUnitFeature instance
+	 * @param amountMap an AmountMap instance
+	 * @param originalCarbonUnit the original CarbonUnit instance from which this LandfillCarbonUnit instance is created
+	 * @param landfillStatus a CarbonUnitStatus enum (either LandFillDegradable or LandFillNonDegradable)
+	 */
+	protected LandfillCarbonUnit(int dateIndex,
+			LandfillCarbonUnitFeature landfillCarbonUnitFeature,
+			AmountMap<Element> amountMap,
+			CarbonUnit originalCarbonUnit,
+			CarbonUnitStatus landfillStatus) {
+		super(dateIndex, landfillCarbonUnitFeature, amountMap, originalCarbonUnit);
 		addStatus(landfillStatus);
 	}
 	

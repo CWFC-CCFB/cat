@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import lerfob.carbonbalancetool.CATSettings.CATSpecies;
 import lerfob.carbonbalancetool.CATUtilityMaps.CATSpeciesAmountMap;
 import lerfob.carbonbalancetool.CATUtilityMaps.CATUseClassSpeciesAmountMap;
 import lerfob.carbonbalancetool.biomassparameters.BiomassParameters;
@@ -113,7 +112,7 @@ public class CATProductCompartment extends CATCompartment {
 
 	
 	private CATUseClassSpeciesAmountMap summarizeWoodProductsInMap(CarbonUnitList carbonUnits) {
-		List<CATSpecies> speciesList = getCompartmentManager().getSpeciesList();
+		List<String> speciesList = getCompartmentManager().getSpeciesList();
 		CATUseClassSpeciesAmountMap outputMap = new CATUseClassSpeciesAmountMap(speciesList);
 		if (carbonUnits != null && !carbonUnits.isEmpty()) {
 			for (UseClass useClass : UseClass.values()) {
@@ -128,7 +127,7 @@ public class CATProductCompartment extends CATCompartment {
 	}
 
 	private Map<Integer, CATUseClassSpeciesAmountMap> summarizeWoodProductEvolution(CarbonUnitList carbonUnits) {
-		List<CATSpecies> speciesList = getCompartmentManager().getSpeciesList();
+		List<String> speciesList = getCompartmentManager().getSpeciesList();
 		CATTimeTable timeScale = getCompartmentManager().getTimeTable();
 		Map<Integer, CATUseClassSpeciesAmountMap> outputMap = new HashMap<Integer, CATUseClassSpeciesAmountMap>();
 		if (carbonUnits != null && !carbonUnits.isEmpty()) {
@@ -173,8 +172,8 @@ public class CATProductCompartment extends CATCompartment {
 	 * @param withRecycling a boolean that takes the value true if recycled products are to be included
 	 * @return a TreeMap instance
 	 */
-	protected TreeMap<UseClass, Map<CATSpecies, Double>> getProductProportions(boolean withRecycling, Element element) {
-		TreeMap<UseClass, Map<CATSpecies, Double>> outputMap = new TreeMap<UseClass, Map<CATSpecies, Double>>();  // UseClass / SpeciesName
+	protected TreeMap<UseClass, Map<String, Double>> getProductProportions(boolean withRecycling, Element element) {
+		TreeMap<UseClass, Map<String, Double>> outputMap = new TreeMap<UseClass, Map<String, Double>>();  // UseClass / SpeciesName
 		Map<CarbonUnitStatus, CATUseClassSpeciesAmountMap> tmpMap = getAmountByUseClass(withRecycling);
 
 		CATUseClassSpeciesAmountMap oMap;
@@ -188,11 +187,11 @@ public class CATProductCompartment extends CATCompartment {
 			AmountMap<Element> sum = oMap.getSum();
 			for (UseClass useClass : oMap.keySet()) {
 				if (!outputMap.containsKey(useClass)) {
-					outputMap.put(useClass, new TreeMap<CATSpecies, Double>());
+					outputMap.put(useClass, new TreeMap<String, Double>());
 				}
 				CATSpeciesAmountMap innerMap = oMap.get(useClass);
-				for (CATSpecies species : innerMap.keySet()) {
-					outputMap.get(useClass).put(species, innerMap.get(species).get(element) / sum.get(element));
+				for (String speciesName : innerMap.keySet()) {
+					outputMap.get(useClass).put(speciesName, innerMap.get(speciesName).get(element) / sum.get(element));
 				}
 			}
 		}
@@ -204,7 +203,7 @@ public class CATProductCompartment extends CATCompartment {
 	 * @return a TreeMap instance
 	 */
 	protected TreeMap<String, CATSpeciesAmountMap> getVolumeByLogGradePerHa() {
-		List<CATSpecies> speciesList = getCompartmentManager().getSpeciesList();
+		List<String> speciesList = getCompartmentManager().getSpeciesList();
 		double areaFactor = 1d / getCompartmentManager().getTimeTable().getLastStandForThisRealization().getAreaHa();
 
 		BiomassParameters biomassParameters = getCompartmentManager().getCarbonToolSettings().getCurrentBiomassParameters();
@@ -221,21 +220,21 @@ public class CATProductCompartment extends CATCompartment {
 
 		AmountMap<Element> carrier;
 		for (LoggableTree tree : woodPieceMap.keySet()) {
-			CATSpecies species = ((CATCompatibleTree) tree).getCATSpecies();
+			String speciesName = tree.getSpeciesName();
 			Collection<WoodPiece> coll = woodPieceMap.get(tree);
 			double basicDensity = biomassParameters.getBasicWoodDensityFromThisTree((CATCompatibleTree) tree, getCompartmentManager());
 			for (WoodPiece piece : coll) {
 				logCategoryName = piece.getLogCategory().getName();
 				volume = piece.getWeightedTotalVolumeM3(); // TODO FP return the under bark volume instead MF20200825
 				CATSpeciesAmountMap speciesAmountMap = outputMap.get(logCategoryName);
-				carrier = speciesAmountMap.get(species);
+				carrier = speciesAmountMap.get(speciesName);
 				carrier.add(Element.Volume, volume);
 				carrier.add(Element.Biomass, volume * basicDensity);
 			}
 		}
 		for (CATSpeciesAmountMap speciesAmountMap : outputMap.values()) {
-			for (CATSpecies species : speciesAmountMap.keySet()) {
-				speciesAmountMap.put(species, speciesAmountMap.get(species).multiplyByAScalar(areaFactor));
+			for (String speciesName : speciesAmountMap.keySet()) {
+				speciesAmountMap.put(speciesName, speciesAmountMap.get(speciesName).multiplyByAScalar(areaFactor));
 			}
 		}
 

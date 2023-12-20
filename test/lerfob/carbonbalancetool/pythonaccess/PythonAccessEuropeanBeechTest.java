@@ -109,7 +109,7 @@ public class PythonAccessEuropeanBeechTest {
 		EuropeanBeechBasicTreeLoggerParameters loggerParams = (EuropeanBeechBasicTreeLoggerParameters) treeLogger.getTreeLoggerParameters();
 		for (DiameterBasedTreeLogCategory logCategory : loggerParams.getLogCategoryList()) {
 			manager.resetCarbonUnitMap();
-			manager.processWoodPiece(logCategory, 0, "", amountMaps, CATSpecies.FAGUS_SYLVATICA);
+			manager.processWoodPiece(logCategory, 0, "", amountMaps, CATSpecies.FAGUS_SYLVATICA.name(), CATSpecies.FAGUS_SYLVATICA.getSpeciesType());
 			double volume = 0;
 			for (CarbonUnitStatus type : CarbonUnitStatus.values()) {
 				CarbonUnitList list = manager.getCarbonUnits(type);

@@ -326,7 +326,8 @@ public class CATTask extends AbstractGenericTask {
 										currentDateIndex - i, 
 										samplingUnitID, 
 										amountMaps, 
-										((CATCompatibleTree) woodPiece.getTreeFromWhichComesThisPiece()).getCATSpecies());
+										woodPiece.getTreeFromWhichComesThisPiece().getSpeciesName(),
+										((CATCompatibleTree) woodPiece.getTreeFromWhichComesThisPiece()).getSpeciesType());
 
 							}
 						} else {
@@ -334,7 +335,8 @@ public class CATTask extends AbstractGenericTask {
 									currentDateIndex, 
 									samplingUnitID, 
 									amountMaps, 
-									((CATCompatibleTree) woodPiece.getTreeFromWhichComesThisPiece()).getCATSpecies());
+									woodPiece.getTreeFromWhichComesThisPiece().getSpeciesName(),
+									((CATCompatibleTree) woodPiece.getTreeFromWhichComesThisPiece()).getSpeciesType());
 						}
 
 					}
@@ -405,7 +407,7 @@ public class CATTask extends AbstractGenericTask {
 			double carbonMg, 
 			int dateIndex, 
 			String samplingUnitID, 
-			WoodyDebrisProcessorID type,
+			WoodyDebrisProcessorID WoodDebrisType,
 			ApplicationScale applicationScale) {
 		CATCompartmentManager manager = caller.getCarbonCompartmentManager();
 		int nbYearsToPreviousMeasurement = getNumberOfYearsBetweenStandOfThisHarvestedTreeAndPreviousStand(manager, tree);
@@ -441,10 +443,10 @@ public class CATTask extends AbstractGenericTask {
 
 			if (shouldBeBrokenDownAnnually(applicationScale, nbYearsToPreviousMeasurement)) {
 				for (int i = 0; i < nbYearsToPreviousMeasurement; i++) {
-					getProcessorManager().processWoodyDebris(dateIndex - i, samplingUnitID, amountMaps, tree.getCATSpecies(), type);
+					getProcessorManager().processWoodyDebris(dateIndex - i, samplingUnitID, amountMaps, tree.getSpeciesName(), tree.getSpeciesType(), WoodDebrisType);
 				}
 			} else {
-				getProcessorManager().processWoodyDebris(dateIndex, samplingUnitID, amountMaps, tree.getCATSpecies(), type);
+				getProcessorManager().processWoodyDebris(dateIndex, samplingUnitID, amountMaps, tree.getSpeciesName(), tree.getSpeciesType(), WoodDebrisType);
 			}
 		}
 	}

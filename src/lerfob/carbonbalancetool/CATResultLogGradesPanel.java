@@ -12,7 +12,6 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 
-import lerfob.carbonbalancetool.CATSettings.CATSpecies;
 import lerfob.carbonbalancetool.CATUtilityMaps.SpeciesMonteCarloEstimateMap;
 import lerfob.carbonbalancetool.gui.AsymmetricalCategoryDataset;
 import lerfob.carbonbalancetool.gui.EnhancedStatisticalBarRenderer;
@@ -62,12 +61,12 @@ class CATResultLogGradesPanel extends CATResultPanel {
 			SpeciesMonteCarloEstimateMap smcem = oMap.get(logCategoryName);
 			MonteCarloEstimate estimate;
 			if (optionPanel.isBySpeciesEnabled()) {
-				for (CATSpecies species : smcem.keySet()) {
-					estimate = smcem.get(species).get(Element.Volume);
+				for (String speciesName : smcem.keySet()) {
+					estimate = smcem.get(speciesName).get(Element.Volume);
 					dataset.add((MonteCarloEstimate) estimate.getProductEstimate(1d / summary.getRotationLength()),
 							getColor(index),
 							logCategoryName, 
-							species.toString());
+							speciesName);
 				}
 			} else {
 				estimate = smcem.getSumAcrossSpecies().get(Element.Volume);

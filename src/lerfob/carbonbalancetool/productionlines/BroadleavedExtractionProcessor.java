@@ -22,7 +22,7 @@ package lerfob.carbonbalancetool.productionlines;
 import java.util.ArrayList;
 import java.util.List;
 
-import lerfob.carbonbalancetool.CATSettings.CATSpecies;
+import repicea.simulation.covariateproviders.treelevel.SpeciesTypeProvider;
 import repicea.simulation.covariateproviders.treelevel.SpeciesTypeProvider.SpeciesType;
 import repicea.simulation.processsystem.ProcessUnit;
 import repicea.util.REpiceaTranslator;
@@ -66,9 +66,9 @@ public class BroadleavedExtractionProcessor extends AbstractExtractionProcessor 
 		List<ProcessUnit> copyList = new ArrayList<ProcessUnit>();
 		copyList.addAll(processUnits);
 		for (ProcessUnit p : copyList) {
-			if (p instanceof CarbonUnit) {
-				CATSpecies species = ((CarbonUnit) p).getSpecies();
-				if (species.getSpeciesType() == SpeciesType.BroadleavedSpecies) {
+			if (p instanceof SpeciesTypeProvider) {
+				SpeciesType speciesType = ((SpeciesTypeProvider) p).getSpeciesType();
+				if (speciesType == SpeciesType.BroadleavedSpecies) {
 					extractedUnits.add(p);
 					processUnits.remove(p);
 				}

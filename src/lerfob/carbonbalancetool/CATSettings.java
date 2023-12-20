@@ -60,7 +60,10 @@ public final class CATSettings {
 	
 	
 	/**
-	 * The enum representing the species. The proportion of bark volume was taken from 
+	 * The enum representing the species. <p>
+	 * 
+	 * This enum makes it possible to obtain the basic density and the bark
+	 * proportion following an IPCC Tier 1 approach. The proportion of bark volume was taken from 
 	 * Miles, P.D. and W.B. Smith. 2009. Specific gravity and other properties of wood
 	 * and bark for 156 tree species found in North America. USDA Forest Service,
 	 * Northern Research Station. Research Note NRS-38.

@@ -23,10 +23,11 @@ import java.util.List;
 
 import lerfob.carbonbalancetool.CATCompartmentManager;
 import lerfob.carbonbalancetool.CATDecayFunction;
-import lerfob.carbonbalancetool.CATSettings.CATSpecies;
 import lerfob.carbonbalancetool.CATTimeTable;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
 import repicea.simulation.MonteCarloSimulationCompliantObject;
+import repicea.simulation.covariateproviders.treelevel.SpeciesNameProvider;
+import repicea.simulation.covariateproviders.treelevel.SpeciesTypeProvider;
 import repicea.simulation.processsystem.AmountMap;
 import repicea.simulation.processsystem.ProcessUnit;
 
@@ -35,7 +36,9 @@ import repicea.simulation.processsystem.ProcessUnit;
  * A CarbonUnit instance is a piece of carbon.
  * @author Mathieu Fortin - November 2010
  */
-public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvider {
+public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvider, 
+																SpeciesNameProvider, 
+																SpeciesTypeProvider {
 
 	public final static String AllSpecies = "AllSpecies";
 	
@@ -97,7 +100,8 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 	protected final String samplingUnitID;
 	private final List<CarbonUnitStatus> status; 
 	private final CarbonUnitFeature carbonUnitFeature;
-	private CATSpecies species;
+	private final String speciesName;
+	private SpeciesType speciesType;
 	private BiomassType biomassType;
 	
 	/**
@@ -114,23 +118,51 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 	 * @param carbonUnitFeature a CarbonUnitFeature instance
 	 * @param initialAmounts a map that contains the amount of each element to be processed
 	 * @param speciesName the name of the species
+	 * @param speciesType the type of species (Broadleaved or Coniferous)
+	 * @param biomassType the type of biomass (wood or bark)
 	 */
 	protected CarbonUnit(int dateIndex, 
 			String samplingUnitID, 
 			CarbonUnitFeature carbonUnitFeature, 
 			AmountMap<Element> initialAmounts,
-			CATSpecies species,
+			String speciesName,
+			SpeciesType speciesType,
 			BiomassType biomassType) {
 		super(initialAmounts);
 		this.dateIndex = dateIndex;
 		this.carbonUnitFeature = carbonUnitFeature;
 		this.samplingUnitID = samplingUnitID;
-		this.species = species;
+		this.speciesName = speciesName;
+		this.speciesType = speciesType;
 		status = new ArrayList<CarbonUnitStatus>();
 		actualized = false;
 		this.biomassType = biomassType; 
 	}
 
+	/**
+	 * 
+	 * @param dateIndex the creation date index of the time scale
+	 * @param carbonUnitFeature a CarbonUnitFeature instance
+	 * @param initialAmounts a map that contains the amount of each element to be processed
+	 * @param originalCarbonUnit the original CarbonUnit instance from which this CarbonUnit instance is created
+	 */
+	protected CarbonUnit(int dateIndex, 
+			CarbonUnitFeature carbonUnitFeature, 
+			AmountMap<Element> initialAmounts,
+			CarbonUnit originalCarbonUnit) {
+		super(initialAmounts);
+		this.dateIndex = dateIndex;
+		this.carbonUnitFeature = carbonUnitFeature;
+		this.samplingUnitID = originalCarbonUnit.samplingUnitID;
+		this.speciesName = originalCarbonUnit.getSpeciesName();
+		this.speciesType = originalCarbonUnit.getSpeciesType();
+		status = new ArrayList<CarbonUnitStatus>();
+		actualized = false;
+		this.biomassType = originalCarbonUnit.getBiomassType(); 
+	}
+	
+	
+	
 	@Override
 	public BiomassType getBiomassType() {
 		if (biomassType == null) {
@@ -148,9 +180,11 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 	
 	protected boolean isActualized() {return actualized;}
 	
+	@Override
+	public String getSpeciesName() {
+		return speciesName;
+	}
 
-	public CATSpecies getSpecies() {return species;}
-	
 	/**
 	 * This method returns the creation date of the product
 	 * @return an integer
@@ -266,10 +300,12 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 				if (dateIndex == otherUnit.dateIndex) {
 					if (status.equals(otherUnit.status)) {
 						if (samplingUnitID.equals(otherUnit.samplingUnitID)) {
-							if (species.equals(otherUnit.species)) {
-								if (getBiomassType() == otherUnit.getBiomassType()) {
-									if (!actualized && !otherUnit.actualized) { // if both units have not been actualized yet
-										return true;
+							if (speciesName.equals(otherUnit.speciesName)) {
+								if (speciesType == otherUnit.speciesType) {
+									if (getBiomassType() == otherUnit.getBiomassType()) {
+										if (!actualized && !otherUnit.actualized) { // if both units have not been actualized yet
+											return true;
+										}
 									}
 								}
 							}
@@ -314,6 +350,9 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 	 * @return an Integer
 	 */
 	public int getIndexInTimeScale() {return dateIndex;}
+
+	@Override
+	public SpeciesType getSpeciesType() {return speciesType;}
 	
 	
 }

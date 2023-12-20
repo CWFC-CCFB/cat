@@ -27,13 +27,13 @@ import java.util.List;
 
 import javax.swing.event.CaretEvent;
 
-import lerfob.carbonbalancetool.CATSettings.CATSpecies;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.BiomassType;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
 import lerfob.carbonbalancetool.productionlines.EndUseWoodProductCarbonUnitFeature.UseClass;
 import repicea.gui.REpiceaUIObject;
 import repicea.serial.xml.PostXmlUnmarshalling;
+import repicea.simulation.covariateproviders.treelevel.SpeciesTypeProvider.SpeciesType;
 import repicea.simulation.processsystem.AmountMap;
 import repicea.simulation.processsystem.ProcessUnit;
 import repicea.simulation.processsystem.Processor;
@@ -274,21 +274,12 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 		CarbonUnit woodProduct;
 
 		if (!isFinalProcessor()) {
-			woodProduct = new CarbonUnit(dateIndex, 
-					carbonUnit.samplingUnitID, 
-					null, 
-					processedAmountMap, 
-					carbonUnit.getSpecies(),
-					carbonUnit.getBiomassType());
+			woodProduct = new CarbonUnit(dateIndex, null, processedAmountMap, carbonUnit);
 			outputUnits.add(woodProduct);
 			return outputUnits;
 		} else {
-			woodProduct = new EndUseWoodProductCarbonUnit(dateIndex, 
-					carbonUnit.samplingUnitID, 
-					(EndUseWoodProductCarbonUnitFeature) woodProductFeature,
-					processedAmountMap,
-					carbonUnit.getSpecies(),
-					carbonUnit.getBiomassType());
+			woodProduct = new EndUseWoodProductCarbonUnit(dateIndex, (EndUseWoodProductCarbonUnitFeature) woodProductFeature, 
+					processedAmountMap,	carbonUnit);
 			outputUnits.add(woodProduct);
 			return outputUnits;
 		}
@@ -302,7 +293,7 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 	 * @return a collection of EndProduct instances (Collection) 
 	 */
 	@Deprecated
-	protected CarbonUnitMap<CarbonUnitStatus> processWoodPiece(int dateIndex, CATSpecies species, AmountMap<Element> amountMap) throws Exception {
+	protected CarbonUnitMap<CarbonUnitStatus> processWoodPiece(int dateIndex, String speciesName, SpeciesType speciesType, AmountMap<Element> amountMap) throws Exception {
 
 		CarbonUnitMap<CarbonUnitStatus> outputMap = new CarbonUnitMap<CarbonUnitStatus>(CarbonUnitStatus.EndUseWoodProduct);
 
@@ -322,7 +313,8 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 							dateIndex, 
 							(EndUseWoodProductCarbonUnitFeature) woodProductFeature,
 							processedAmountMap,
-							species);
+							speciesName,
+							speciesType);
 					outputMap.get(CarbonUnitStatus.EndUseWoodProduct).add(woodProduct);
 
 				} else if (isLandfillProcessor()) {
@@ -334,7 +326,8 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 							sampleUnitID, 
 							lfcuf, 
 							landFillMapTmp, 
-							species, 
+							speciesName,
+							speciesType,
 							BiomassType.Wood, 
 							CarbonUnitStatus.LandFillDegradable);
 					getProductionLine().getManager().getCarbonUnits(CarbonUnitStatus.LandFillDegradable).add((LandfillCarbonUnit) woodProduct); 
@@ -344,32 +337,34 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 							sampleUnitID, 
 							lfcuf, 
 							landFillMapTmp, 
-							species, 
+							speciesName,
+							speciesType,
 							BiomassType.Wood, 
 							CarbonUnitStatus.LandFillNonDegradable); 
 					getProductionLine().getManager().getCarbonUnits(CarbonUnitStatus.LandFillNonDegradable).add((LandfillCarbonUnit) woodProduct); 
 					
 				} else {				// is left in the forest
-					woodProduct = new CarbonUnit(dateIndex, sampleUnitID, woodProductFeature, processedAmountMap, species, BiomassType.Wood);
+					woodProduct = new CarbonUnit(dateIndex, sampleUnitID, woodProductFeature, processedAmountMap, speciesName, speciesType, BiomassType.Wood);
 					getProductionLine().getManager().getCarbonUnits(CarbonUnitStatus.DeadWood).add(woodProduct);
 				}
 
 			} else if (hasSubProcessors()) {
 				for (Processor subProcessor : getSubProcessors()) {
 					AmountMap<Element> subProcessedMap = processedAmountMap.multiplyByAScalar(((ProductionLineProcessor) subProcessor).getAverageIntake());
-					outputMap.add(((ProductionLineProcessor) subProcessor).processWoodPiece(dateIndex, species, subProcessedMap));
+					outputMap.add(((ProductionLineProcessor) subProcessor).processWoodPiece(dateIndex, speciesName, speciesType, subProcessedMap));
 				}
 			} else if (isSentToAnotherMarket()) {
 				outputMap.add(getProductionLine().getManager().processWoodPieceIntoThisProductionLine(getProductionLineToBeSentTo(), 
 						dateIndex,
-						species,
+						speciesName,
+						speciesType,
 						processedAmountMap));
 			}
 		}
 		
 		if (somethingIsLoss) {
 			AmountMap<Element> lossAmountMap = amountMap.multiplyByAScalar(1 - averageYield);
-			CarbonUnitMap<CarbonUnitStatus> tmpMap = getLossProcessor().processWoodPiece(dateIndex, species, lossAmountMap);
+			CarbonUnitMap<CarbonUnitStatus> tmpMap = getLossProcessor().processWoodPiece(dateIndex, speciesName, speciesType, lossAmountMap);
 			for (Collection<CarbonUnit> carbonUnits : tmpMap.values()) {
 				outputMap.get(CarbonUnitStatus.IndustrialLosses).addAll(carbonUnits);
 			}
