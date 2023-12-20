@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lerfob.carbonbalancetool.CATCompartmentManager;
-import lerfob.carbonbalancetool.CATDecayFunction;
 import lerfob.carbonbalancetool.CATTimeTable;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
 import repicea.simulation.MonteCarloSimulationCompliantObject;
@@ -221,8 +220,8 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 	 * @return the integrated carbon in tC (double)
 	 */
 	public double getIntegratedCarbon(MonteCarloSimulationCompliantObject subject) {
-		CATDecayFunction decayFunction = getCarbonUnitFeature().getDecayFunction();
-		decayFunction.setAverageLifetimeYr(getCarbonUnitFeature().getAverageLifetime(subject));
+		DecayFunction decayFunction = getCarbonUnitFeature().getDecayFunction();
+//		decayFunction.setAverageLifetimeYr(getCarbonUnitFeature().getAverageLifetime(subject));
 		return getInitialCarbon() * decayFunction.getInfiniteIntegral(); //	0d : unnecessary parameter
 	}
 
@@ -234,13 +233,13 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 	 * @throws Exception
 	 */
 	protected void actualizeCarbon(CATCompartmentManager compartmentManager) throws Exception {
-		CATDecayFunction decayFunction = getCarbonUnitFeature().getDecayFunction();
+		DecayFunction decayFunction = getCarbonUnitFeature().getDecayFunction();
 		CATTimeTable timeScale = compartmentManager.getTimeTable();
 		setTimeTable(timeScale);
 		currentCarbonArray = new double[timeScale.size()];
 
-		double averageLifetimeYr = getCarbonUnitFeature().getAverageLifetime(compartmentManager);
-		decayFunction.setAverageLifetimeYr(averageLifetimeYr);
+//		double averageLifetimeYr = getCarbonUnitFeature().getAverageLifetime(compartmentManager);
+//		decayFunction.setAverageLifetimeYr(averageLifetimeYr);
 		double currentCarbon = getInitialCarbon();
 
 		double formerCarbon;
@@ -250,7 +249,7 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 		for (int i = dateIndex; i < timeScale.size(); i++) {
 			date = timeScale.getDateYrAtThisIndex(i);
 			if (date > getCreationDate() && currentCarbon > ProductionProcessorManager.VERY_SMALL) {
-				if (averageLifetimeYr > 0) {	// calculate the proportion only if lifetime is greater than 0
+				if (decayFunction.getInfiniteIntegral() > 0) {	// calculate the proportion only if lifetime is greater than 0
 					double thisRemains = decayFunction.getValueAtTime(date - getCreationDate());
 					double thatRemained = decayFunction.getValueAtTime(timeScale.getDateYrAtThisIndex(i - 1) - getCreationDate());
 					factor = thisRemains / thatRemained;	

@@ -18,66 +18,50 @@
  */
 package lerfob.carbonbalancetool.productionlines;
 
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.Serializable;
 
-import javax.swing.JComboBox;
-
-import lerfob.carbonbalancetool.CATDecayFunction;
-import lerfob.carbonbalancetool.CATExponentialDecayFunction;
-import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettings;
-import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettings.VariabilitySource;
+import lerfob.carbonbalancetool.productionlines.DecayFunction.DecayFunctionType;
+import lerfob.carbonbalancetool.productionlines.DecayFunction.LifetimeMode;
 import repicea.gui.REpiceaUIObject;
-import repicea.gui.components.NumberFormatFieldFactory.NumberFieldDocument.NumberFieldEvent;
-import repicea.gui.components.NumberFormatFieldFactory.NumberFieldListener;
-import repicea.simulation.MonteCarloSimulationCompliantObject;
-import repicea.util.REpiceaTranslator;
-import repicea.util.REpiceaTranslator.TextableEnum;
+import repicea.serial.SerializerChangeMonitor;
 
 /**
  * The CarbonUnitFeature class defines some characteristics of carbon units contained in a wood piece. <p>
  * It contains the lifetime, use class, and others characteristics. 
  * @author Mathieu Fortin - 2012
  */
-public class CarbonUnitFeature implements Serializable, REpiceaUIObject, NumberFieldListener, ItemListener {
+@SuppressWarnings("serial")
+public class CarbonUnitFeature implements Serializable, REpiceaUIObject {
 
-	private static final long serialVersionUID = 20101118L;
-
-	private static final double HALFLIFE_TO_MEANLIFETIME_CONSTANT = 1d / Math.log(2d);
-
-	protected static enum LifetimeMode implements TextableEnum {
-		HALFLIFE("Half-life (yr)", "Demi-vie (ann\u00E9es)"),
-		AVERAGE("Average lifetime (yr)", "Dur\u00E9e de vie moyenne (ann\u00E9es)"); 
-
-		LifetimeMode(String englishText, String frenchText) {
-			setText(englishText, frenchText);
-		}
-		
-		@Override
-		public void setText(String englishText, String frenchText) {
-			REpiceaTranslator.setString(this, englishText, frenchText);
-		}
-
-		@Override
-		public String toString() {
-			return REpiceaTranslator.getString(this);
-		}
+	static {
+		SerializerChangeMonitor.registerClassNameChange("lerfob.carbonbalancetool.productionlines.CarbonUnitFeature$LifetimeMode",
+				"lerfob.carbonbalancetool.productionlines.DecayFunction$LifetimeMode");
 	}
+
+//	private static final double HALFLIFE_TO_MEANLIFETIME_CONSTANT = 1d / Math.log(2d);
+
 
 	/**
 	 * IMPORTANT: This field can be either the average lifetime or the half-life. The conversion is handled 
 	 * by the getAverageLifetime() method.
+	 * @deprecated the average life time and the half life are now members of the DecayFunction class
+	 * @see {@link  lerfob.carbonbalancetool.productionlines.DecayFunction}
 	 */
+	@Deprecated
 	protected double averageLifetime;
+	/**
+	 * @deprecated the lifetime model is now a member of the DecayFunction class
+	 * @see {@link  lerfob.carbonbalancetool.productionlines.DecayFunction}
+	 */
+	@Deprecated
+	private LifetimeMode lifetimeMode;
 
-	private CATDecayFunction decayFunction;
+	private DecayFunction decayFunction;
 	
 	private AbstractProductionLineProcessor processor;
 	
 	private transient CarbonUnitFeaturePanel userInterfacePanel;
 
-	private LifetimeMode lifetimeMode;
 
 	/**
 	 * Constructor for GUI mode.
@@ -85,40 +69,43 @@ public class CarbonUnitFeature implements Serializable, REpiceaUIObject, NumberF
 	 */
 	protected CarbonUnitFeature(AbstractProductionLineProcessor processor) {
 		setProcessor(processor);
-		lifetimeMode = LifetimeMode.HALFLIFE; // default value
+//		lifetimeMode = LifetimeMode.HALFLIFE; // default value 
+		decayFunction = new DecayFunction(this, LifetimeMode.HALFLIFE, DecayFunctionType.Exponential, 0d);	// default IPCC setup (exponential and half life), the half life is set later on.
 	}
 	
-	protected LifetimeMode getLifetimeMode() {
+	@Deprecated
+	private LifetimeMode getLifetimeMode() {
 		if (lifetimeMode == null) {
 			lifetimeMode = LifetimeMode.AVERAGE;	// for former implementation
 		}
 		return lifetimeMode;
 	}
 
-	protected CATDecayFunction getDecayFunction() {
+	protected DecayFunction getDecayFunction() {
 		if (decayFunction == null) {
-			decayFunction = new CATExponentialDecayFunction();
+			decayFunction = new DecayFunction(this, getLifetimeMode(), DecayFunctionType.Exponential, averageLifetime);
 		} 
 		return decayFunction;
 	}
 	
-	/*
-	 * Accessors
-	 */
-	protected double getAverageLifetime(MonteCarloSimulationCompliantObject subject) {
-		double meanLifetime; 
-		if (getLifetimeMode() == LifetimeMode.AVERAGE) {
-			meanLifetime = averageLifetime;
-		} else {
-			meanLifetime = averageLifetime * HALFLIFE_TO_MEANLIFETIME_CONSTANT; // TODO fix that the average lifetime should be calculated using the 
-		}
-		if (subject != null) {
-			return meanLifetime * CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.Lifetime, subject, toString());
-		} else {
-			return meanLifetime;
-		}
-	}
+//	/*
+//	 * Accessors
+//	 */
+//	protected double getAverageLifetime(MonteCarloSimulationCompliantObject subject) {
+//		double meanLifetime; 
+//		if (getLifetimeMode() == LifetimeMode.AVERAGE) {
+//			meanLifetime = averageLifetime;
+//		} else {
+//			meanLifetime = averageLifetime * HALFLIFE_TO_MEANLIFETIME_CONSTANT; // TODO fix that the average lifetime should be calculated using the 
+//		}
+//		if (subject != null) {
+//			return meanLifetime * CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.Lifetime, subject, toString());
+//		} else {
+//			return meanLifetime;
+//		}
+//	}
 	
+	@Deprecated
 	protected void setAverageLifetime(double d) {averageLifetime = d;}
 	
 	protected CarbonUnitFeaturePanel getUserInterfacePanel() {return userInterfacePanel;}
@@ -155,36 +142,37 @@ public class CarbonUnitFeature implements Serializable, REpiceaUIObject, NumberF
 //		return true;
 //	}
 
-	@Override
-	public void numberChanged(NumberFieldEvent e) {
-		if (e.getSource().equals(getUI().averageLifetimeTextField)) {
-			double value = Double.parseDouble(getUI().averageLifetimeTextField.getText());
-			if (value != averageLifetime) {
-				((AbstractProcessorButton) getProcessor().getUI()).setChanged(true);
-				setAverageLifetime(value);
-			}
-		} 
-	}
+//	@Override
+//	public void numberChanged(NumberFieldEvent e) {
+//		if (e.getSource().equals(getUI().averageLifetimeTextField)) {
+//			double value = Double.parseDouble(getUI().averageLifetimeTextField.getText());
+//			if (value != averageLifetime) {
+//				((AbstractProcessorButton) getProcessor().getUI()).setChanged(true);
+//				setAverageLifetime(value);
+//			}
+//		} 
+//	}
 	
 	@Override
 	public String toString() {
-		return getProcessor().getName() + "_" + averageLifetime;
+//		return getProcessor().getName() + "_" + averageLifetime;
+		return getProcessor().getName();
 	}
 
-	@SuppressWarnings("rawtypes")
-	@Override
-	public void itemStateChanged(ItemEvent evt) {
-		if (evt.getSource() instanceof JComboBox) {
-			Object obj = ((JComboBox) evt.getSource()).getSelectedItem();
-			if (obj instanceof LifetimeMode) {
-				LifetimeMode newLifetimeMode = (LifetimeMode) obj;
-				if (newLifetimeMode != lifetimeMode) {
-					((AbstractProcessorButton) getProcessor().getUI()).setChanged(true);
-					lifetimeMode = newLifetimeMode;
-					System.out.println("Lifetime mode switch to " + lifetimeMode);
-				}
-			}
-		}	
-	}
+//	@SuppressWarnings("rawtypes")
+//	@Override
+//	public void itemStateChanged(ItemEvent evt) {
+//		if (evt.getSource() instanceof JComboBox) {
+//			Object obj = ((JComboBox) evt.getSource()).getSelectedItem();
+//			if (obj instanceof LifetimeMode) {
+//				LifetimeMode newLifetimeMode = (LifetimeMode) obj;
+//				if (newLifetimeMode != lifetimeMode) {
+//					((AbstractProcessorButton) getProcessor().getUI()).setChanged(true);
+//					lifetimeMode = newLifetimeMode;
+//					System.out.println("Lifetime mode switch to " + lifetimeMode);
+//				}
+//			}
+//		}	
+//	}
 
 }

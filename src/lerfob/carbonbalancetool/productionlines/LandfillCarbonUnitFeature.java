@@ -78,7 +78,7 @@ public class LandfillCarbonUnitFeature extends CarbonUnitFeature implements Chan
 	 */
 	protected LandfillCarbonUnitFeature(AbstractProductionLineProcessor processor) {
 		super(processor);
-		setAverageLifetime(33);	// Default value in IPCC 2006 Waste p.3.17
+		getDecayFunction().setHalfLifeYr(33); // Default value in IPCC 2006 Waste p.3.17
 	}
 
 	@Override

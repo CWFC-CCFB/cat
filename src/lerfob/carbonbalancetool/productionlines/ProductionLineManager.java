@@ -148,6 +148,7 @@ public final class ProductionLineManager extends AbstractDesigner<ProductionLine
 		fireDesignerChangeEvent();
 	}
 	
+	@Deprecated
 	@Override
 	public void reset() {
 		setName("");

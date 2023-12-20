@@ -1,5 +1,5 @@
 /*
- * This file is part of the lerfob-foresttools library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2022 Her Majesty the Queen in right of Canada
  * Author: Mathieu Fortin, Canadian Wood Fibre Centre
