@@ -110,7 +110,7 @@ public class CarbonUnitFeature implements Serializable, REpiceaUIObject, NumberF
 		if (getLifetimeMode() == LifetimeMode.AVERAGE) {
 			meanLifetime = averageLifetime;
 		} else {
-			meanLifetime = averageLifetime * HALFLIFE_TO_MEANLIFETIME_CONSTANT;
+			meanLifetime = averageLifetime * HALFLIFE_TO_MEANLIFETIME_CONSTANT; // TODO fix that the average lifetime should be calculated using the 
 		}
 		if (subject != null) {
 			return meanLifetime * CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.Lifetime, subject, toString());

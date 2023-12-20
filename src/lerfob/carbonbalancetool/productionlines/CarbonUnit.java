@@ -45,7 +45,9 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 		LandFillDegradable,
 		LandFillNonDegradable,
 		Recycled, 
-		/** Can be either harvest residues or dead wood. */
+		/** 
+		 * Can be either harvest residues or dead wood. 
+		 */
 		DeadWood, 
 		IndustrialLosses,
 		RecycledLosses;
@@ -95,7 +97,6 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 	protected final String samplingUnitID;
 	private final List<CarbonUnitStatus> status; 
 	private final CarbonUnitFeature carbonUnitFeature;
-//	private final String speciesName;
 	private CATSpecies species;
 	private BiomassType biomassType;
 	
@@ -147,11 +148,6 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 	
 	protected boolean isActualized() {return actualized;}
 	
-//	@Override
-//	public String getSpeciesName() {
-////		return speciesName;
-//		return getSpecies().toString();
-//	}
 
 	public CATSpecies getSpecies() {return species;}
 	
@@ -237,9 +233,6 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 		actualized = true;
 	}
 	
-//	protected boolean isFromIntervention() {
-//		return status.size() == 1 && CarbonUnitStatus.getPotentialInterventionResultStatus().contains(status.get(0));
-//	}
 
 	/**
 	 * This method returns the released carbon along in time given the product has been actualized. Otherwise it returns null.
@@ -273,7 +266,6 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 				if (dateIndex == otherUnit.dateIndex) {
 					if (status.equals(otherUnit.status)) {
 						if (samplingUnitID.equals(otherUnit.samplingUnitID)) {
-//							if (speciesName.equals(otherUnit.speciesName)) {
 							if (species.equals(otherUnit.species)) {
 								if (getBiomassType() == otherUnit.getBiomassType()) {
 									if (!actualized && !otherUnit.actualized) { // if both units have not been actualized yet

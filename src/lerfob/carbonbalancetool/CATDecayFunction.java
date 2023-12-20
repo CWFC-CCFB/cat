@@ -1,7 +1,9 @@
 /*
- * This file is part of the lerfob-forestools library.
+ * This file is part of the CAT library.
  *
- * Copyright (C) 2012 Mathieu Fortin for LERFOB INRA/AgroParisTech, 
+ * Copyright (C) 2012 Mathieu Fortin for LERFOB INRA/AgroParisTech
+ * Copyright (C) 2023 His Majesty the King in Right of Canada
+ * Author: Mathieu Fortin, Canadian Forest Service
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,6 +27,14 @@ package lerfob.carbonbalancetool;
  */
 public interface CATDecayFunction {
 
+	/**
+	 * Enum associated to the implementation of CATDecayFunction.
+	 * @author Mathieu Fortin - December 2023
+	 */
+	public static enum DecayFunctionType {
+		Exponential,
+		Weibull;
+	}
 	
 	/**
 	 * This method returns the value of the infinite integral of the decay function.
