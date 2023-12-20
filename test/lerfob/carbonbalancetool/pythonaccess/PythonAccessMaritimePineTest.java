@@ -86,7 +86,7 @@ public class PythonAccessMaritimePineTest {
 		MaritimePineBasicTreeLoggerParameters loggerParams = (MaritimePineBasicTreeLoggerParameters) treeLogger.getTreeLoggerParameters();
 		for (DiameterBasedTreeLogCategory logCategory : loggerParams.getLogCategoryList()) {
 			manager.resetCarbonUnitMap();
-			manager.processWoodPiece(logCategory, 0, "", amountMaps, CATSpecies.PINUS_PINASTER);
+			manager.processWoodPiece(logCategory, 0, "", amountMaps, CATSpecies.PINUS_PINASTER.name(), CATSpecies.PINUS_PINASTER.getSpeciesType());
 			double volume = 0;
 			for (CarbonUnitStatus type : CarbonUnitStatus.values()) {
 				CarbonUnitList list = manager.getCarbonUnits(type);
