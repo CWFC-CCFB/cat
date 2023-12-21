@@ -191,7 +191,6 @@ public final class CATSettings {
 		GlobalWarmingPotentialMap.put(AssessmentReport.Fifth, new GWP(28, 265, 1.9));	// from IPCC(2013, Ch.8 p.714 and Table 8.SM.16)
 	}
 
-	private final CATExponentialFunction decayFunction = new CATExponentialFunction();
 	private final SettingMemory settings;
 	protected boolean formerImplementation;
 	
@@ -393,7 +392,7 @@ public final class CATSettings {
 	}
 
 
-	public CATExponentialFunction getDecayFunction() {return decayFunction;}
+//	public CATExponentialFunction getDecayFunction() {return decayFunction;}
 	
 
 	private void loadFromParameter(Parameterizable params, String filename) {

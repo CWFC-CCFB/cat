@@ -37,8 +37,6 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
 import lerfob.carbonbalancetool.CATCompartmentManager;
-import lerfob.carbonbalancetool.CATDecayFunction;
-import lerfob.carbonbalancetool.CATExponentialFunction;
 import lerfob.carbonbalancetool.CarbonAccountingTool;
 import lerfob.carbonbalancetool.catdiameterbasedtreelogger.CATDiameterBasedTreeLogger;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.BiomassType;
@@ -252,7 +250,7 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 
 	private transient CarbonUnitMap<CarbonUnitStatus> carbonUnitMap;
 
-	private CATDecayFunction decayFunction;
+//	private DecayFunction decayFunction;
 
 	/**
 	 * Constructor.
@@ -692,12 +690,12 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		}
 	}
 
-	protected CATDecayFunction getDecayFunction() {
-		if (decayFunction == null) {
-			decayFunction = new CATExponentialFunction();
-		}
-		return decayFunction;
-	}
+//	protected DecayFunction getDecayFunction() {
+//		if (decayFunction == null) {
+//			decayFunction = new ExponentialDecayFunction();
+//		}
+//		return decayFunction;
+//	}
 
 	protected CarbonUnitMap<CarbonUnitStatus> getCarbonUnitMap() {
 		if (carbonUnitMap == null) {

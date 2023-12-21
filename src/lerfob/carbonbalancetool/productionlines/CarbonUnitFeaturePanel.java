@@ -19,20 +19,13 @@
 package lerfob.carbonbalancetool.productionlines;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
-import lerfob.carbonbalancetool.productionlines.CarbonUnitFeature.LifetimeMode;
 import repicea.gui.REpiceaPanel;
 import repicea.gui.UIControlManager;
-import repicea.gui.components.NumberFormatFieldFactory;
-import repicea.gui.components.NumberFormatFieldFactory.JFormattedNumericField;
-import repicea.gui.components.NumberFormatFieldFactory.Range;
-import repicea.gui.components.NumberFormatFieldFactory.Type;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
 
@@ -60,13 +53,14 @@ public class CarbonUnitFeaturePanel extends REpiceaPanel {
 		}
 	}
 	
-	protected JComboBox<LifetimeMode> lifetimeModeList;
+//	protected JComboBox<LifetimeMode> lifetimeModeList;
 	
-	protected JFormattedNumericField averageLifetimeTextField;
+//	protected JFormattedNumericField averageLifetimeTextField;
 	
 	private CarbonUnitFeature caller;
 	
 	protected JPanel mainPanel;
+	protected DecayFunctionPanel decayFunctionPanel;
 	
 	protected CarbonUnitFeaturePanel(CarbonUnitFeature caller) {
 		super();
@@ -79,12 +73,12 @@ public class CarbonUnitFeaturePanel extends REpiceaPanel {
 	protected void setCaller(CarbonUnitFeature caller) {this.caller = caller;}
 	
 	protected void initializeFields() {
-		averageLifetimeTextField = NumberFormatFieldFactory.createNumberFormatField(Type.Double, Range.Positive, false);
-		averageLifetimeTextField.setText(((Double) getCaller().averageLifetime).toString());
-		averageLifetimeTextField.setPreferredSize(new Dimension(100, averageLifetimeTextField.getFontMetrics(averageLifetimeTextField.getFont()).getHeight() + 2));
-		
-		lifetimeModeList = new JComboBox<LifetimeMode>(LifetimeMode.values());
-		lifetimeModeList.setSelectedItem(getCaller().getLifetimeMode());
+//		averageLifetimeTextField = NumberFormatFieldFactory.createNumberFormatField(Type.Double, Range.Positive, false);
+//		averageLifetimeTextField.setText(((Double) getCaller().averageLifetime).toString());
+//		averageLifetimeTextField.setPreferredSize(new Dimension(100, averageLifetimeTextField.getFontMetrics(averageLifetimeTextField.getFont()).getHeight() + 2));
+//		
+//		lifetimeModeList = new JComboBox<LifetimeMode>(LifetimeMode.values());
+//		lifetimeModeList.setSelectedItem(getCaller().getLifetimeMode());
 	}
 	
 	protected void createUI() {
@@ -96,10 +90,11 @@ public class CarbonUnitFeaturePanel extends REpiceaPanel {
 		setupPanel.add(mainPanel, BorderLayout.NORTH);
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
 
-		JPanel lifetimePanel = UIControlManager.createSimpleHorizontalPanel(lifetimeModeList, averageLifetimeTextField, 5, true);
+		decayFunctionPanel = getCaller().getDecayFunction().getUI();
+		//.createSimpleHorizontalPanel(lifetimeModeList, averageLifetimeTextField, 5, true);
 		
 		mainPanel.add(Box.createVerticalStrut(5));
-		mainPanel.add(lifetimePanel);
+		mainPanel.add(decayFunctionPanel);
 		mainPanel.add(Box.createVerticalStrut(5));
 	}
 
@@ -111,19 +106,19 @@ public class CarbonUnitFeaturePanel extends REpiceaPanel {
 	@Override
 	public void setEnabled(boolean b) {
 		super.setEnabled(b);
-		averageLifetimeTextField.setEnabled(b);
+		decayFunctionPanel.setEnabled(b);
 	}
 
 	@Override
 	public void listenTo() {
-		averageLifetimeTextField.addNumberFieldListener(getCaller());
-		lifetimeModeList.addItemListener(getCaller());
+//		averageLifetimeTextField.addNumberFieldListener(getCaller());
+//		lifetimeModeList.addItemListener(getCaller());
 	}
 
 	@Override
 	public void doNotListenToAnymore() {
-		averageLifetimeTextField.removeNumberFieldListener(getCaller());
-		lifetimeModeList.removeItemListener(getCaller());
+//		averageLifetimeTextField.removeNumberFieldListener(getCaller());
+//		lifetimeModeList.removeItemListener(getCaller());
 	}
 
 	/*

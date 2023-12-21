@@ -1,5 +1,5 @@
 /*
- * This file is part of the lerfob-forestools library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2010-2016 Mathieu Fortin AgroParisTech/INRA UMR LERFoB, 
  *
@@ -151,6 +151,7 @@ public class CATTimeTable {
 	
 	public int lastIndexOf(int dateYr) {return internalTimeTable.lastIndexOf(dateYr);}
 
+	@SuppressWarnings("unchecked")
 	void setMonteCarloRealization(int realizationId) {
 		realizationStandMap.clear();
 		currentStands.clear();

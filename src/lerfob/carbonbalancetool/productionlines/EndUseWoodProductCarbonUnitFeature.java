@@ -32,6 +32,7 @@ import lerfob.carbonbalancetool.productionlines.combustion.CombustionEmissions.C
 import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettings;
 import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettings.VariabilitySource;
 import repicea.gui.components.NumberFormatFieldFactory.NumberFieldDocument.NumberFieldEvent;
+import repicea.gui.components.NumberFormatFieldFactory.NumberFieldListener;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
 
@@ -41,7 +42,8 @@ import repicea.util.REpiceaTranslator.TextableEnum;
  * @author M. Fortin - October 2010
  */
 public class EndUseWoodProductCarbonUnitFeature extends CarbonUnitFeature implements ChangeListener, 
-																					ItemListener {
+																					ItemListener,
+																					NumberFieldListener {
 
 	private static final long serialVersionUID = 20101020L;
 	
@@ -224,8 +226,8 @@ public class EndUseWoodProductCarbonUnitFeature extends CarbonUnitFeature implem
 				((AbstractProcessorButton) getProcessor().getUI()).setChanged(true);
 				emissionsByFunctionalUnit = value;
 			}
-		} else {
-			super.numberChanged(e);
+//		} else {
+//			super.numberChanged(e);
 		}
 	}
 
@@ -249,8 +251,8 @@ public class EndUseWoodProductCarbonUnitFeature extends CarbonUnitFeature implem
 					((AbstractProcessorButton) getProcessor().getUI()).setChanged(true);
 					useClass = newUseClass;
 				}
-			} else if (obj instanceof LifetimeMode) {
-				super.itemStateChanged(evt);
+//			} else if (obj instanceof LifetimeMode) {
+//				super.itemStateChanged(evt);
 			} else if (obj instanceof CombustionProcess) {
 				CombustionProcess newCombustionProcess = (CombustionProcess) obj;
 				if (newCombustionProcess != combustionProcess) {

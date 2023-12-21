@@ -43,13 +43,12 @@ class CATCompartmentCompileLibrary {
 	void selectCalculatorFunction(CATCompartment carbonCompartment) throws Exception {
 		CATCompartmentManager manager = carbonCompartment.getCompartmentManager();
 		
-
 		Collection<? extends CarbonUnit> carbonUnits;
 		CATTimeTable timeTable = manager.getTimeTable();
 		double[] carbon = new double[timeTable.size()];
 		double integratedCarbon = 0d;
 		int revolutionPeriod = manager.getRotationLength();
-		CATExponentialFunction decayFunction;
+//		CATExponentialFunction decayFunction;
 		List<CATCompatibleStand> stands = timeTable.getStandsForThisRealization();
 		CATIntermediateBiomassCarbonMap oMap;
 		
@@ -81,7 +80,7 @@ class CATCompartmentCompileLibrary {
 		case DeadBiom:
 		case Products:
 		case LfillDeg:
-			decayFunction = manager.getCarbonToolSettings().getDecayFunction();
+//			decayFunction = manager.getCarbonToolSettings().getDecayFunction();
 			
 			for (int i = 0; i < timeTable.size(); i++) {
 				carbonUnits = carbonCompartment.getCarbonUnitsArray()[i];
@@ -91,7 +90,7 @@ class CATCompartmentCompileLibrary {
 						for (int j = 0; j < timeTable.size(); j++) {
 							carbon[j] += actualizedCarbon[j];
 						}
-						integratedCarbon += carbonUnit.getIntegratedCarbon(decayFunction, manager);
+						integratedCarbon += carbonUnit.getIntegratedCarbon(manager);
 					}
 				}
 			}
@@ -144,7 +143,7 @@ class CATCompartmentCompileLibrary {
 
 		case EnerSubs:
 			
-			decayFunction = manager.getCarbonToolSettings().getDecayFunction();
+//			decayFunction = manager.getCarbonToolSettings().getDecayFunction();
 
 			for (int i = 0; i < timeTable.size(); i++) {
 				carbonUnits = carbonCompartment.getCarbonUnitsArray()[i];
@@ -233,7 +232,7 @@ class CATCompartmentCompileLibrary {
 			break;
 			
 		case LfillEm:
-			decayFunction = manager.getCarbonToolSettings().getDecayFunction();
+//			decayFunction = manager.getCarbonToolSettings().getDecayFunction();
 			
 			for (int i = 0; i < timeTable.size(); i++) {
 				carbonUnits = carbonCompartment.getCarbonUnitsArray()[i];
