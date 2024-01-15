@@ -37,7 +37,7 @@ jobs:
 
     - name: Execute Gradle 'integrationTest' task on Linux
       if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: sudo xvfb-run ./gradlew integrationTest
+      run: xvfb-run ./gradlew integrationTest
 
     - name: Execute Gradle 'integrationTest' task on other OS
       if: ${{ matrix.os != 'ubuntu-latest' }}
