@@ -38,6 +38,7 @@ public class AffiliereJSONImportTest {
 	@SuppressWarnings("rawtypes")
 	@Test
 	public void testAffiliereReaderFromFile() throws IOException {
+//		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportTest.class) + "BACCFIRE V7.2_layout 1.json";
 		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportTest.class) + "EtudesAvecEtiquette4.json";
 		ProductionProcessorManager manager = new ProductionProcessorManager();
 		manager.importFrom(filename, ImportFormat.AFFILIERE);
@@ -45,7 +46,7 @@ public class AffiliereJSONImportTest {
 		MemorizerPackage mp = manager.getMemorizerPackage();
 		Assert.assertEquals("Testing nb of processors", 94, ((List) mp.get(1)).size());
 	}
-	
+		
 	@SuppressWarnings("rawtypes")
 	@Ignore
 	@Test

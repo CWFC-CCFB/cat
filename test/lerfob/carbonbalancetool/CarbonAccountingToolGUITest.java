@@ -24,6 +24,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.logging.Level;
 
+import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
@@ -240,6 +241,11 @@ public class CarbonAccountingToolGUITest {
 		ROBOT.clickThisButton(CATFrame.MessageID.CalculateCarbonBalance.name(), CATAWTProperty.CarbonCalculationSuccessful); 
 		int tabCountAfter = CAT.getUI().graphicPanel.tabbedPane.getTabCount();
 		Assert.assertEquals("Testing if a tab has been craeted in the tabbedPane instance", tabCountBefore + 1, tabCountAfter);
+		CATSingleViewPanel singleViewPanel = (CATSingleViewPanel) ROBOT.findComponentWithThisName("Sim 3");
+		singleViewPanel.selector.setSelectedIndex(2);
+		Assert.assertTrue("Testing if the panel displays the information", singleViewPanel.selector.getSelectedItem() instanceof CATResultHWPPanel);
+		singleViewPanel.refreshInterface();
+		int u = 0;
 	}
 	
 	

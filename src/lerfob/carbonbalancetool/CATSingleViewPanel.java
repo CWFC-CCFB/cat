@@ -33,7 +33,7 @@ import repicea.gui.REpiceaPanel;
 class CATSingleViewPanel extends REpiceaPanel implements ItemListener, PropertyChangeListener {
 
 	@SuppressWarnings("rawtypes")
-	private JComboBox selector;
+	protected JComboBox selector;
 	private JScrollPane viewerScrollPane;		
 	private CATOptionPanel optionPanel;
 	private CATSimulationResult summary;

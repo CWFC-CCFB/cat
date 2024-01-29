@@ -71,8 +71,28 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	
 	private static int NumberOfExtraYrs = 80;	// number of years after the final cut
 
+	/**
+	 * The treeCollections member is a four-level map.<p>
+	 * The keys are:<ol>
+	 * <li> the StatusClass enum
+	 * <li> the CATCompatibleStand instance
+	 * <li> the samplingUnitId (String)
+	 * <li> the species (String)
+	 * </ol>
+	 * The value is a Collection of CATCompatibleTree instances
+	 */
 	private final Map<StatusClass, Map<CATCompatibleStand, Map<String, Map<String, Collection<CATCompatibleTree>>>>> treeCollections;
+	
+	/**
+	 * A map whose keys are the trees and values are the corresponding stands.<p>
+	 * This map is used to provide a date index in conjunction with the timeTable member.
+	 */
 	private final Map<CATCompatibleTree, CATCompatibleStand> treeRegister;
+	
+	/**
+	 * A List of all the species found in the CATCompatibleStand instances.<p>
+	 * This list is set when the {@link CATCompartmentManager#init(List)} method is called.
+	 */
 	private final List<String> speciesList;
 
 	private List<CATCompatibleStand> stands;
@@ -107,6 +127,13 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		initializeCompartments();
 	}
 		
+	/**
+	 * Trees are registered in the treeCollections map and the treeRegister map immediately after the manager has been reset following
+	 * the triggering of the calculateCarbon action.
+	 * @param statusClass a StatusClass enum
+	 * @param stand a CATCompatibleStand instance
+	 * @param tree a CATCompatibleTree instance
+	 */
 	protected void registerTree(StatusClass statusClass, CATCompatibleStand stand, CATCompatibleTree tree) {
 		if (!treeCollections.containsKey(statusClass)) {
 			treeCollections.put(statusClass, new HashMap<CATCompatibleStand, Map<String, Map<String, Collection<CATCompatibleTree>>>>());
@@ -160,7 +187,13 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		return -1;
 	}
 	
-
+	/**
+	 * Return the second-level Map from the treeCollections member.<p>
+	 * These second-level map are needed for the logging, bucking and transformation of trees into
+	 * harvest wood products.
+	 * @param statusClass a StatusClass enum
+	 * @return a Map instance
+	 */
 	protected Map<CATCompatibleStand, Map<String, Map<String, Collection<CATCompatibleTree>>>> getTrees(StatusClass statusClass) {
 		if (treeCollections.containsKey(statusClass)) {
 			return treeCollections.get(statusClass);
@@ -172,18 +205,13 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	private void clearTreeCollections() {
 		treeCollections.clear();
 		treeRegister.clear();
-		speciesList.clear();
+//		speciesList.clear();  // is now set through the init method
 	}
 
 	protected List<String> getSpeciesList() {
 		return speciesList;
 	}
 
-	protected void registerTreeSpecies(CATCompatibleTree tree) {
-		if (!speciesList.contains(tree.getSpeciesName())) {
-			speciesList.add(tree.getSpeciesName());
-		}
-	}
 
 	protected void setSimulationValid(boolean isSimulationValid) {
 		this.isSimulationValid = isSimulationValid;
@@ -214,9 +242,11 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	 * <li> the rotation length (or cutting cycle in case of uneven-aged management)
 	 * <li> whether the simulation can be run in infinite sequence
 	 * <li> the number of Monte Carlo realizations (set to 1 if the model is deterministic)
+	 * <li> the list of species found in the simulation
 	 * </ul> 
 	 * @param stands a List of CATCompatibleStand instances
 	 */
+	@SuppressWarnings("unchecked")
 	public void init(List<CATCompatibleStand> stands) {
 		this.stands = stands;
 		if (stands != null) {
@@ -244,6 +274,21 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 			}
 				
 			timeTable = new CATTimeTable(stands, initialAgeYr, nbExtraYears);
+
+			// scan all the trees to identify the different species and store their codes in the speciesList member
+			speciesList.clear();
+			for (CATCompatibleStand s : stands) {
+				for (StatusClass sc : StatusClass.values()) {
+					Collection<CATCompatibleTree> trees = s.getTrees(sc);
+					for (CATCompatibleTree tree : trees) {
+						if (!speciesList.contains(tree.getSpeciesName())) {
+							speciesList.add(tree.getSpeciesName());
+						}
+					}
+				}
+			}
+			
+			
 		}
 	}
 	
@@ -277,7 +322,10 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	}
 
 	
-	
+	/**
+	 * The first task to be carried out when the calculateCarbon action is triggered is to reset the
+	 * manager.
+	 */
 	protected void resetManager() {
 		clearTreeCollections();
 		resetCompartments();
