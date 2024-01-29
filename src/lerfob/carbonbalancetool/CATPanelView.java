@@ -147,6 +147,7 @@ class CATPanelView extends REpiceaPanel implements ChangeListener, PropertyChang
 
 	protected void addSimulationResult(CATSimulationResult summary) {
 		CATSingleViewPanel singleViewPanel = new CATSingleViewPanel(optionPanel, summary);
+		singleViewPanel.setName(summary.getResultId());
 		tabbedPane.insertTab(summary.getResultId(), null, singleViewPanel, summary.toString(), 0);
 		tabbedPane.setSelectedIndex(0);
 	}

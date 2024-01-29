@@ -58,7 +58,14 @@ public class CATTask extends AbstractGenericTask {
 		SET_STANDLIST(false),
 		UNLOCK_ENGINE(false),
 		SHOW_INTERFACE(false),
+		/**
+		 * First task to be carried out when the calculateCarbon action is triggered.
+		 * @see CATCompartmentManager#resetManager()
+		 */
 		RESET_MANAGER(false), 
+		/**
+		 * Second task to be carried out when the calculateCarbon action is triggered
+		 */
 		REGISTER_TREES(false),
 		DISPLAY_RESULT(false),
 		SET_BIOMASS_PARMS(false),
@@ -168,7 +175,6 @@ public class CATTask extends AbstractGenericTask {
 	}
 
 	
-
 	@SuppressWarnings("unchecked")
 	private void registerTrees() {
 		CATCompartmentManager manager = caller.getCarbonCompartmentManager();
@@ -188,7 +194,7 @@ public class CATTask extends AbstractGenericTask {
 						if (statusClass != StatusClass.alive) {
 							manager.registerTree(statusClass, stand, t);
 						}
-						manager.registerTreeSpecies(t);	// we register all the possible species regardless of tree status
+//						manager.registerTreeSpecies(t);	// we register all the possible species regardless of tree status -- NOW HANDLED IN the INIT method of CATCompartmentManager 
 					} 
 				}
 			}
