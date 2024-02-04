@@ -70,7 +70,7 @@ public abstract class AbstractProcessor extends Processor {
 	 * Create a Processor instance from a LinkedHashMap instance.<p>
 	 * 
 	 * @param oMap a LinkedHashMap<String, Object> instance
-	 * @return a Processor instance
+	 * @return a ProductionLineProcessor instance
 	 */
 	public static Processor createProcessor(LinkedHashMap<String, Object> oMap) {
 //		if (oMap.containsKey("class")) { // previously exported from CAT

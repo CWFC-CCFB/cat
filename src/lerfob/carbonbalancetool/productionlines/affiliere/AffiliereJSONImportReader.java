@@ -25,6 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -44,6 +45,30 @@ import repicea.simulation.processsystem.Processor;
  */
 public class AffiliereJSONImportReader {
 
+	public enum AFFiliereUnit {
+		VolumeM3("1000m3"), 
+		DryBiomassMg("1000t");
+	
+		final String suffix;
+		
+		AFFiliereUnit(String suffix) {
+			this.suffix = suffix;
+		}
+	}
+
+	public enum AFFiliereStudy {
+		AFFiliere("AF Fili\u00E8res"),
+		Carbone4("Carbone 4"),
+		BACCFIRE("BACCFIRE"),
+		MFAB("MFAB");
+		
+		final String prefix;
+		
+		AFFiliereStudy(String prefix) {
+			this.prefix = prefix;
+		}
+	}
+	
 	public static final String NameTag = "name";
 	public static final String XTag = "x";
 	public static final String YTag = "y";
@@ -66,15 +91,36 @@ public class AffiliereJSONImportReader {
 	
 	protected final LinkedHashMap<?,?> mappedJSON;
 	protected final Map<String, Processor> processors;
-	protected final List<ProductionLineProcessor> endProductProcessors;
+	protected final List<Processor> endProductProcessors;
+	protected final List<Processor> ioProcessors;
+	protected final AFFiliereStudy study;
+	protected final AFFiliereUnit unit;
 	
 	/**
 	 * Constructor.
 	 * @param file the File instance to be read.
 	 * @throws FileNotFoundException if the file cannot be found.
 	 */
+	public AffiliereJSONImportReader(File file, AFFiliereStudy study, AFFiliereUnit unit) throws FileNotFoundException {
+		this(new FileInputStream(file), study, unit);
+	}
+
+	/**
+	 * Constructor.
+	 * @param url the url of the file to be read.
+	 * @throws IOException if the url cannot produce an input stream.
+	 */
+	public AffiliereJSONImportReader(URL url, AFFiliereStudy study, AFFiliereUnit unit) throws IOException {
+		this(url.openStream(), study, unit);
+	}
+
+	/**
+	 * Constructor.
+	 * @param file the File instance to be read.
+	 * @throws FileNotFoundException if the file cannot be found.
+	 */
 	public AffiliereJSONImportReader(File file) throws FileNotFoundException {
-		this(new FileInputStream(file));
+		this(new FileInputStream(file), null, null);
 	}
 
 	/**
@@ -83,32 +129,74 @@ public class AffiliereJSONImportReader {
 	 * @throws IOException if the url cannot produce an input stream.
 	 */
 	public AffiliereJSONImportReader(URL url) throws IOException {
-		this(url.openStream());
+		this(url.openStream(), null, null);
+	}
+
+	private String formatTagMap(LinkedHashMap<String,Object> oMap) {
+		StringBuilder sb = new StringBuilder();
+		for (String k : oMap.keySet()) {
+			sb.append(k);
+			sb.append("=");
+			sb.append(((Object[]) oMap.get(k))[0].toString());
+			sb.append(",");
+		}
+		return "{" + sb.toString() + "}";
 	}
 	
+	private void addToListIfRelevant(Processor p, LinkedHashMap<String, Object> oMap, String key, String expression, List<Processor> outputList) {
+		if (oMap.containsKey(key) ) {
+			Object o = oMap.get(key);
+			String str = ((Object[]) o)[0].toString();
+			if (str.startsWith(expression)) {
+				outputList.add(p);
+			}
+		}
+	}
+	
+	
 	@SuppressWarnings("unchecked")
-	private AffiliereJSONImportReader(InputStream is) {
+	private AffiliereJSONImportReader(InputStream is, AFFiliereStudy study, AFFiliereUnit unit) {
+		this.study = study == null ?
+				AFFiliereStudy.AFFiliere :
+					study;
+		this.unit = unit == null ?
+				AFFiliereUnit.DryBiomassMg :
+					unit;
 		JsonReader reader = new JsonReader(is);
 		mappedJSON = (LinkedHashMap<?,?>) reader.readObject();
 		reader.close();
 		LinkedHashMap<?,?> processorJSONMap = (LinkedHashMap<?,?>) mappedJSON.get("nodes");
 		LinkedHashMap<?,?> linkJSONMap = (LinkedHashMap<?,?>) mappedJSON.get("links");
 		processors = new HashMap<String, Processor>();
-		endProductProcessors = new ArrayList<ProductionLineProcessor>();
+		endProductProcessors = new ArrayList<Processor>();
+		ioProcessors = new ArrayList<Processor>();
+		List<String> nodeCategories = new ArrayList<String>();
 		for (Object o : processorJSONMap.values()) {
 			LinkedHashMap<String, Object> oMap = (LinkedHashMap<String, Object>) o;
 			String id = oMap.get("idNode").toString();
 			Processor p = AbstractProcessor.createProcessor(oMap);
 			processors.put(id, p);
+			LinkedHashMap<String, Object> tagMap = (LinkedHashMap<String, Object>) oMap.get("tags");
+			addToListIfRelevant(p, tagMap, "Catégorie noeud", "Produit fini", endProductProcessors);
+			addToListIfRelevant(p, tagMap, "Type de noeud", "echange", ioProcessors);
+//			System.out.println(id + "-" + formatTagMap(tagMap));
 		}
+//		System.out.println(nodeCategories);
 
 		Map<Processor, List<FutureLink>> linkMap = new HashMap<Processor, List<FutureLink>>();
+		
+		String studyUnitAttribute = this.study.prefix + " " + this.unit.suffix;
 		
 		for (String fatherProcessorName : processors.keySet()) {
 			for (Object linkValue : linkJSONMap.values()) {
 				LinkedHashMap<?,?> linkProperties = (LinkedHashMap<?,?>)  linkValue;
 				if (linkProperties.containsKey("idSource") && linkProperties.get("idSource").equals(fatherProcessorName)) {
 					Processor fatherProcessor = processors.get(fatherProcessorName);
+					boolean isEndProductProcessor = endProductProcessors.contains(fatherProcessor);
+
+					if (isEndProductProcessor) {
+						int u = 0;
+					}
 					if (linkProperties.containsKey("idTarget")) {
 						String childProcessorName = (String) linkProperties.get("idTarget");
 						Processor childProcessor = processors.get(childProcessorName);
@@ -118,6 +206,9 @@ public class AffiliereJSONImportReader {
 							if (valueMap.containsKey("proportion")) {
 								value = ((Number) valueMap.get("proportion")).doubleValue();
 							} else {
+								if (valueMap.containsKey(studyUnitAttribute)) {
+									valueMap = (LinkedHashMap<?,?>) valueMap.get(studyUnitAttribute);
+								}
 								value = ((Number) valueMap.get("value")).doubleValue();
 							}
 							if (!linkMap.containsKey(fatherProcessor)) {

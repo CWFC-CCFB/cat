@@ -36,17 +36,27 @@ import repicea.util.ObjectUtility;
 public class AffiliereJSONImportTest {
 
 	@SuppressWarnings("rawtypes")
+	@Ignore // TODO remove ignore after testAffiliereReaderFromFile2 works MF2024-01-29
 	@Test
 	public void testAffiliereReaderFromFile() throws IOException {
-//		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportTest.class) + "BACCFIRE V7.2_layout 1.json";
 		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportTest.class) + "EtudesAvecEtiquette4.json";
 		ProductionProcessorManager manager = new ProductionProcessorManager();
 		manager.importFrom(filename, ImportFormat.AFFILIERE);
-//		manager.showUI(null);
 		MemorizerPackage mp = manager.getMemorizerPackage();
 		Assert.assertEquals("Testing nb of processors", 94, ((List) mp.get(1)).size());
 	}
-		
+
+	@SuppressWarnings("rawtypes")
+	@Test
+	public void testAffiliereReaderFromFile2() throws IOException {
+		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportTest.class) + "BACCFIRE V7.2_desagrege_layout.json";
+		ProductionProcessorManager manager = new ProductionProcessorManager();
+		manager.importFrom(filename, ImportFormat.AFFILIERE);
+		manager.showUI(null);
+		MemorizerPackage mp = manager.getMemorizerPackage();
+		Assert.assertEquals("Testing nb of processors", 94, ((List) mp.get(1)).size());
+	}
+
 	@SuppressWarnings("rawtypes")
 	@Ignore
 	@Test
