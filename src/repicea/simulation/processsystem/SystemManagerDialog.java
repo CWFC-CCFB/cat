@@ -31,6 +31,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
 
@@ -80,9 +81,10 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 		UIControlManager.setTitle(SystemManagerDialog.class, "System Manager", "Gestionnaire de syst\u00E8me");
 	}
 	
-	protected SystemPanel systemPanel;
+	protected final SystemPanel systemPanel;
 	protected ToolPanel toolPanel;
 	private final SystemManager caller;
+	private final JScrollPane processorListPanel;
 
 	protected JMenuItem load;
 	protected JMenuItem save;
@@ -95,14 +97,16 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 	protected JMenuItem undo;
 	protected JMenuItem redo;
 	protected JSlider zoomSlider;
-	
+		
 	protected final WindowSettings windowSettings;
 	
 	protected SystemManagerDialog(Window parent, SystemManager systemManager) {
 		super(parent);
 		windowSettings = new WindowSettings(REpiceaSystem.getJavaIOTmpDir() + getClass().getSimpleName()+ ".ser", this);
 		setCancelOnClose(false);	// closing by clicking on the "x" is interpreted as ok
-		this.caller = systemManager;
+		caller = systemManager;
+		systemPanel = createSystemPanel();
+		processorListPanel = createProcessorListPanel();
 		init();
 		initUI();
 		setMinimumSize(new Dimension(400,500));
@@ -115,7 +119,6 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 	
 	
 	protected void init() {
-		systemPanel = createSystemPanel();
 		setToolPanel();
 		CommonGuiUtility.enableThoseComponents(toolPanel, AbstractButton.class, getCaller().getGUIPermission().isEnablingGranted());
 		
@@ -162,6 +165,10 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 
 	protected SystemLayout createSystemLayout() {
 		return new SystemLayout();
+	}
+	
+	protected JScrollPane createProcessorListPanel() {
+		return new JScrollPane(new ProcessorListTable(caller));
 	}
 	
 	protected JMenu createFileMenu() {

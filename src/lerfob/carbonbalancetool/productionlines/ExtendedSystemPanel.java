@@ -1,5 +1,5 @@
 /*
- * This file is part of the lerfob-forestools library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2010-2014 Mathieu Fortin for LERFOB AgroParisTech/INRA, 
  *
@@ -43,9 +43,7 @@ public class ExtendedSystemPanel extends SystemPanel {
 					addLinkLine(new EndOfLifeLinkLine(this, process, process.disposedToProcessor));
 				}
 				if (process.getExtractionProcessor() != null)
-//				for (AbstractExtractionProcessor p : process.getExtractionProcessors()) {	
 					addLinkLine(new ExtractionLinkLine(this, process, process.getExtractionProcessor()));	
-//				}
 			}
 		}
 	}

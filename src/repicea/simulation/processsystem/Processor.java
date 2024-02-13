@@ -24,7 +24,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +34,7 @@ import javax.swing.event.CaretListener;
 import repicea.gui.REpiceaPanel;
 import repicea.gui.REpiceaUIObject;
 import repicea.gui.REpiceaUIObjectWithParent;
+import repicea.simulation.processsystem.ProcessorListTable.ProcessorListTableCellValue;
 
 @SuppressWarnings("serial")
 public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, CaretListener, Serializable {
@@ -294,6 +294,13 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 
 	protected void setPartOfEndlessLoop(boolean bool) {
 		this.markedAsPartOfEndlessLoop = bool;
+	}
+
+	protected List<ProcessorListTableCellValue> getFieldsToDisplay() {
+		List<ProcessorListTableCellValue> cellValues = new ArrayList<ProcessorListTableCellValue>();
+		cellValues.add(new ProcessorListTableCellValue("Name", String.class, name));
+		cellValues.add(new ProcessorListTableCellValue("Terminal", Boolean.class, isTerminal));
+		return cellValues;
 	}
 
 }
