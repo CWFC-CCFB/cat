@@ -124,8 +124,9 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 		saveAs = UIControlManager.createCommonMenuItem(CommonControlID.SaveAs);
 		new REpiceaIOFileHandlerUI(this, caller, save, saveAs, load);
 
+		export = UIControlManager.createCommonMenu(MessageID.ExportMenu);
+
 		if (isBatikExtensionAvailable()) {	// The handler should not be instantiated before checking if batik is available otherwise this throws an exception
-			export = UIControlManager.createCommonMenu(MessageID.ExportMenu);
 			exportAsSVG = UIControlManager.createCommonMenuItem(MessageID.ExportToSVG);
 			new REpiceaOSVGFileHandlerUI(this, exportAsSVG, systemPanel.getInternalPanel());
 		}
@@ -170,10 +171,10 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 		file.add(save);
 		file.add(saveAs);
 		file.add(new JSeparator());
+		file.add(export);
+		file.add(new JSeparator());
 		if (isBatikExtensionAvailable()) {
 			export.add(exportAsSVG);
-			file.add(export);
-			file.add(new JSeparator());
 		}
 		file.add(close);
 		return file;
