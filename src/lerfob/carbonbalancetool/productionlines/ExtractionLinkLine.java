@@ -61,7 +61,6 @@ public class ExtractionLinkLine extends ValidProcessorLinkLine {
 	protected void finalize() {
 		super.finalize();
 		ProductionLineProcessor fatherProcessor =  (ProductionLineProcessor) getFatherAnchor().getOwner();
-//		fatherProcessor.removeExtractionProcessor((AbstractExtractionProcessor) getSonAnchor().getOwner());
 		fatherProcessor.setExtractionProcessor(null);
 	}
 

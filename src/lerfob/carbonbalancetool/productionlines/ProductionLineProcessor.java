@@ -142,33 +142,8 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 	
 	void setExtractionProcessor(AbstractExtractionProcessor p) {
 		extractionProcessor = p;
-//		if (!containsExtractionProcessorOfThisKind(p.getClass())) {
-//			getExtractionProcessors().add(p);
-//		}
 	}
-	
-//	void removeExtractionProcessor(AbstractExtractionProcessor p) {
-//		getExtractionProcessors().remove(p);
-//	}
 
-//	boolean containsExtractionProcessorOfThisKind(Class<? extends AbstractExtractionProcessor> clazz) {
-//		return getExtractionProcessorOfThisKind(clazz) != null;
-//	}
-
-//	AbstractExtractionProcessor getExtractionProcessorOfThisKind(Class<? extends AbstractExtractionProcessor> clazz) {
-//		for (AbstractExtractionProcessor p : getExtractionProcessors()) {
-//			if (clazz.isInstance(p)) {
-//				return p;
-//			}
-//		}
-//		return null;
-//	}
-	
-//	protected void patchXmlSerializerBug() {
-//		if (!hasSubProcessors()) {
-//			this.subProcessors = new ArrayList<Processor>();
-//		}
-//	}
 	
 	/**
 	 * This method returns the average intake (from 0 to 1) taken from the father processor.

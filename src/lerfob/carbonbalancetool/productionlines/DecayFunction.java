@@ -24,11 +24,15 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.Serializable;
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.List;
 
 import repicea.gui.REpiceaUIObject;
 import repicea.gui.components.NumberFormatFieldFactory.NumberFieldDocument.NumberFieldEvent;
 import repicea.gui.components.NumberFormatFieldFactory.NumberFieldListener;
 import repicea.math.utility.GammaUtility;
+import repicea.simulation.processsystem.ProcessorListTable.MemberHandler;
+import repicea.simulation.processsystem.ProcessorListTable.MemberInformation;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
 
@@ -38,7 +42,27 @@ import repicea.util.REpiceaTranslator.TextableEnum;
  * @author Mathieu Fortin - October 2010
  */
 @SuppressWarnings("serial")
-class DecayFunction implements Serializable, REpiceaUIObject, NumberFieldListener, ItemListener {
+class DecayFunction implements Serializable, REpiceaUIObject, NumberFieldListener, ItemListener, MemberHandler {
+
+	protected static enum MemberLabel implements TextableEnum {
+		DecayFunctionType("Decay function type", "Type de d\u00E9croissance"),
+		LifetimeMode("Lifetime type", "Type de dur\u00E9e de vie"),
+		Lifetime("Lifetime (yr)", "Dur\u00E9e de vie");
+
+		MemberLabel(String englishString, String frenchString) {
+			setText(englishString, frenchString);
+		}
+		
+		@Override
+		public void setText(String englishText, String frenchText) {
+			REpiceaTranslator.setString(this, englishText, frenchText);
+		}
+		
+		@Override
+		public String toString() {return REpiceaTranslator.getString(this);}
+		
+	}
+	
 
 	/**
 	 * Enum associated to the implementation of CATDecayFunction.
@@ -218,5 +242,25 @@ class DecayFunction implements Serializable, REpiceaUIObject, NumberFieldListene
 		} else {
 			return functionType.name() + "_" + weibullLambda + "_" + weibullBeta + "_" + averageLifetimeYr + "_" + halfLifeYr;
 		}
+	}
+
+	@Override
+	public List<MemberInformation> getInformationsOnMembers() {
+		List<MemberInformation> memberInfo = new ArrayList<MemberInformation>();	
+		memberInfo.add(new MemberInformation(MemberLabel.DecayFunctionType.toString(), DecayFunctionType.class, functionType));
+		memberInfo.add(new MemberInformation(MemberLabel.LifetimeMode.toString(), LifetimeMode.class, lifetimeMode));
+		memberInfo.add(new MemberInformation(MemberLabel.Lifetime.toString(), double.class, getLifetime()));
+		return memberInfo;
+	}
+
+	@Override
+	public void processChangeToMember(String fieldName, Object value) {
+		if (fieldName.equals(MemberLabel.DecayFunctionType.toString())) {
+			functionType = (DecayFunctionType) value;
+		} else if (fieldName.equals(MemberLabel.LifetimeMode.toString())) {
+			lifetimeMode = (LifetimeMode) value;
+		} else if (fieldName.equals(MemberLabel.Lifetime.toString())) {
+			setLifetime((double) value);
+		} 
 	}
 }

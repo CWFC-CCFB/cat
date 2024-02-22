@@ -20,10 +20,12 @@ package lerfob.carbonbalancetool.productionlines;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.List;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import repicea.simulation.processsystem.ProcessorListTable.MemberInformation;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
 
@@ -34,7 +36,30 @@ import repicea.util.REpiceaTranslator.TextableEnum;
 public class LandfillCarbonUnitFeature extends CarbonUnitFeature implements ChangeListener, ItemListener {
 
 	private static final long serialVersionUID = 20101118L;
+	
 
+	protected static enum MemberLabel implements TextableEnum {
+		LandfillType("Landfill type", "Type de d\u00E9charge"),
+		DocFraction("DOC fraction", "Fraction COD");
+
+		
+		MemberLabel(String englishText, String frenchText) {
+			setText(englishText, frenchText);
+		}
+		
+		@Override
+		public void setText(String englishText, String frenchText) {
+			REpiceaTranslator.setString(this, englishText, frenchText);
+		}
+		
+		@Override
+		public String toString() {return REpiceaTranslator.getString(this);}
+		
+	}
+	
+	
+	
+	
 	public static enum LandfillType implements TextableEnum {
 		MANAGED_ANAEROBIC("Managed - anaerobic", "Am\u00E9nag\u00E9 - ana\u00E9robique", 1d),
 		MANAGED_SEMIANAEROBIC("Managed - semi-anaerobic","Am\u00E9nag\u00E9 - semi-ana\u00E9robique", 0.5),
@@ -134,4 +159,26 @@ public class LandfillCarbonUnitFeature extends CarbonUnitFeature implements Chan
 		return landfillType;
 	}
 
+	
+	@Override
+	public List<MemberInformation> getInformationsOnMembers() {
+		List<MemberInformation> memberInfo = super.getInformationsOnMembers();
+		memberInfo.add(new MemberInformation(MemberLabel.LandfillType.toString(), LandfillType.class, getLandfillType()));
+		memberInfo.add(new MemberInformation(MemberLabel.DocFraction.toString(), double.class, getDegradableOrganicCarbonFraction()));
+		return memberInfo;
+	}
+
+	@Override
+	public void processChangeToMember(String fieldName, Object value) {
+		if (fieldName.equals(MemberLabel.LandfillType.toString())) {
+			landfillType = (LandfillType) value;
+		} else if (fieldName.equals(MemberLabel.DocFraction.toString())) {
+			this.setDegradableOrganicCarbonFraction((double) value);
+		} else {
+			super.processChangeToMember(fieldName, value);
+		}
+	}
+
+	
+	
 }

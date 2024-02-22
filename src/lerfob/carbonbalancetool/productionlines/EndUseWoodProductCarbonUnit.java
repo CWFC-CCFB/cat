@@ -74,7 +74,7 @@ public class EndUseWoodProductCarbonUnit extends CarbonUnit {
 			CarbonUnit originalCarbonUnit) {
 		super(dateIndex, carbonUnitFeature, amountMap, originalCarbonUnit);
 		addStatus(CarbonUnitStatus.EndUseWoodProduct);
-		AbstractProcessor.updateProcessEmissions(getAmountMap(), carbonUnitFeature.getBiomassOfFunctionalUnitMg(), carbonUnitFeature.getEmissionsMgCO2ByFunctionalUnit());
+		AbstractProcessor.updateProcessEmissions(getAmountMap(), carbonUnitFeature.getBiomassOfFunctionalUnitMg(), carbonUnitFeature.getEmissionsMgCO2EqByFunctionalUnit());
 	}
 
 	/**
@@ -229,7 +229,7 @@ public class EndUseWoodProductCarbonUnit extends CarbonUnit {
 	@SuppressWarnings("deprecation")
 	private double getSubstitutionPerFunctionalUnit(double nbFunctionalUnits, CATCompartmentManager manager) {
 		if (isNewImplementation()) {
-			return nbFunctionalUnits * getCarbonUnitFeature().getSubstitutionCO2EqFunctionalUnit(manager) * CATSettings.CO2_C_FACTOR; // Conversion to C eq.
+			return nbFunctionalUnits * getCarbonUnitFeature().getSubstitutionMgCO2EqByFunctionalUnit(manager) * CATSettings.CO2_C_FACTOR; // Conversion to C eq.
 		} else {
 			return nbFunctionalUnits * getCarbonUnitFeature().getAverageSubstitution();
 		}

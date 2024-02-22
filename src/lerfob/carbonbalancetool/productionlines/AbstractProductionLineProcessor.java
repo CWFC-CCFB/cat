@@ -22,6 +22,9 @@ import java.util.List;
 
 import repicea.gui.REpiceaPanel;
 import repicea.simulation.processsystem.ProcessUnit;
+import repicea.simulation.processsystem.ProcessorListTable.MemberInformation;
+import repicea.util.REpiceaTranslator;
+import repicea.util.REpiceaTranslator.TextableEnum;
 
 /**
  * An abstract for all Processor-derived classes (except the LogCategoryProcessor), which ensures
@@ -32,6 +35,24 @@ import repicea.simulation.processsystem.ProcessUnit;
 @SuppressWarnings("serial")
 public abstract class AbstractProductionLineProcessor extends AbstractProcessor {
 
+	protected static enum MemberLabel implements TextableEnum {
+		FunctionUnitBiomass("Functional unit (FU) biomass (Mg)", "Biomasse de l'unit\u00E9 fonctionnelle (UF, Mg)"),
+		EmissionFunctionUnit("Emissions (Mg CO2 eq./FU)", "Emissions (Mg CO2 eq./UF)");
+
+		MemberLabel(String englishText, String frenchText) {
+			setText(englishText, frenchText);
+		}
+		
+		@Override
+		public void setText(String englishText, String frenchText) {
+			REpiceaTranslator.setString(this, englishText, frenchText);
+		}
+		
+		@Override
+		public String toString() {return REpiceaTranslator.getString(this);}
+		
+	}
+	
 	protected CarbonUnitFeature woodProductFeature;
 
 	protected CarbonUnitFeature getEndProductFeature() {return woodProductFeature;}
@@ -53,6 +74,38 @@ public abstract class AbstractProductionLineProcessor extends AbstractProcessor 
 	@SuppressWarnings("rawtypes")
 	@Override
 	protected abstract List<ProcessUnit> createProcessUnitsFromThisProcessor(ProcessUnit unit, Number intake);
+	
+	@Override
+	public List<MemberInformation> getInformationsOnMembers() {
+		List<MemberInformation> cellValues = super.getInformationsOnMembers();
+		if (hasSubProcessors()) {
+			cellValues.add(new MemberInformation(MemberLabel.FunctionUnitBiomass.toString(), double.class, functionUnitBiomass));
+			cellValues.add(new MemberInformation(MemberLabel.EmissionFunctionUnit.toString(), double.class, emissionsByFunctionalUnit));
+		} else {
+			cellValues.addAll(woodProductFeature.getInformationsOnMembers());
+		}
+		return cellValues;
+	}
+	
+	@Override
+	public void processChangeToMember(String fieldName, Object value) {
+		if (fieldName.equals(MemberLabel.FunctionUnitBiomass.toString())) {
+			if (hasSubProcessors()) {
+				functionUnitBiomass = (double) value;
+			} else {
+				getEndProductFeature().processChangeToMember(fieldName, value);
+			}
+		} else if (fieldName.equals(MemberLabel.EmissionFunctionUnit.toString())) {
+			if (hasSubProcessors()) {
+				emissionsByFunctionalUnit = (double) value;
+			} else {
+				getEndProductFeature().processChangeToMember(fieldName, value);
+			}
+		} else {
+			super.processChangeToMember(fieldName, value);
+		}
+	}
+	
 	
 	
 }

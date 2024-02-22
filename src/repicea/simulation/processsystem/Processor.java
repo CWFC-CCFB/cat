@@ -34,11 +34,14 @@ import javax.swing.event.CaretListener;
 import repicea.gui.REpiceaPanel;
 import repicea.gui.REpiceaUIObject;
 import repicea.gui.REpiceaUIObjectWithParent;
-import repicea.simulation.processsystem.ProcessorListTable.ProcessorListTableCellValue;
+import repicea.simulation.processsystem.ProcessorListTable.MemberHandler;
+import repicea.simulation.processsystem.ProcessorListTable.MemberInformation;
 
 @SuppressWarnings("serial")
-public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, CaretListener, Serializable {
+public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, CaretListener, Serializable, MemberHandler {
 
+	protected static final String NameField = "Name";
+	
 	private Point originalLocation;
 	protected transient ProcessorButton guiInterface;
 	
@@ -71,8 +74,9 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 	
 	
 	/**
-	 * A terminal processor cannot have any subprocessor by definition. This method returns true if the processor belong to 
-	 * this category.
+	 * A terminal processor cannot have any subprocessor by definition. <p>
+	 * 
+	 * This method returns true if the processor belong to this category.
 	 * @return a boolean
 	 */
 	public boolean isTerminalProcessor() {return isTerminal;}
@@ -296,11 +300,18 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 		this.markedAsPartOfEndlessLoop = bool;
 	}
 
-	protected List<ProcessorListTableCellValue> getFieldsToDisplay() {
-		List<ProcessorListTableCellValue> cellValues = new ArrayList<ProcessorListTableCellValue>();
-		cellValues.add(new ProcessorListTableCellValue("Name", String.class, name));
-		cellValues.add(new ProcessorListTableCellValue("Terminal", Boolean.class, isTerminal));
+	@Override
+	public List<MemberInformation> getInformationsOnMembers() {
+		List<MemberInformation> cellValues = new ArrayList<MemberInformation>();
+		cellValues.add(new MemberInformation(NameField, String.class, name));
 		return cellValues;
+	}
+	
+	@Override
+	public void processChangeToMember(String fieldName, Object value) {
+		if (fieldName.equals(NameField)) {
+			setName(value.toString());
+		}
 	}
 
 }
