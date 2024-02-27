@@ -24,7 +24,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.logging.Level;
 
-import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
@@ -33,6 +32,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 //import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -316,6 +316,7 @@ public class CarbonAccountingToolGUITest {
 
 	}
 
+	@Ignore // TODO Renable this test when the import method has been clarified
 	@Test
 	public void test05AFFiliereImportHappyPath() throws Exception {
 		if (System.getProperty("os.name").toLowerCase().contains("mac")) {

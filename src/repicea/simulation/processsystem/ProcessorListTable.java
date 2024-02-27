@@ -19,13 +19,21 @@
  */
 package repicea.simulation.processsystem;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
 import javax.swing.JTable;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 
+import repicea.gui.CommonGuiUtility;
+import repicea.gui.REpiceaAWTProperty;
 import repicea.gui.Refreshable;
 
 /**
@@ -85,7 +93,7 @@ public class ProcessorListTable extends JTable implements Refreshable, CellEdito
 	}
 	
 	protected final SystemManager caller;
-	private DefaultTableModel tableModel;
+	private ProcessorListTableModel tableModel;
 	
 	public ProcessorListTable(SystemManager caller) {
 		this.caller = caller;
@@ -93,12 +101,54 @@ public class ProcessorListTable extends JTable implements Refreshable, CellEdito
 	}
 	
 	protected void initUI() {
-		tableModel = new DefaultTableModel();
+		tableModel = new ProcessorListTableModel();
 		synchronizeTable(tableModel);
-		setModel(tableModel);
 	}
 
-	private void synchronizeTable(DefaultTableModel tableModel) {
+	private class ProcessorListTableModel extends DefaultTableModel {
+		
+		final Map<Integer, List<Integer>> editableCellMap;
+		final Map<Integer, Class<?>> columnClassMap;
+		
+		ProcessorListTableModel() {
+			super();
+			editableCellMap = new HashMap<Integer, List<Integer>>();
+			columnClassMap = new HashMap<Integer, Class<?>>();
+		}
+		
+		@Override
+		public void setValueAt(Object o, int row, int column) {
+			super.setValueAt(o, row, column);
+			if (!columnClassMap.containsKey(column) && o != null) {
+				columnClassMap.put(column, o.getClass());
+			}
+			if (!editableCellMap.containsKey(row)) {
+				editableCellMap.put(row, new ArrayList<Integer>());
+			}
+			if (!editableCellMap.get(row).contains(column)) {
+				editableCellMap.get(row).add(column);
+			}
+		}
+		
+		@Override
+		public boolean isCellEditable(int row, int column) {
+			boolean isEditable = false;
+			if (editableCellMap.containsKey(row) && caller.getGUIPermission().isEnablingGranted()) {
+				 isEditable = editableCellMap.get(row).contains(column); 
+			}
+			return isEditable;
+		}
+		
+		@Override
+		public Class<?> getColumnClass(int c) {
+			return columnClassMap.get(c);
+		}
+
+	} 
+	
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void synchronizeTable(ProcessorListTableModel tableModel) {
 		List<Processor> processors = getProcessorList(); 
 		for (int row = 0; row < processors.size(); row++) {
 			Processor p = processors.get(row);
@@ -114,10 +164,23 @@ public class ProcessorListTable extends JTable implements Refreshable, CellEdito
 			tableModel.addRow(rowObject);
 			for (MemberInformation v : p.getInformationsOnMembers()) {
 				tableModel.setValueAt(v.value, row, tableModel.findColumn(v.fieldName));
-			}			
+			}
 		}
+		
+		setModel(tableModel);
+
+		for (int i = 0; i < getColumnCount(); i++) {
+			Class clazz = getColumnClass(i);
+			TableColumn cModel = getColumnModel().getColumn(i);
+			if (clazz.isEnum()) {
+				JComboBox comboBox = new JComboBox(clazz.getEnumConstants());
+				cModel.setCellEditor(new DefaultCellEditor(comboBox));
+			}
+		}
+		
 	}
 
+	
 	/**
 	 * This method should be override in derived class.
 	 * @return a List of Processor instances
@@ -141,6 +204,11 @@ public class ProcessorListTable extends JTable implements Refreshable, CellEdito
 			String columnName = ((DefaultTableModel) evt.getSource()).getColumnName(columnIndex);
 			Object newValue = ((DefaultTableModel) evt.getSource()).getValueAt(rowIndex, columnIndex);
 			p.processChangeToMember(columnName, newValue);
+			// record a change
+			SystemManagerDialog systemDlg = (SystemManagerDialog) CommonGuiUtility.getParentComponent(this, SystemManagerDialog.class);
+			if (systemDlg != null) {
+				systemDlg.firePropertyChange(REpiceaAWTProperty.ActionPerformed, this, null);
+			}
 		}
 	}
 	

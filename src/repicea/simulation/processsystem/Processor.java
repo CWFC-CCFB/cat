@@ -274,9 +274,6 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 			if (sum != 100d) {
 			}
 			boolean isValid = Math.abs(sum - 100d) < 1E-12;
-//			if (!isValid) {
-//				int u = 0;
-//			}
 			return isValid;
 		} else {
 			return true;

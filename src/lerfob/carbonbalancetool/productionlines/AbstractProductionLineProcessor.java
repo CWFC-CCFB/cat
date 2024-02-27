@@ -102,6 +102,7 @@ public abstract class AbstractProductionLineProcessor extends AbstractProcessor 
 				getEndProductFeature().processChangeToMember(fieldName, value);
 			}
 		} else {
+			woodProductFeature.processChangeToMember(fieldName, value);
 			super.processChangeToMember(fieldName, value);
 		}
 	}
