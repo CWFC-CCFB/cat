@@ -762,8 +762,8 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	public static void main(String[] args) {
 		REpiceaTranslator.setCurrentLanguage(Language.English);
 //		REpiceaTranslator.setCurrentLanguage(Language.French);
-//		ProductionProcessorManager ppm = new ProductionProcessorManager(new DefaultREpiceaGUIPermission(false));
-		ProductionProcessorManager ppm = new ProductionProcessorManager();
+		ProductionProcessorManager ppm = new ProductionProcessorManager(new DefaultREpiceaGUIPermission(false));
+//		ProductionProcessorManager ppm = new ProductionProcessorManager();
 		String filename = ObjectUtility.getPackagePath(ppm.getClass()) + File.separator + "library" + File.separator
 				+ "hardwood_recycling_en.prl";
 		try {

@@ -118,7 +118,7 @@ public class EndUseWoodProductCarbonUnitFeaturePanel extends CarbonUnitFeaturePa
 		biomassFUTextField.setPreferredSize(new Dimension(100, biomassFUTextField.getFontMetrics(biomassFUTextField.getFont()).getHeight() + 2));
 		
 		substitutionTextField = NumberFormatFieldFactory.createNumberFormatField(Type.Double, Range.All, false);
-		substitutionTextField.setText(((Double) getCaller().getSubstitutionCO2EqFunctionalUnit(null)).toString());
+		substitutionTextField.setText(((Double) getCaller().getSubstitutionMgCO2EqByFunctionalUnit(null)).toString());
 		substitutionTextField.setPreferredSize(new Dimension(100, substitutionTextField.getFontMetrics(substitutionTextField.getFont()).getHeight() + 2));
 		
 		useClassList = new JComboBox(UseClass.values());
@@ -142,7 +142,7 @@ public class EndUseWoodProductCarbonUnitFeaturePanel extends CarbonUnitFeaturePa
 				NumberFormatFieldFactory.Range.Positive,
 				false);
 		emissionsByFUField.setColumns(5);
-		emissionsByFUField.setText(((Double) getCaller().getEmissionsMgCO2ByFunctionalUnit()).toString());
+		emissionsByFUField.setText(((Double) getCaller().getEmissionsMgCO2EqByFunctionalUnit()).toString());
 
 	}
 	

@@ -122,18 +122,6 @@ public class ProcessorInternalDialog extends REpiceaDialog {
 		}
 		bottomComponent.add(bottomPanel, BorderLayout.CENTER);
 		
-//		SystemManagerDialog dlg = (SystemManagerDialog) CommonGuiUtility.getParentComponent(this, SystemManagerDialog.class);
-//		boolean isEnablingGranted = dlg.getCaller().getGUIPermission().isEnablingGranted();
-//		if (!isEnablingGranted) {
-//			CommonGuiUtility.enableThoseComponents(bottomComponent, JTextComponent.class, isEnablingGranted);
-//			CommonGuiUtility.enableThoseComponents(bottomComponent, AbstractButton.class, isEnablingGranted);
-//			CommonGuiUtility.enableThoseComponents(bottomComponent, JComboBox.class, isEnablingGranted);
-//			CommonGuiUtility.enableThoseComponents(bottomComponent, JSlider.class, isEnablingGranted);
-//		}
-
-//		pack();
-//		validate();
-//		repaint();
 	}
 
 
@@ -146,18 +134,6 @@ public class ProcessorInternalDialog extends REpiceaDialog {
 	public void doNotListenToAnymore() {
 		processorTextField.removeCaretListener(getCaller());
 	}
-
-//	private void checkComponentPermissions(JPanel panel) {
-//		boolean isEnablingGranted = this.getCaller().getGuiInterface().getGUIPermission().isEnablingGranted();
-////		SystemManagerDialog dlg = (SystemManagerDialog) CommonGuiUtility.getParentComponent(this, SystemManagerDialog.class);
-////		boolean isEnablingGranted = dlg.getCaller().getGUIPermission().isEnablingGranted();
-//		if (!isEnablingGranted) {
-//			CommonGuiUtility.enableThoseComponents(panel, JTextComponent.class, isEnablingGranted);
-//			CommonGuiUtility.enableThoseComponents(panel, AbstractButton.class, isEnablingGranted);
-//			CommonGuiUtility.enableThoseComponents(panel, JComboBox.class, isEnablingGranted);
-//			CommonGuiUtility.enableThoseComponents(panel, JSlider.class, isEnablingGranted);
-//		}
-//	}
 
 	@Override
 	public void refreshInterface() {

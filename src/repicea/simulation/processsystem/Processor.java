@@ -24,7 +24,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,10 +34,14 @@ import javax.swing.event.CaretListener;
 import repicea.gui.REpiceaPanel;
 import repicea.gui.REpiceaUIObject;
 import repicea.gui.REpiceaUIObjectWithParent;
+import repicea.simulation.processsystem.ProcessorListTable.MemberHandler;
+import repicea.simulation.processsystem.ProcessorListTable.MemberInformation;
 
 @SuppressWarnings("serial")
-public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, CaretListener, Serializable {
+public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, CaretListener, Serializable, MemberHandler {
 
+	protected static final String NameField = "Name";
+	
 	private Point originalLocation;
 	protected transient ProcessorButton guiInterface;
 	
@@ -71,8 +74,9 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 	
 	
 	/**
-	 * A terminal processor cannot have any subprocessor by definition. This method returns true if the processor belong to 
-	 * this category.
+	 * A terminal processor cannot have any subprocessor by definition. <p>
+	 * 
+	 * This method returns true if the processor belong to this category.
 	 * @return a boolean
 	 */
 	public boolean isTerminalProcessor() {return isTerminal;}
@@ -270,9 +274,6 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 			if (sum != 100d) {
 			}
 			boolean isValid = Math.abs(sum - 100d) < 1E-12;
-//			if (!isValid) {
-//				int u = 0;
-//			}
 			return isValid;
 		} else {
 			return true;
@@ -294,6 +295,20 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 
 	protected void setPartOfEndlessLoop(boolean bool) {
 		this.markedAsPartOfEndlessLoop = bool;
+	}
+
+	@Override
+	public List<MemberInformation> getInformationsOnMembers() {
+		List<MemberInformation> cellValues = new ArrayList<MemberInformation>();
+		cellValues.add(new MemberInformation(NameField, String.class, name));
+		return cellValues;
+	}
+	
+	@Override
+	public void processChangeToMember(String fieldName, Object value) {
+		if (fieldName.equals(NameField)) {
+			setName(value.toString());
+		}
 	}
 
 }

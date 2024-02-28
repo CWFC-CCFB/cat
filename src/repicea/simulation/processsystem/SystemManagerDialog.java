@@ -26,11 +26,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.AbstractButton;
+import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
 
@@ -61,8 +64,11 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 		SliderTitle("Output flux", "Flux sortant"),
 		Unnamed("Unnamed", "SansNom"),
 		ExportMenu("Export", "Exporter"),
-		ExportToSVG("As SVG image", "Image SVG");
-
+		ExportToSVG("As SVG image", "Image SVG"),
+		FluxView("Fluxes", "Flux"),
+		TableView("Table", "Table")
+		;
+		
 		MessageID(String englishText, String frenchText) {
 			setText(englishText, frenchText);
 		}
@@ -80,29 +86,37 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 		UIControlManager.setTitle(SystemManagerDialog.class, "System Manager", "Gestionnaire de syst\u00E8me");
 	}
 	
-	protected SystemPanel systemPanel;
+	protected final SystemPanel systemPanel;
 	protected ToolPanel toolPanel;
+	protected JPanel bottomPanel;
+	protected JPanel fluxViewPanel;
+	protected JPanel tableViewPanel;
 	private final SystemManager caller;
-
+	protected ProcessorListTable processorTable;
+	
 	protected JMenuItem load;
 	protected JMenuItem save;
 	protected JMenuItem saveAs;
 	protected JMenu export;
 	protected JMenuItem exportAsSVG;
+	protected JMenuItem fluxView;
+	protected JMenuItem tableView;
 	protected JMenuItem close;
 	protected JMenuItem reset;
 	protected JMenuItem help;
 	protected JMenuItem undo;
 	protected JMenuItem redo;
 	protected JSlider zoomSlider;
-	
+		
 	protected final WindowSettings windowSettings;
 	
 	protected SystemManagerDialog(Window parent, SystemManager systemManager) {
 		super(parent);
 		windowSettings = new WindowSettings(REpiceaSystem.getJavaIOTmpDir() + getClass().getSimpleName()+ ".ser", this);
 		setCancelOnClose(false);	// closing by clicking on the "x" is interpreted as ok
-		this.caller = systemManager;
+		caller = systemManager;
+		systemPanel = createSystemPanel();
+		processorTable = createProcessorListPanel();
 		init();
 		initUI();
 		setMinimumSize(new Dimension(400,500));
@@ -115,7 +129,6 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 	
 	
 	protected void init() {
-		systemPanel = createSystemPanel();
 		setToolPanel();
 		CommonGuiUtility.enableThoseComponents(toolPanel, AbstractButton.class, getCaller().getGUIPermission().isEnablingGranted());
 		
@@ -125,11 +138,16 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 		new REpiceaIOFileHandlerUI(this, caller, save, saveAs, load);
 
 		export = UIControlManager.createCommonMenu(MessageID.ExportMenu);
-
 		if (isBatikExtensionAvailable()) {	// The handler should not be instantiated before checking if batik is available otherwise this throws an exception
 			exportAsSVG = UIControlManager.createCommonMenuItem(MessageID.ExportToSVG);
 			new REpiceaOSVGFileHandlerUI(this, exportAsSVG, systemPanel.getInternalPanel());
 		}
+
+		fluxView = new JRadioButtonMenuItem(MessageID.FluxView.toString());
+		fluxViewPanel = new JPanel(new BorderLayout());
+		tableView = new JRadioButtonMenuItem(MessageID.TableView.toString());
+		tableViewPanel = new JPanel(new BorderLayout());
+		
 		
 		close = UIControlManager.createCommonMenuItem(CommonControlID.Close);
 		reset = UIControlManager.createCommonMenuItem(CommonControlID.Reset);
@@ -139,9 +157,12 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 		redo = UIControlManager.createCommonMenuItem(CommonControlID.Redo);
 		
 		new REpiceaMemorizerHandler(this, undo, redo);
-		
+	
+		bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+
 		zoomSlider = createZoomSlider();
 		zoomSlider.addChangeListener(systemPanel);
+	
 	}
 
 	
@@ -163,6 +184,10 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 
 	protected SystemLayout createSystemLayout() {
 		return new SystemLayout();
+	}
+	
+	protected ProcessorListTable createProcessorListPanel() {
+		return new ProcessorListTable(caller);
 	}
 	
 	protected JMenu createFileMenu() {
@@ -189,6 +214,16 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 		return edit;
 	}
 
+	protected JMenu createViewMenu() {
+		JMenu view = UIControlManager.createCommonMenu(UIControlManager.CommonMenuTitle.View);
+		view.add(fluxView);
+		view.add(tableView);
+		ButtonGroup gr = new ButtonGroup();
+		gr.add(fluxView);
+		gr.add(tableView);
+		return view;
+	}
+	
 	/**
 	 * Check if batik extension is available, in case it has not
 	 * packaged in the fat jar. 
@@ -209,11 +244,6 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 		return about;
 	}
 	
-//	protected JMenu createViewMenu() {
-//		JMenu view = UIControlManager.createCommonMenu(CommonMenuTitle.View);
-//		view.add(enlarge);
-//		return view;
-//	}
 	/**
 	 * This method returns the SystemManager instance behind this dialog.
 	 * @return a SystemManager instance.
@@ -231,27 +261,52 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 		JMenu editMenu = createEditMenu();
 		menuBar.add(editMenu);
 		editMenu.setEnabled(getCaller().getGUIPermission().isEnablingGranted());
+
+		JMenu viewMenu = createViewMenu();
+		menuBar.add(viewMenu);
+		fluxView.setSelected(true); // default view
 		
 		menuBar.add(createAboutMenu());
 
-		JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		bottomPanel.add(new JLabel("-"));
 		bottomPanel.add(zoomSlider);
 		bottomPanel.add(new JLabel("+"));
 		
 		getContentPane().setLayout(new BorderLayout());
-		getContentPane().add(systemPanel, BorderLayout.CENTER);
-		getContentPane().add(toolPanel, BorderLayout.WEST);
-		getContentPane().add(bottomPanel, BorderLayout.SOUTH);
+		
+		setFluxViewPanel();
+		
 		refreshTitle();
 	}
 	
+	private void setFluxViewPanel() {
+		getContentPane().removeAll();
+		fluxViewPanel.removeAll();
+		synchronizeUIWithOwner();
+		fluxViewPanel.add(systemPanel, BorderLayout.CENTER);
+		fluxViewPanel.add(toolPanel, BorderLayout.WEST);
+		fluxViewPanel.add(bottomPanel, BorderLayout.SOUTH);
+		getContentPane().add(fluxViewPanel, BorderLayout.CENTER);
+		revalidate(); 
+		repaint();
+	}
+	
+	private void setTableViewPanel() {
+		getContentPane().removeAll();
+		processorTable.refreshInterface();
+		JScrollPane scrollPane = new JScrollPane(processorTable);
+		getContentPane().add(scrollPane, BorderLayout.CENTER);
+		revalidate();
+		repaint();
+	}
 	
 	@Override
 	public void listenTo() {
 		reset.addActionListener(this);
 		close.addActionListener(this);
 		help.addActionListener(this);
+		fluxView.addActionListener(this);
+		tableView.addActionListener(this);
 	}
 
 	@Override
@@ -259,6 +314,8 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 		reset.removeActionListener(this);
 		close.removeActionListener(this);
 		help.removeActionListener(this);
+		fluxView.removeActionListener(this);
+		tableView.removeActionListener(this);
 	}
 
 	@Override
@@ -304,7 +361,15 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 			reset();
 		} else if (evt.getSource().equals(help)) {
 			helpAction();
-		} 
+		} else if (evt.getSource().equals(tableView)) {
+			if (tableView.isSelected()) {
+				setTableViewPanel();
+			}
+		} else if (evt.getSource().equals(fluxView)) {
+			if (fluxView.isSelected()) {
+				setFluxViewPanel();
+			}
+		}
 	}
 
 	@Override
@@ -329,27 +394,6 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 
 	@Override
 	public WindowSettings getWindowSettings() {return windowSettings;}
-
-//	@Override
-//	public void itemStateChanged(ItemEvent e) {
-//		if (e.getSource().equals(enlarge)) {
-//			if (e.getStateChange() == ItemEvent.SELECTED) {
-//				previousDimension = getSize();
-//				previousLocation = getLocation();
-//			    GraphicsConfiguration config = this.getGraphicsConfiguration();
-//			    GraphicsDevice currentScreen = config.getDevice();
-//			    Dimension screenSize = new Dimension(currentScreen.getDisplayMode().getWidth(),
-//			    		currentScreen.getDisplayMode().getHeight());
-//				setSize(screenSize);
-//				
-//				setLocation(new Point(0,0)); // TODO should be in absolute not in relative
-//			} else if (e.getStateChange() == ItemEvent.DESELECTED) {
-//				setSize(previousDimension);
-//				setLocation(previousLocation);
-//			}
-//		}
-//	}
-	
 
 	
 }
