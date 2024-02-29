@@ -57,6 +57,7 @@ import repicea.gui.UIControlManager;
 import repicea.gui.components.REpiceaComboBoxOpenButton;
 import repicea.io.REpiceaFileFilter;
 import repicea.io.REpiceaFileFilterList;
+import repicea.serial.SerializerChangeMonitor;
 import repicea.simulation.processsystem.Processor;
 import repicea.simulation.processsystem.ProcessorListTable;
 import repicea.simulation.processsystem.SystemLayout;
@@ -73,6 +74,10 @@ import repicea.util.REpiceaTranslator.TextableEnum;
 public class ProductionProcessorManagerDialog extends SystemManagerDialog implements OwnedWindow, 
 																					PropertyChangeListener,
 																					ItemListener {
+	
+	static {
+		SerializerChangeMonitor.registerClassNameChange("lerfob.carbonbalancetool.productionlines.BroadleavedExtractionProcessor", "lerfob.carbonbalancetool.productionlines.StatusSpeciesTypeExtractionProcessor");
+	}
 	
 	static {
 		UISetup.Icons.put(CreateLeftInForestProcessorButton.class.getName(), CommonGuiUtility.retrieveIcon(ProductionProcessorManagerDialog.class, "IconLeftInForest.png"));

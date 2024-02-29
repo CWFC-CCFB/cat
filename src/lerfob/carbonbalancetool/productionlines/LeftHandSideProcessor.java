@@ -1,5 +1,5 @@
 /*
- * This file is part of the lerfob-forestools library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2010-2015 Mathieu Fortin for LERFOB AgroParisTech/INRA, 
  *
@@ -25,6 +25,11 @@ import repicea.gui.permissions.REpiceaGUIPermission;
 import repicea.simulation.processsystem.Processor;
 import repicea.simulation.processsystem.SystemPanel;
 
+/**
+ * Processors of this class are the entry points of the flux configuration.<p>
+ * The dead wood and the harvested trees are coming into the flux configuration through these processors.
+ * @author Mathieu Fortin - 2015 
+ */
 @SuppressWarnings("serial")
 public abstract class LeftHandSideProcessor extends AbstractProcessor {
 
@@ -32,22 +37,26 @@ public abstract class LeftHandSideProcessor extends AbstractProcessor {
 	protected static class CustomizedREpiceaGUIPermission implements REpiceaGUIPermission {
 
 		@Override
-		public boolean isDragGranted() {
+		public boolean isDragGranted() { // but can link them to other processors
 			return true;
 		}
 
 		@Override
-		public boolean isDropGranted() {
+		public boolean isDropGranted() {  // cannot be drag and drop
 			return false;
 		}
 
 		@Override
-		public boolean isSelectionGranted() {
+		public boolean isSelectionGranted() { // cannot be selected
 			return false;
 		}
 
+		/**
+		 * Enabling is mainly set in the {@link repicea.simulation.processsystem.SystemComponentMouseAdapter} class.<p>
+		 * See the ComponentsToBeEnabledDisabled static member of that class for the list of components.
+		 */
 		@Override
-		public boolean isEnablingGranted() {
+		public boolean isEnablingGranted() { //cannot be modified
 			return false;
 		}
 		

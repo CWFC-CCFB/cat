@@ -49,7 +49,7 @@ import repicea.util.ExtendedFileFilter;
 public final class ProductionLineManager extends AbstractDesigner<ProductionLine> {
 
 	private static final long serialVersionUID = 20130127L;
-
+	
 	static {
 		SerializerChangeMonitor.registerClassNameChange("marketmodel.WoodProductMarketManager", 	"lerfob.carbonbalancetool.productionlines.ProductionLineManager");
 		SerializerChangeMonitor.registerClassNameChange("marketmodel.WoodProductMarketModel", 	"lerfob.carbonbalancetool.productionlines.ProductionLine");

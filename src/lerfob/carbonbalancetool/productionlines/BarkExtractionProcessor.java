@@ -61,15 +61,6 @@ public class BarkExtractionProcessor extends AbstractExtractionProcessor {
 		setName(MessageID.Debarking.toString());		// default name
 	}
 
-	@Override
-	public ProcessorButton getUI(Container container) {
-		if (guiInterface == null) {
-			guiInterface = new ExtractionProcessorButton((SystemPanel) container, this);
-		}
-		return guiInterface;
-	}
-
-
 	@SuppressWarnings("rawtypes")
 	@Override
 	protected List<ProcessUnit> extract(List<ProcessUnit> processUnits) {

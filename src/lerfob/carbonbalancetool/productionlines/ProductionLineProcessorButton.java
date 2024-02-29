@@ -69,8 +69,8 @@ public class ProductionLineProcessorButton extends AbstractProcessorButton imple
 			super(ProductionLineProcessorButton.this, 
 					ProductionLineProcessorButton.this.addDebarkerItem,
 					ProductionLineProcessorButton.this.removeDebarkerItem,
-					ProductionLineProcessorButton.this.addBroadleavedSortingItem,
-					ProductionLineProcessorButton.this.removeBroadleavedSortingItem);
+					ProductionLineProcessorButton.this.addStatusSpeciesTypeSortingItem,
+					ProductionLineProcessorButton.this.removeStatusSpeciesTypeSortingItem);
 		}
 
 		@Override
@@ -78,8 +78,8 @@ public class ProductionLineProcessorButton extends AbstractProcessorButton imple
 			ProductionLineProcessor owner = (ProductionLineProcessor) ProductionLineProcessorButton.this.getOwner();
 			ProductionLineProcessorButton.this.addDebarkerItem.setEnabled(owner.getExtractionProcessor() == null);
 			ProductionLineProcessorButton.this.removeDebarkerItem.setEnabled(owner.getExtractionProcessor() instanceof BarkExtractionProcessor);
-			ProductionLineProcessorButton.this.addBroadleavedSortingItem.setEnabled(owner.getExtractionProcessor() == null);
-			ProductionLineProcessorButton.this.removeBroadleavedSortingItem.setEnabled(owner.getExtractionProcessor() instanceof BroadleavedExtractionProcessor);
+			ProductionLineProcessorButton.this.addStatusSpeciesTypeSortingItem.setEnabled(owner.getExtractionProcessor() == null);
+			ProductionLineProcessorButton.this.removeStatusSpeciesTypeSortingItem.setEnabled(owner.getExtractionProcessor() instanceof StatusSpeciesTypeExtractionProcessor);
 		}
 			
 		
@@ -93,11 +93,11 @@ public class ProductionLineProcessorButton extends AbstractProcessorButton imple
 	
 	
 	
-	static enum MessageID implements TextableEnum {
+	private static enum MessageID implements TextableEnum {
 		AddDebarkerMessage("Add debarking", "Ajouter \u00E9cor\u00E7age"),
 		RemoveDebarkerMessage("Remove debarking", "Eliminer \u00E9cor\u00E7age"),
-		AddBroadleavedSortingMessage("Add broadleaved sorting", "Ajouter tri des feuillus"),
-		RemoveBroadleavedSortingMessage("Remove broadleaved sorting", "Eliminer tri des feuillus");
+		AddStatusSpeciesTypeSortingMessage("Add species type or status sorting", "Ajouter tri par \u00E9tat ou type d'esp\u00E8ces"),
+		RemoveStatusSpeciesTypeSortingMessage("Remove species type or status sorting", "Eliminer tri par \u00E9tat ou type d'esp\u00E8ces");
 
 		MessageID(String englishText, String frenchText) {
 			setText(englishText, frenchText);
@@ -120,8 +120,8 @@ public class ProductionLineProcessorButton extends AbstractProcessorButton imple
 	
 	final JMenuItem addDebarkerItem;
 	final JMenuItem removeDebarkerItem;
-	final JMenuItem addBroadleavedSortingItem;
-	final JMenuItem removeBroadleavedSortingItem;
+	final JMenuItem addStatusSpeciesTypeSortingItem;
+	final JMenuItem removeStatusSpeciesTypeSortingItem;
 	
 	
 	
@@ -137,8 +137,8 @@ public class ProductionLineProcessorButton extends AbstractProcessorButton imple
 		createEndOfLifeLinkRecognizer.setComponent(null);
 		addDebarkerItem = new JMenuItem(MessageID.AddDebarkerMessage.toString());
 		removeDebarkerItem = new JMenuItem(MessageID.RemoveDebarkerMessage.toString());
-		addBroadleavedSortingItem = new JMenuItem(MessageID.AddBroadleavedSortingMessage.toString());
-		removeBroadleavedSortingItem = new JMenuItem(MessageID.RemoveBroadleavedSortingMessage.toString());
+		addStatusSpeciesTypeSortingItem = new JMenuItem(MessageID.AddStatusSpeciesTypeSortingMessage.toString());
+		removeStatusSpeciesTypeSortingItem = new JMenuItem(MessageID.RemoveStatusSpeciesTypeSortingMessage.toString());
 		setExtractionPopupMenu();
 	}
 	
@@ -183,7 +183,7 @@ public class ProductionLineProcessorButton extends AbstractProcessorButton imple
 
 	private enum ExtractionType {
 		Debarking(BarkExtractionProcessor.class), 
-		BroadleavedSorting(BroadleavedExtractionProcessor.class);
+		StatusSpeciesTypeSorting(StatusSpeciesTypeExtractionProcessor.class);
 		
 		final Class<? extends AbstractExtractionProcessor> clazz;
 		
@@ -207,8 +207,8 @@ public class ProductionLineProcessorButton extends AbstractProcessorButton imple
 		switch(type) {
 		case Debarking:
 			return new BarkExtractionProcessor();
-		case BroadleavedSorting:
-			return new BroadleavedExtractionProcessor();
+		case StatusSpeciesTypeSorting:
+			return new StatusSpeciesTypeExtractionProcessor();
 		default:
 			throw new InvalidParameterException("Extraction type " + type.name() + " has not been implemented yet!" );
 		}
@@ -231,10 +231,10 @@ public class ProductionLineProcessorButton extends AbstractProcessorButton imple
 			addExtractionProcessor(ExtractionType.Debarking);
 		} else if (arg0.getSource().equals(removeDebarkerItem)) {
 			removeExtractionProcessor(ExtractionType.Debarking);
-		} else if (arg0.getSource().equals(this.addBroadleavedSortingItem)) {
-			addExtractionProcessor(ExtractionType.BroadleavedSorting);
-		} else if (arg0.getSource().equals(removeBroadleavedSortingItem)) {
-			removeExtractionProcessor(ExtractionType.BroadleavedSorting);
+		} else if (arg0.getSource().equals(this.addStatusSpeciesTypeSortingItem)) {
+			addExtractionProcessor(ExtractionType.StatusSpeciesTypeSorting);
+		} else if (arg0.getSource().equals(removeStatusSpeciesTypeSortingItem)) {
+			removeExtractionProcessor(ExtractionType.StatusSpeciesTypeSorting);
 		} 
 	}
 

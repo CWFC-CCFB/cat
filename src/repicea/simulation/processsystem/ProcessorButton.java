@@ -39,6 +39,12 @@ import repicea.gui.permissions.REpiceaGUIPermission;
 import repicea.gui.permissions.REpiceaGUIPermissionProvider;
 import repicea.simulation.processsystem.UISetup.BasicMode;
 
+/**
+ * The UI of the Processor class.<p>
+ * 
+ * It is a simple button. Once double-clicked, the ProcessorButton instance
+ * creates a {@link ProcessorInternalDialog} instance, which contains the characteristics of the Processor.
+ */
 @SuppressWarnings("serial")
 public class ProcessorButton extends SelectableJButton implements AnchorProvider, REpiceaShowableUIWithParent, REpiceaGUIPermissionProvider {
 

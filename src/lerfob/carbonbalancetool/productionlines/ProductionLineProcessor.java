@@ -43,8 +43,8 @@ import repicea.util.REpiceaTranslator;
 
 
 /**
- * The WoodProductProcessor class handles all the processing from the wood piece to a particular end product.
- * Basically, it includes an intake factor (from 0 to 1), a yield factor (from 0 to 1) and an indicator that specifies
+ * The ProductionLineProcessor class handles all the processing from the wood piece to a particular end product.<p>
+ * It includes an intake factor (from 0 to 1), a yield factor (from 0 to 1) and an indicator that specifies
  * whether or not the residual from this processor can be used for energy.
  * @author M. Fortin - September 2010
  */

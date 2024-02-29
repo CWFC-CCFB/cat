@@ -50,8 +50,6 @@ public class EndUseWoodProductCarbonUnitFeaturePanel extends CarbonUnitFeaturePa
 	private static final long serialVersionUID = 20101020L;
 	
 	public static enum MessageID implements TextableEnum {
-//		LandfillSiteCheckBoxLabel("Send to landfill after useful life", "Envoyer \u00E0 la d\u00E9charge apr\u00E8s vie utile"),
-//		PercentageSentToTheLandfill("Percentage sent to landfill", "Pourcentage envoy\u00E9 \u00E0 la d\u00E9charge"),
 		RelativeSubstitution("Relative substitution (Mg CO2 eq. / Funct. Unit)", "Substitution relative (Mg CO2 eq. / Unit\u00E9 fonct.)"),
 		UseClassCategory("Use class", "Cat\u00E9gorie d'usage"),
 		CombustionProcessName("Combustion process", "Proc\u00E9d\u00E9 de combustion");

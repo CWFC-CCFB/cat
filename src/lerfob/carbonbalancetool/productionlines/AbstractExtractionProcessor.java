@@ -1,5 +1,5 @@
 /*
- * This file is part of the lerfob-forestools library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2020 Mathieu Fortin for Canadian Forest Service, 
  *
@@ -19,6 +19,7 @@
 package lerfob.carbonbalancetool.productionlines;
 
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Graphics;
 import java.util.Collection;
 import java.util.List;
@@ -27,16 +28,19 @@ import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager.Carbo
 import repicea.gui.permissions.REpiceaGUIPermission;
 import repicea.simulation.processsystem.ProcessUnit;
 import repicea.simulation.processsystem.Processor;
+import repicea.simulation.processsystem.ProcessorButton;
 import repicea.simulation.processsystem.SystemPanel;
 
 /**
  * The AbstractExtractionProcessor class defines a process that extracts something before splitting
  * the ElementUnit instance (e.g. debarking).
+ * 
  * @author Mathieu Fortin - September 2020
  */
 @SuppressWarnings("serial")
 public abstract class AbstractExtractionProcessor extends AbstractProcessor {
 
+	
 	
 	protected static class CustomizedREpiceaGUIPermission implements REpiceaGUIPermission {
 
@@ -46,7 +50,7 @@ public abstract class AbstractExtractionProcessor extends AbstractProcessor {
 		}
 
 		@Override
-		public boolean isDropGranted() {
+		public boolean isDropGranted() {	// AbstractExtractionProcessor cannot be drag and drop. They must be created through the popup menu.
 			return false;
 		}
 
@@ -55,15 +59,19 @@ public abstract class AbstractExtractionProcessor extends AbstractProcessor {
 			return true;
 		}
 
+		/**
+		 * Enabling is mainly set in the {@link repicea.simulation.processsystem.SystemComponentMouseAdapter} class.<p>
+		 * See the ComponentsToBeEnabledDisabled static member of that class for the list of components.
+		 */
 		@Override
-		public boolean isEnablingGranted() {
+		public boolean isEnablingGranted() {	
 			return true;
 		}
 	}
 
 	/**
-	 * The LandfillProcessorButton has a specific icon for GUI.
-	 * @author Mathieu Fortin - May 2014
+	 * A species AbstractProcessorButton for the ExtractionProcessor class.
+	 * @author Mathieu Fortin - January 2021
 	 */
 	protected static class ExtractionProcessorButton extends AbstractProcessorButton {
 		protected ExtractionProcessorButton(SystemPanel panel, AbstractExtractionProcessor process) {
@@ -101,7 +109,24 @@ public abstract class AbstractExtractionProcessor extends AbstractProcessor {
 		}
 	}
 
+	/**
+	 * Extract the ProcessUnit instances that match some criteria.<p>
+	 * These ProcessUnit instances are returned by the method. IMPORTANT: these units must be removed from
+	 * the processUnits argument.
+	 * @param processUnits a List of ProcessUnit instances
+	 * @return the list of units that were extracted
+	 */
 	@SuppressWarnings("rawtypes")
 	protected abstract List<ProcessUnit> extract(List<ProcessUnit> processUnits);
+	
+	
+	@Override
+	public ProcessorButton getUI(Container container) {
+		if (guiInterface == null) {
+			guiInterface = new ExtractionProcessorButton((SystemPanel) container, this);
+		}
+		return guiInterface;
+	}
+
 	
 }
