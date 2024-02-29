@@ -187,9 +187,11 @@ public class StatusSpeciesTypeExtractionProcessor extends AbstractExtractionProc
 			if (e.getStateChange() == ItemEvent.SELECTED) {
 				if (e.getSource().equals(speciesTypeComboBox)) {
 					caller.speciesType = (Enum) speciesTypeComboBox.getSelectedItem();
+					((AbstractProcessorButton) caller.getUI()).setChanged(true);
 					refreshInterface();
 				} else if (e.getSource().equals(statusClassComboBox)) {
 					caller.statusClass = (Enum) statusClassComboBox.getSelectedItem();
+					((AbstractProcessorButton) caller.getUI()).setChanged(true);
 					refreshInterface();
 				}
 			}

@@ -43,9 +43,10 @@ public class LandfillCarbonUnit extends CarbonUnit {
 							AmountMap<Element> amountMap,
 							String speciesName,
 							SpeciesType speciesType,
+							StatusClass statusClass,
 							BiomassType biomassType,
 							CarbonUnitStatus landfillStatus) {
-		super(dateIndex, sampleUnitID, landfillCarbonUnitFeature, amountMap, speciesName, speciesType, biomassType);
+		super(dateIndex, sampleUnitID, landfillCarbonUnitFeature, amountMap, speciesName, speciesType, statusClass, biomassType);
 		addStatus(landfillStatus);
 	}
 	

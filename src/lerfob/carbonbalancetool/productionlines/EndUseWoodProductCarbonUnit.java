@@ -55,8 +55,9 @@ public class EndUseWoodProductCarbonUnit extends CarbonUnit {
 			EndUseWoodProductCarbonUnitFeature carbonUnitFeature,
 			AmountMap<Element> amountMap,
 			String speciesName,
-			SpeciesType speciesType) {
-		super(dateIndex, "", carbonUnitFeature, amountMap, speciesName, speciesType, BiomassType.Wood);
+			SpeciesType speciesType,
+			StatusClass statusClass) {
+		super(dateIndex, "", carbonUnitFeature, amountMap, speciesName, speciesType, statusClass, BiomassType.Wood);
 		this.rawRoundWoodVolume = initialVolumeBeforeFirstTransformation;
 	}
 	
@@ -131,7 +132,7 @@ public class EndUseWoodProductCarbonUnit extends CarbonUnit {
 						}
 						compartmentManager.getCarbonToolSettings().getCurrentProductionProcessorManager().getCarbonUnitMap().add(processedUnits);
 					} else {	// former implementation
-						((ProductionLineProcessor) getCarbonUnitFeature().getProcessor()).getProductionLine().getManager().sendToTheLandfill(i, getSpeciesName(), getSpeciesType(), updatedMap);	
+						((ProductionLineProcessor) getCarbonUnitFeature().getProcessor()).getProductionLine().getManager().sendToTheLandfill(i, getSpeciesName(), getSpeciesType(), getStatusClass(), updatedMap);	
 					}
 				}
 			}

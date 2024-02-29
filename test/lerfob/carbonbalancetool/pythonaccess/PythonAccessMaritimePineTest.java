@@ -15,6 +15,7 @@ import lerfob.carbonbalancetool.productionlines.CarbonUnit.BiomassType;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
 import lerfob.carbonbalancetool.productionlines.CarbonUnitList;
+import lerfob.carbonbalancetool.productionlines.ProductionLinesTest.CATCompatibleTreeImpl;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager;
 import lerfob.treelogger.diameterbasedtreelogger.DiameterBasedTreeLogCategory;
 import lerfob.treelogger.maritimepine.MaritimePineBasicTreeLogger;
@@ -86,7 +87,7 @@ public class PythonAccessMaritimePineTest {
 		MaritimePineBasicTreeLoggerParameters loggerParams = (MaritimePineBasicTreeLoggerParameters) treeLogger.getTreeLoggerParameters();
 		for (DiameterBasedTreeLogCategory logCategory : loggerParams.getLogCategoryList()) {
 			manager.resetCarbonUnitMap();
-			manager.processWoodPiece(logCategory, 0, "", amountMaps, CATSpecies.PINUS_PINASTER.name(), CATSpecies.PINUS_PINASTER.getSpeciesType());
+			manager.processWoodPiece(logCategory, 0, "", amountMaps, new CATCompatibleTreeImpl(CATSpecies.PINUS_PINASTER, StatusClass.cut));
 			double volume = 0;
 			for (CarbonUnitStatus type : CarbonUnitStatus.values()) {
 				CarbonUnitList list = manager.getCarbonUnits(type);

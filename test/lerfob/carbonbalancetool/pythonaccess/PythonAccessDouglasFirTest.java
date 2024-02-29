@@ -16,6 +16,7 @@ import lerfob.carbonbalancetool.productionlines.CarbonUnit;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.BiomassType;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
+import lerfob.carbonbalancetool.productionlines.ProductionLinesTest.CATCompatibleTreeImpl;
 import lerfob.carbonbalancetool.productionlines.CarbonUnitList;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager;
 import lerfob.treelogger.douglasfirfcba.DouglasFCBALogCategory;
@@ -150,7 +151,7 @@ public class PythonAccessDouglasFirTest {
 		DouglasFCBATreeLoggerParameters loggerParams = (DouglasFCBATreeLoggerParameters) treeLogger.getTreeLoggerParameters();
 		for (DouglasFCBALogCategory logCategory : loggerParams.getLogCategoryList()) {
 			manager.resetCarbonUnitMap();
-			manager.processWoodPiece(logCategory, 0, "", amountMaps, CATSpecies.PSEUDOTSUGA_MENZIESII.name(), CATSpecies.PSEUDOTSUGA_MENZIESII.getSpeciesType());
+			manager.processWoodPiece(logCategory, 0, "", amountMaps, new CATCompatibleTreeImpl(CATSpecies.PSEUDOTSUGA_MENZIESII, StatusClass.cut));
 			double volume = 0;
 			for (CarbonUnitStatus type : CarbonUnitStatus.values()) {
 				CarbonUnitList list = manager.getCarbonUnits(type);
