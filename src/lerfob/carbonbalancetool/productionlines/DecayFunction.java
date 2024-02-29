@@ -33,6 +33,7 @@ import repicea.gui.components.NumberFormatFieldFactory.NumberFieldListener;
 import repicea.math.utility.GammaUtility;
 import repicea.simulation.processsystem.ProcessorListTable.MemberHandler;
 import repicea.simulation.processsystem.ProcessorListTable.MemberInformation;
+import repicea.simulation.processsystem.ResourceReleasable;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
 
@@ -42,7 +43,7 @@ import repicea.util.REpiceaTranslator.TextableEnum;
  * @author Mathieu Fortin - October 2010
  */
 @SuppressWarnings("serial")
-class DecayFunction implements Serializable, REpiceaUIObject, NumberFieldListener, ItemListener, MemberHandler {
+class DecayFunction implements Serializable, REpiceaUIObject, NumberFieldListener, ItemListener, MemberHandler, ResourceReleasable {
 
 	protected static enum MemberLabel implements TextableEnum {
 		DecayFunctionType("Decay function type", "Type de d\u00E9croissance"),
@@ -247,20 +248,28 @@ class DecayFunction implements Serializable, REpiceaUIObject, NumberFieldListene
 	@Override
 	public List<MemberInformation> getInformationsOnMembers() {
 		List<MemberInformation> memberInfo = new ArrayList<MemberInformation>();	
-		memberInfo.add(new MemberInformation(MemberLabel.DecayFunctionType.toString(), DecayFunctionType.class, functionType));
-		memberInfo.add(new MemberInformation(MemberLabel.LifetimeMode.toString(), LifetimeMode.class, lifetimeMode));
-		memberInfo.add(new MemberInformation(MemberLabel.Lifetime.toString(), double.class, getLifetime()));
+		memberInfo.add(new MemberInformation(MemberLabel.DecayFunctionType, DecayFunctionType.class, functionType));
+		memberInfo.add(new MemberInformation(MemberLabel.LifetimeMode, LifetimeMode.class, lifetimeMode));
+		memberInfo.add(new MemberInformation(MemberLabel.Lifetime, double.class, getLifetime()));
 		return memberInfo;
 	}
 
 	@Override
-	public void processChangeToMember(String fieldName, Object value) {
-		if (fieldName.equals(MemberLabel.DecayFunctionType.toString())) {
+	public void processChangeToMember(Enum<?> label, Object value) {
+		if (label == MemberLabel.DecayFunctionType) {
 			functionType = (DecayFunctionType) value;
-		} else if (fieldName.equals(MemberLabel.LifetimeMode.toString())) {
+		} else if (label == MemberLabel.LifetimeMode) {
 			lifetimeMode = (LifetimeMode) value;
-		} else if (fieldName.equals(MemberLabel.Lifetime.toString())) {
+		} else if (label == MemberLabel.Lifetime) {
 			setLifetime((double) value);
 		} 
+	}
+
+	@Override
+	public void releaseResources() {
+		if (userInterface != null) {
+			userInterface.doNotListenToAnymore();
+			userInterface = null;
+		}
 	}
 }

@@ -122,4 +122,7 @@ public abstract class AbstractProcessor extends Processor {
 		return super.getProcessFeaturesPanel();
 	}
 
+	
+
+	
 }

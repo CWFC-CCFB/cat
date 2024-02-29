@@ -163,19 +163,19 @@ public class LandfillCarbonUnitFeature extends CarbonUnitFeature implements Chan
 	@Override
 	public List<MemberInformation> getInformationsOnMembers() {
 		List<MemberInformation> memberInfo = super.getInformationsOnMembers();
-		memberInfo.add(new MemberInformation(MemberLabel.LandfillType.toString(), LandfillType.class, getLandfillType()));
-		memberInfo.add(new MemberInformation(MemberLabel.DocFraction.toString(), double.class, getDegradableOrganicCarbonFraction()));
+		memberInfo.add(new MemberInformation(MemberLabel.LandfillType, LandfillType.class, getLandfillType()));
+		memberInfo.add(new MemberInformation(MemberLabel.DocFraction, double.class, getDegradableOrganicCarbonFraction()));
 		return memberInfo;
 	}
 
 	@Override
-	public void processChangeToMember(String fieldName, Object value) {
-		if (fieldName.equals(MemberLabel.LandfillType.toString())) {
+	public void processChangeToMember(Enum<?> label, Object value) {
+		if (label == MemberLabel.LandfillType) {
 			landfillType = (LandfillType) value;
-		} else if (fieldName.equals(MemberLabel.DocFraction.toString())) {
+		} else if (label == MemberLabel.DocFraction) {
 			this.setDegradableOrganicCarbonFraction((double) value);
 		} else {
-			super.processChangeToMember(fieldName, value);
+			super.processChangeToMember(label, value);
 		}
 	}
 

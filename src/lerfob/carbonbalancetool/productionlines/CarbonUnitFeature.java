@@ -27,6 +27,7 @@ import repicea.gui.REpiceaUIObject;
 import repicea.serial.SerializerChangeMonitor;
 import repicea.simulation.processsystem.ProcessorListTable.MemberHandler;
 import repicea.simulation.processsystem.ProcessorListTable.MemberInformation;
+import repicea.simulation.processsystem.ResourceReleasable;
 
 /**
  * The CarbonUnitFeature class defines some characteristics of carbon units contained in a wood piece. <p>
@@ -34,7 +35,7 @@ import repicea.simulation.processsystem.ProcessorListTable.MemberInformation;
  * @author Mathieu Fortin - 2012
  */
 @SuppressWarnings("serial")
-public class CarbonUnitFeature implements Serializable, REpiceaUIObject, MemberHandler {
+public class CarbonUnitFeature implements Serializable, REpiceaUIObject, MemberHandler, ResourceReleasable {
 
 	static {
 		SerializerChangeMonitor.registerClassNameChange("lerfob.carbonbalancetool.productionlines.CarbonUnitFeature$LifetimeMode",
@@ -125,8 +126,17 @@ public class CarbonUnitFeature implements Serializable, REpiceaUIObject, MemberH
 	}
 
 	@Override
-	public void processChangeToMember(String fieldName, Object value) {
-		getDecayFunction().processChangeToMember(fieldName, value);
+	public void processChangeToMember(Enum<?> label, Object value) {
+		getDecayFunction().processChangeToMember(label, value);
+	}
+
+	@Override
+	public void releaseResources() {
+		if (userInterfacePanel != null) {
+			userInterfacePanel.doNotListenToAnymore();
+			userInterfacePanel = null;
+		}
+		getDecayFunction().releaseResources();
 	}
 
 

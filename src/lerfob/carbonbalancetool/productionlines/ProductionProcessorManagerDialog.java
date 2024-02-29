@@ -140,7 +140,7 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 		protected List<Processor> getProcessorList() {
 			List<Processor> processors = new ArrayList<Processor>();
 			for (Processor p : caller.getList()) {
-				if (p instanceof AbstractProductionLineProcessor) {
+				if (p instanceof AbstractProductionLineProcessor || p instanceof AbstractExtractionProcessor) {
 					processors.add(p);
 				}
 			}

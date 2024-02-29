@@ -105,10 +105,10 @@ public class EnhancedProcessorInternalDialog extends ProcessorInternalDialog imp
 		setTopComponent();
 		REpiceaPanel featurePanel = getCaller().getProcessFeaturesPanel();
 		if (featurePanel != null) {
-			if (getCaller() instanceof AbstractProductionLineProcessor && getCaller().hasSubProcessors() ) {
-				setBottomComponent(new JPanel());
-			} else {
+			if (mustDisplayCarbonUnitFeatures(getCaller())) {
 				setBottomComponent(featurePanel);
+			} else {
+				setBottomComponent(new JPanel());
 			}
 		}
 		pack();
@@ -124,12 +124,10 @@ public class EnhancedProcessorInternalDialog extends ProcessorInternalDialog imp
 	@Override
 	protected JPanel setTopComponent() {
 		JPanel topComponent = super.setTopComponent();
-		if (getCaller().hasSubProcessors() || !(getCaller() instanceof ProductionLineProcessor)) { // this condition is because production line processors handle their emission within their carbon features
-//		if (getCaller().hasSubProcessors()) {
+		if (usesEmissionsAndFunctionalUnitFromAbstractProcessorClass(getCaller())) {
 			JPanel panel = UIControlManager.createSimpleHorizontalPanel(MessageID.FunctionalUnitBiomassLabel, functionUnitBiomass, 5, true);
 			topComponent.add(panel);
 			topComponent.add(Box.createVerticalStrut(5));
-
 			panel = UIControlManager.createSimpleHorizontalPanel(MessageID.EmissionsLabel, emissionsByFunctionUnit, 5, true);
 			topComponent.add(panel);
 			topComponent.add(Box.createVerticalStrut(5));
@@ -139,6 +137,17 @@ public class EnhancedProcessorInternalDialog extends ProcessorInternalDialog imp
 		return topComponent;
 	}
 
+	
+	static boolean usesEmissionsAndFunctionalUnitFromAbstractProcessorClass(AbstractProcessor p) {
+		return p instanceof AbstractExtractionProcessor ||
+				p instanceof LandfillProcessor || 
+				(p instanceof ProductionLineProcessor && p.hasSubProcessors());
+	}
+	
+	static boolean mustDisplayCarbonUnitFeatures(AbstractProcessor p) {
+		return !(p instanceof AbstractProductionLineProcessor) || !p.hasSubProcessors() ;
+	}
+	
 
 	@Override
 	public void listenTo() {

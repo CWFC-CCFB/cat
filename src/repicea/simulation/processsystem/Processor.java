@@ -36,6 +36,8 @@ import repicea.gui.REpiceaUIObject;
 import repicea.gui.REpiceaUIObjectWithParent;
 import repicea.simulation.processsystem.ProcessorListTable.MemberHandler;
 import repicea.simulation.processsystem.ProcessorListTable.MemberInformation;
+import repicea.util.REpiceaTranslator;
+import repicea.util.REpiceaTranslator.TextableEnum;
 
 /**
  * A Processor instance represents a node in the flux configuration.<p>
@@ -45,9 +47,23 @@ import repicea.simulation.processsystem.ProcessorListTable.MemberInformation;
  * @see ProcessorButton
  */
 @SuppressWarnings("serial")
-public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, CaretListener, Serializable, MemberHandler {
+public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, CaretListener, Serializable, MemberHandler, ResourceReleasable {
 
-	protected static final String NameField = "Name";
+	protected static enum MemberLabel implements TextableEnum {
+		NameField("Name", "Nom");
+		
+		MemberLabel(String englishName, String frenchName) {
+			setText(englishName, frenchName);
+		}
+
+		@Override
+		public void setText(String englishText, String frenchText) {
+			REpiceaTranslator.setString(this, englishText, frenchText);
+		}
+		
+		@Override
+		public String toString() {return REpiceaTranslator.getString(this);}
+	}
 	
 	private Point originalLocation;
 	protected transient ProcessorButton guiInterface;
@@ -307,14 +323,21 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 	@Override
 	public List<MemberInformation> getInformationsOnMembers() {
 		List<MemberInformation> cellValues = new ArrayList<MemberInformation>();
-		cellValues.add(new MemberInformation(NameField, String.class, name));
+		cellValues.add(new MemberInformation(MemberLabel.NameField, String.class, name));
 		return cellValues;
 	}
 	
 	@Override
-	public void processChangeToMember(String fieldName, Object value) {
-		if (fieldName.equals(NameField)) {
+	public void processChangeToMember(Enum<?> label, Object value) {
+		if (label == MemberLabel.NameField) {
 			setName(value.toString());
+		}
+	}
+
+	@Override
+	public void releaseResources() {
+		if (guiInterface != null) {
+			guiInterface.releaseResources();
 		}
 	}
 
