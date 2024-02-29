@@ -50,7 +50,7 @@ public class ProcessorListTable extends JTable implements Refreshable, CellEdito
 	 */
 	public static class MemberInformation {
 	
-		final String fieldName;
+		final Enum<?> label;
 		final Class<?> type;
 		final Object value;
 		
@@ -60,8 +60,8 @@ public class ProcessorListTable extends JTable implements Refreshable, CellEdito
 		 * @param type the type of the field (String, double, ...)
 		 * @param value the value of the member
 		 */
-		public MemberInformation(String fieldName, Class<?> type, Object value) {
-			this.fieldName = fieldName;
+		public MemberInformation(Enum<?> label, Class<?> type, Object value) {
+			this.label = label;
 			this.type = type;
 			this.value = value;
 		}
@@ -83,20 +83,23 @@ public class ProcessorListTable extends JTable implements Refreshable, CellEdito
 		/**
 		 * Apply the changes made in a member. <p>
 		 * 
-		 * The fieldName arguement is used to find the proper member.
+		 * The label argument is used to find the proper member.
 		 * 
-		 * @param fieldName the field name
+		 * @param label the enum that stands for the field name
 		 * @param value the new value
 		 */
-		public void processChangeToMember(String fieldName, Object value);
+		public void processChangeToMember(Enum<?> label, Object value);
 
 	}
 	
 	protected final SystemManager caller;
 	private ProcessorListTableModel tableModel;
+	private final Map<String, Enum<?>> enumMap;
 	
 	public ProcessorListTable(SystemManager caller) {
 		this.caller = caller;
+//		putClientProperty("terminateEditOnFocusLost", true);
+		enumMap = new HashMap<String, Enum<?>>();
 		initUI();
 	}
 	
@@ -149,12 +152,14 @@ public class ProcessorListTable extends JTable implements Refreshable, CellEdito
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void synchronizeTable(ProcessorListTableModel tableModel) {
+		enumMap.clear();
 		List<Processor> processors = getProcessorList(); 
 		for (int row = 0; row < processors.size(); row++) {
 			Processor p = processors.get(row);
 			for (MemberInformation v : p.getInformationsOnMembers()) {
-				if (tableModel.findColumn(v.fieldName) == -1) {
-					tableModel.addColumn(v.fieldName);
+				if (tableModel.findColumn(v.label.toString()) == -1) {
+					tableModel.addColumn(v.label.toString());
+					enumMap.put(v.label.toString(), v.label);
 				}
 			}			
 		}
@@ -163,7 +168,7 @@ public class ProcessorListTable extends JTable implements Refreshable, CellEdito
 			Object[] rowObject = new Object[tableModel.getColumnCount()];
 			tableModel.addRow(rowObject);
 			for (MemberInformation v : p.getInformationsOnMembers()) {
-				tableModel.setValueAt(v.value, row, tableModel.findColumn(v.fieldName));
+				tableModel.setValueAt(v.value, row, tableModel.findColumn(v.label.toString()));
 			}
 		}
 		
@@ -203,7 +208,9 @@ public class ProcessorListTable extends JTable implements Refreshable, CellEdito
 			Processor p = getProcessorList().get(rowIndex);
 			String columnName = ((DefaultTableModel) evt.getSource()).getColumnName(columnIndex);
 			Object newValue = ((DefaultTableModel) evt.getSource()).getValueAt(rowIndex, columnIndex);
-			p.processChangeToMember(columnName, newValue);
+			Enum label = enumMap.get(columnName);
+			p.processChangeToMember(label, newValue);
+			System.out.println("Changing " + label.name() + " to " + newValue.toString());
 			// record a change
 			SystemManagerDialog systemDlg = (SystemManagerDialog) CommonGuiUtility.getParentComponent(this, SystemManagerDialog.class);
 			if (systemDlg != null) {

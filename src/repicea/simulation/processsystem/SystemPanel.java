@@ -145,13 +145,13 @@ public class SystemPanel extends DnDPanel<Processor> implements MouseListener,
 	protected void addManagerComponents() {
 		for (REpiceaUIObject obj : getListManager().getList()) {
 			Processor process = (Processor) obj;
+			process.releaseResources();
 			addProcessorButton(process.getUI(this));
 			for (Processor subProcess : process.getSubProcessors()) {
 				addLinkLine(new ProcessorLinkLine(this, process, subProcess));
 			}
 		}
 	}
-
 	
 	protected boolean addProcessorButton(ProcessorButton processorButton) {
 		boolean bool = false;

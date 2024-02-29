@@ -24,12 +24,14 @@ import java.awt.Graphics;
 import java.util.Collection;
 import java.util.List;
 
+import lerfob.carbonbalancetool.productionlines.AbstractProductionLineProcessor.MemberLabel;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager.CarbonTestProcessUnit;
 import repicea.gui.permissions.REpiceaGUIPermission;
 import repicea.simulation.processsystem.ProcessUnit;
 import repicea.simulation.processsystem.Processor;
 import repicea.simulation.processsystem.ProcessorButton;
 import repicea.simulation.processsystem.SystemPanel;
+import repicea.simulation.processsystem.ProcessorListTable.MemberInformation;
 
 /**
  * The AbstractExtractionProcessor class defines a process that extracts something before splitting
@@ -128,5 +130,23 @@ public abstract class AbstractExtractionProcessor extends AbstractProcessor {
 		return guiInterface;
 	}
 
-	
+	@Override
+	public List<MemberInformation> getInformationsOnMembers() {
+		List<MemberInformation> cellValues = super.getInformationsOnMembers();
+		cellValues.add(new MemberInformation(AbstractProductionLineProcessor.MemberLabel.FunctionUnitBiomass, double.class, functionUnitBiomass));
+		cellValues.add(new MemberInformation(AbstractProductionLineProcessor.MemberLabel.EmissionFunctionUnit, double.class, emissionsByFunctionalUnit));
+		return cellValues;
+	}
+
+	@Override
+	public void processChangeToMember(Enum label, Object value) {
+		if (label == AbstractProductionLineProcessor.MemberLabel.FunctionUnitBiomass) {
+			functionUnitBiomass = (double) value;
+		} else if (label == AbstractProductionLineProcessor.MemberLabel.EmissionFunctionUnit) {
+			emissionsByFunctionalUnit = (double) value;
+		} else {
+			super.processChangeToMember(label, value);
+		}
+	}
+
 }

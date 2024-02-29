@@ -306,25 +306,25 @@ public class EndUseWoodProductCarbonUnitFeature extends CarbonUnitFeature implem
 	@Override
 	public List<MemberInformation> getInformationsOnMembers() {
 		List<MemberInformation> memberInfo = super.getInformationsOnMembers();
-		memberInfo.add(new MemberInformation(AbstractProductionLineProcessor.MemberLabel.FunctionUnitBiomass.toString(), double.class, getBiomassOfFunctionalUnitMg()));
-		memberInfo.add(new MemberInformation(AbstractProductionLineProcessor.MemberLabel.EmissionFunctionUnit.toString(), double.class, getEmissionsMgCO2EqByFunctionalUnit()));
-		memberInfo.add(new MemberInformation(MemberLabel.UseClass.toString(), UseClass.class, getUseClass()));
-		memberInfo.add(new MemberInformation(MemberLabel.Substitution.toString(), double.class, relativeSubstitutionCO2EqFonctionalUnit));
+		memberInfo.add(new MemberInformation(AbstractProductionLineProcessor.MemberLabel.FunctionUnitBiomass, double.class, getBiomassOfFunctionalUnitMg()));
+		memberInfo.add(new MemberInformation(AbstractProductionLineProcessor.MemberLabel.EmissionFunctionUnit, double.class, getEmissionsMgCO2EqByFunctionalUnit()));
+		memberInfo.add(new MemberInformation(MemberLabel.UseClass, UseClass.class, getUseClass()));
+		memberInfo.add(new MemberInformation(MemberLabel.Substitution, double.class, relativeSubstitutionCO2EqFonctionalUnit));
 		return memberInfo;
 	}
 
 	@Override
-	public void processChangeToMember(String fieldName, Object value) {
-		if (fieldName.equals(AbstractProductionLineProcessor.MemberLabel.FunctionUnitBiomass.toString())) {
+	public void processChangeToMember(Enum<?> label, Object value) {
+		if (label == AbstractProductionLineProcessor.MemberLabel.FunctionUnitBiomass) {
 			biomassOfFunctionalUnit = (double) value;
-		} else if (fieldName.equals(AbstractProductionLineProcessor.MemberLabel.EmissionFunctionUnit.toString())) {
+		} else if (label == AbstractProductionLineProcessor.MemberLabel.EmissionFunctionUnit) {
 			emissionsByFunctionalUnit = (double) value;
-		} else if (fieldName.equals(MemberLabel.UseClass.toString())) {
+		} else if (label == MemberLabel.UseClass) {
 			setUseClass((UseClass) value);
-		} else if (fieldName.equals(MemberLabel.Substitution.toString())) {
+		} else if (label == MemberLabel.Substitution) {
 			relativeSubstitutionCO2EqFonctionalUnit = (double) value;
 		} else {
-			super.processChangeToMember(fieldName, value);
+			super.processChangeToMember(label, value);
 		}
 	}
 

@@ -27,6 +27,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
+import javax.swing.CellEditor;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -367,6 +368,12 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 			}
 		} else if (evt.getSource().equals(fluxView)) {
 			if (fluxView.isSelected()) {
+				if (processorTable != null) {
+					CellEditor cellEditor = processorTable.getCellEditor();
+					if (cellEditor != null) {
+						cellEditor.stopCellEditing();
+					}
+				}
 				setFluxViewPanel();
 			}
 		}
