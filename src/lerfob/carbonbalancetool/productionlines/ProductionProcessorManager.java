@@ -37,6 +37,7 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
 import lerfob.carbonbalancetool.CATCompartmentManager;
+import lerfob.carbonbalancetool.CATCompatibleTree;
 import lerfob.carbonbalancetool.CarbonAccountingTool;
 import lerfob.carbonbalancetool.catdiameterbasedtreelogger.CATDiameterBasedTreeLogger;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.BiomassType;
@@ -57,6 +58,7 @@ import repicea.serial.Memorizable;
 import repicea.serial.MemorizerPackage;
 import repicea.serial.SerializerChangeMonitor;
 import repicea.simulation.covariateproviders.treelevel.SpeciesTypeProvider.SpeciesType;
+import repicea.simulation.covariateproviders.treelevel.TreeStatusProvider.StatusClass;
 import repicea.simulation.processsystem.AmountMap;
 import repicea.simulation.processsystem.ProcessUnit;
 import repicea.simulation.processsystem.Processor;
@@ -616,10 +618,16 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	 * @param dateIndex   the index of the date in the time scale
 	 * @param amountMap   a Map which contains the amounts of the different elements
 	 */
-	public void processWoodPiece(LogCategory logCategory, int dateIndex, String samplingUnitID,
-			Map<BiomassType, AmountMap<Element>> amountMaps, String speciesName, SpeciesType speciesType) {
+	public void processWoodPiece(LogCategory logCategory, 
+			int dateIndex, 
+			String samplingUnitID,
+			Map<BiomassType, AmountMap<Element>> amountMaps, 
+			CATCompatibleTree tree) {
+//			String speciesName, 
+//			SpeciesType speciesType,
+//			StatusClass statusClass) {
 		Processor processor = findLeftHandSideProcessor(logCategory);
-		processAmountMap(processor, dateIndex, samplingUnitID, amountMaps, speciesName, speciesType);
+		processAmountMap(processor, dateIndex, samplingUnitID, amountMaps, tree.getSpeciesName(), tree.getSpeciesType(), tree.getStatusClass());
 	}
 
 	/**
@@ -629,19 +637,30 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	 * @param amountMap a Map which contains the amounts of the different elements
 	 * @param type      a WoodyDebrisProcessorID enum variable
 	 */
-	public void processWoodyDebris(int dateIndex, String samplingUnitID,
-			Map<BiomassType, AmountMap<Element>> amountMaps, String speciesName, SpeciesType speciesType, WoodyDebrisProcessorID type) {
+	public void processWoodyDebris(int dateIndex, 
+			String samplingUnitID,
+			Map<BiomassType, AmountMap<Element>> amountMaps, 
+			CATCompatibleTree tree,
+//			String speciesName, 
+//			SpeciesType speciesType, 
+//			StatusClass statusClass,
+			WoodyDebrisProcessorID type) {
 		Processor processor = findWoodyDebrisProcessor(type);
-		processAmountMap(processor, dateIndex, samplingUnitID, amountMaps, speciesName, speciesType);
+		processAmountMap(processor, dateIndex, samplingUnitID, amountMaps, tree.getSpeciesName(), tree.getSpeciesType(), tree.getStatusClass());
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private Collection<CarbonUnit> processAmountMap(Processor processor, int dateIndex, String samplingUnitID,
-			Map<BiomassType, AmountMap<Element>> amountMaps, String speciesName, SpeciesType speciesType) {
+	private Collection<CarbonUnit> processAmountMap(Processor processor, 
+			int dateIndex, 
+			String samplingUnitID,
+			Map<BiomassType, AmountMap<Element>> amountMaps, 
+			String speciesName, 
+			SpeciesType speciesType,
+			StatusClass statusClass) {
 		List<ProcessUnit> inputUnits = new ArrayList<ProcessUnit>();
 		if (!amountMaps.isEmpty()) {
 			for (BiomassType bt : amountMaps.keySet()) {
-				inputUnits.add(new CarbonUnit(dateIndex, samplingUnitID, null, amountMaps.get(bt), speciesName, speciesType, bt));
+				inputUnits.add(new CarbonUnit(dateIndex, samplingUnitID, null, amountMaps.get(bt), speciesName, speciesType, statusClass, bt));
 			}
 			Collection<CarbonUnit> processedUnits = (Collection) processor.doProcess(inputUnits);
 			getCarbonUnitMap().add(processedUnits);
@@ -762,8 +781,8 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	public static void main(String[] args) {
 		REpiceaTranslator.setCurrentLanguage(Language.English);
 //		REpiceaTranslator.setCurrentLanguage(Language.French);
-		ProductionProcessorManager ppm = new ProductionProcessorManager(new DefaultREpiceaGUIPermission(false));
-//		ProductionProcessorManager ppm = new ProductionProcessorManager();
+//		ProductionProcessorManager ppm = new ProductionProcessorManager(new DefaultREpiceaGUIPermission(false));
+		ProductionProcessorManager ppm = new ProductionProcessorManager();
 		String filename = ObjectUtility.getPackagePath(ppm.getClass()) + File.separator + "library" + File.separator
 				+ "hardwood_recycling_en.prl";
 		try {

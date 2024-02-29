@@ -1,5 +1,5 @@
 /*
- * This file is part of the repicea library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2009-2014 Mathieu Fortin for Rouge-Epicea
  *
@@ -34,6 +34,15 @@ import repicea.gui.UIControlManager;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
 
+/**
+ * A dialog to set the processor characteristics.<p>
+ * 
+ * There are common features such as the processor names. The class automatically asks the processor 
+ * if there are specific features through the {@link Processor#getProcessFeaturesPanel()}, which returns an
+ * REpiceaPanel instance. This method can be overriden in derived class.
+ * 
+ * @author Mathieu Fortin - 2014
+ */
 @SuppressWarnings("serial")
 public class ProcessorInternalDialog extends REpiceaDialog {
 
@@ -64,7 +73,7 @@ public class ProcessorInternalDialog extends REpiceaDialog {
 	
 	private final Processor caller;
 
-	protected JTextField processorTextField;
+	private JTextField processorTextField;
 	
 	private JPanel bottomComponent;
 	private JPanel topComponent;

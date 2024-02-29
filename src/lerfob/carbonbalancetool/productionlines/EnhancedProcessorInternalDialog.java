@@ -1,3 +1,21 @@
+/*
+ * This file is part of the CAT library.
+ *
+ * Copyright (C) 2010-2012 Mathieu Fortin for LERFOB INRA/AgroParisTech, 
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed with the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * Please see the license at http://www.gnu.org/copyleft/lesser.html.
+ */
 package lerfob.carbonbalancetool.productionlines;
 
 import java.awt.Window;
@@ -6,6 +24,7 @@ import javax.swing.Box;
 import javax.swing.JPanel;
 
 import repicea.gui.CommonGuiUtility;
+import repicea.gui.REpiceaPanel;
 import repicea.gui.UIControlManager;
 import repicea.gui.components.NumberFormatFieldFactory;
 import repicea.gui.components.NumberFormatFieldFactory.JFormattedNumericField;
@@ -18,6 +37,14 @@ import repicea.simulation.processsystem.SystemManagerDialog;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
 
+/**
+ * An internal dialog for CAT processors.<p>
+ * 
+ * The {@link AbstractProcessorButton} class uses an EnhancedProcessorInternalDialog instance 
+ * instead of a {@link repicea.simulation.processsystem.ProcessorInternalDialog} instance.
+ * 
+ * @author Mathieu Fortin - 2012
+ */
 @SuppressWarnings("serial")
 public class EnhancedProcessorInternalDialog extends ProcessorInternalDialog implements NumberFieldListener {
 
@@ -74,6 +101,22 @@ public class EnhancedProcessorInternalDialog extends ProcessorInternalDialog imp
 		
 	
 	@Override
+	public void refreshInterface() {
+		setTopComponent();
+		REpiceaPanel featurePanel = getCaller().getProcessFeaturesPanel();
+		if (featurePanel != null) {
+			if (getCaller() instanceof AbstractProductionLineProcessor && getCaller().hasSubProcessors() ) {
+				setBottomComponent(new JPanel());
+			} else {
+				setBottomComponent(featurePanel);
+			}
+		}
+		pack();
+		validate();
+		repaint();
+	}
+	
+	@Override
 	protected AbstractProcessor getCaller() {
 		return (AbstractProcessor) super.getCaller();
 	}
@@ -81,7 +124,8 @@ public class EnhancedProcessorInternalDialog extends ProcessorInternalDialog imp
 	@Override
 	protected JPanel setTopComponent() {
 		JPanel topComponent = super.setTopComponent();
-		if (getCaller().hasSubProcessors()) {
+		if (getCaller().hasSubProcessors() || !(getCaller() instanceof ProductionLineProcessor)) { // this condition is because production line processors handle their emission within their carbon features
+//		if (getCaller().hasSubProcessors()) {
 			JPanel panel = UIControlManager.createSimpleHorizontalPanel(MessageID.FunctionalUnitBiomassLabel, functionUnitBiomass, 5, true);
 			topComponent.add(panel);
 			topComponent.add(Box.createVerticalStrut(5));

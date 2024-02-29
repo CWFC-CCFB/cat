@@ -1,5 +1,5 @@
 /*
- * This file is part of the repicea-simulation library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2009-2014 Mathieu Fortin for Rouge-Epicea
  *
@@ -37,6 +37,13 @@ import repicea.gui.REpiceaUIObjectWithParent;
 import repicea.simulation.processsystem.ProcessorListTable.MemberHandler;
 import repicea.simulation.processsystem.ProcessorListTable.MemberInformation;
 
+/**
+ * A Processor instance represents a node in the flux configuration.<p>
+ * Its UI is a {@link ProcessorButton} instance. Once double-clicked, the ProcessorButton instance
+ * creates a {@link ProcessorInternalDialog} instance, which contains the characteristics of the Processor.
+ * @author Mathieu Fortin - 2014
+ * @see ProcessorButton
+ */
 @SuppressWarnings("serial")
 public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, CaretListener, Serializable, MemberHandler {
 
