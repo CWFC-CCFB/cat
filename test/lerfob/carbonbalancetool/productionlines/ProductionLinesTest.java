@@ -442,6 +442,65 @@ public class ProductionLinesTest {
 
 	}
 
+	/**
+	 * Tests if the amount in is equal to the amount out
+	 */
+	@Test
+	public void testCumulativeEmissionsWithValueForEachProcess2() {
+		try {
+			String filename = ObjectUtility.getPackagePath(getClass()) + File.separator
+					+ "testHardwood_simple_enWithEmissions2.prl";
+			ProductionProcessorManager processorManager = new ProductionProcessorManager();
+			processorManager.load(filename);
+
+			double volume = 100d;
+			double carbonContent = .5;
+			double basicWoodDensity = .5;
+
+			AmountMap<Element> amountMap = new AmountMap<Element>();
+			amountMap.put(Element.Volume, volume);
+			amountMap.put(Element.Biomass, volume * basicWoodDensity);
+			amountMap.put(Element.C, volume * basicWoodDensity * carbonContent);
+			Map<BiomassType, AmountMap<Element>> amountMaps = new HashMap<BiomassType, AmountMap<Element>>();
+			amountMaps.put(BiomassType.Wood, amountMap);
+			
+			List<Processor> processors = processorManager.getPrimaryProcessors();
+			int i = processors.size() - 1;
+			LogCategoryProcessor sawingProcessor = null;
+			while (i >= 0) {
+				Processor p = processors.get(i);
+				if (p instanceof LogCategoryProcessor) {
+					sawingProcessor = (LogCategoryProcessor) p;
+					break;
+				}
+				i--;
+			}
+//			Collection<CarbonUnit> endProducts = processorManager.processWoodPiece(sawingProcessor.logCategory, 2015, amountMap);
+			processorManager.processWoodPiece(sawingProcessor.logCategory, 2015, "", amountMaps, new CATCompatibleTreeImpl(CATSpecies.ABIES, StatusClass.cut));
+				
+			Collection<CarbonUnit> endProducts = new ArrayList<CarbonUnit>();
+			for (CarbonUnitStatus status : CarbonUnitStatus.values()) {
+				endProducts.addAll(processorManager.getCarbonUnits(status));
+			}
+
+			double actualEmissions = 0d;
+			for (CarbonUnit unit : endProducts) {
+				actualEmissions += unit.getAmountMap().get(Element.EmissionsCO2Eq);
+			}
+
+			double expectedEmissions = 8.5;
+			Assert.assertEquals("Test for production line : " + "Sawing",
+					expectedEmissions, 
+					actualEmissions, 
+					1E-12);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail(e.getMessage());
+		} 
+
+	}
+
 
 	@Test
 	public void testBroadleavedSorting1() throws IOException {
