@@ -200,6 +200,12 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 	@Deprecated
 	protected boolean isPrimaryProcessor() {return fatherProcessor == null;}
 	
+	/**
+	 * Check if the production line processor is final, i.e. it stands for an end-use product.<p>
+	 * 
+	 * This happens when the production line processor has no sub processors.
+	 * @return a boolean
+	 */
 	protected boolean isFinalProcessor() {return (!hasSubProcessors() && !sentToAnotherMarket);}
 	
 	@Deprecated

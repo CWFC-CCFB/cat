@@ -105,7 +105,7 @@ public class EnhancedProcessorInternalDialog extends ProcessorInternalDialog imp
 		setTopComponent();
 		REpiceaPanel featurePanel = getCaller().getProcessFeaturesPanel();
 		if (featurePanel != null) {
-			if (mustDisplayCarbonUnitFeatures(getCaller())) {
+			if (getCaller().mustDisplaySpecificAdditionalFeatures()) {
 				setBottomComponent(featurePanel);
 			} else {
 				setBottomComponent(new JPanel());
@@ -124,7 +124,7 @@ public class EnhancedProcessorInternalDialog extends ProcessorInternalDialog imp
 	@Override
 	protected JPanel setTopComponent() {
 		JPanel topComponent = super.setTopComponent();
-		if (usesEmissionsAndFunctionalUnitFromAbstractProcessorClass(getCaller())) {
+		if (getCaller().usesEmissionsAndFunctionalUnitFromAbstractProcessorClass()) {
 			JPanel panel = UIControlManager.createSimpleHorizontalPanel(MessageID.FunctionalUnitBiomassLabel, functionUnitBiomass, 5, true);
 			topComponent.add(panel);
 			topComponent.add(Box.createVerticalStrut(5));
@@ -138,17 +138,6 @@ public class EnhancedProcessorInternalDialog extends ProcessorInternalDialog imp
 	}
 
 	
-	static boolean usesEmissionsAndFunctionalUnitFromAbstractProcessorClass(AbstractProcessor p) {
-		return p instanceof AbstractExtractionProcessor ||
-				p instanceof LandfillProcessor || 
-				(p instanceof ProductionLineProcessor && p.hasSubProcessors());
-	}
-	
-	static boolean mustDisplayCarbonUnitFeatures(AbstractProcessor p) {
-		return !(p instanceof AbstractProductionLineProcessor) || !p.hasSubProcessors() ;
-	}
-	
-
 	@Override
 	public void listenTo() {
 		super.listenTo();

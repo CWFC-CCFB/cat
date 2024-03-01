@@ -54,12 +54,41 @@ public abstract class AbstractProcessor extends Processor {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public Collection<ProcessUnit> doProcess(List<ProcessUnit> inputUnits) {
-		if (hasSubProcessors()) {
+		if (usesEmissionsAndFunctionalUnitFromAbstractProcessorClass()) {
 			for (ProcessUnit processUnit : inputUnits) {
 				AbstractProcessor.updateProcessEmissions(processUnit.getAmountMap(), functionUnitBiomass, emissionsByFunctionalUnit);
 			}
 		}
 		return super.doProcess(inputUnits);
+	}
+
+	/**
+	 * Check if the processor is using emissions and functional unit definitions from the
+	 * AbstractcProcessorClass as opposed to those in the EndUseProductCarbonUnitFeature class.<p>
+	 * There are three cases where this happens:
+	 * <ul>
+	 * <li> the instance inherits from the AbstractExtractionProcessor class;
+	 * <li> the instance is a LandfillProcessor instance;
+	 * <li> the instance is a ProductionLineProcessor but it has some sub processors.
+	 * </ul>
+	 * @return a boolean
+	 */
+	protected boolean usesEmissionsAndFunctionalUnitFromAbstractProcessorClass() {
+		return this instanceof AbstractExtractionProcessor ||
+				this instanceof LandfillProcessor || 
+				(this instanceof ProductionLineProcessor && hasSubProcessors());
+	}
+	
+	/**
+	 * Check if specific features must be displayed.<p>
+	 * 
+	 * Specific features are not available when dealing with an AbstractProductionLineProcessor instance 
+	 * that has sub processors. This happens with ProductionLineProcessor instances when they are not end
+	 * use products.
+	 * @return a boolean
+	 */
+	protected boolean mustDisplaySpecificAdditionalFeatures() {
+		return !(this instanceof ProductionLineProcessor && hasSubProcessors());
 	}
 
 	

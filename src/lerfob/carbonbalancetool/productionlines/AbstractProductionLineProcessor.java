@@ -79,11 +79,11 @@ public abstract class AbstractProductionLineProcessor extends AbstractProcessor 
 	@Override
 	public List<MemberInformation> getInformationsOnMembers() {
 		List<MemberInformation> cellValues = super.getInformationsOnMembers();
-		if (EnhancedProcessorInternalDialog.usesEmissionsAndFunctionalUnitFromAbstractProcessorClass(this)) {
+		if (usesEmissionsAndFunctionalUnitFromAbstractProcessorClass()) {
 			cellValues.add(new MemberInformation(MemberLabel.FunctionUnitBiomass, double.class, functionUnitBiomass));
 			cellValues.add(new MemberInformation(MemberLabel.EmissionFunctionUnit, double.class, emissionsByFunctionalUnit));
 		} 
-		if (EnhancedProcessorInternalDialog.mustDisplayCarbonUnitFeatures(this)) {
+		if (mustDisplaySpecificAdditionalFeatures()) {
 			cellValues.addAll(woodProductFeature.getInformationsOnMembers());
 		}
 		return cellValues;
@@ -92,13 +92,13 @@ public abstract class AbstractProductionLineProcessor extends AbstractProcessor 
 	@Override
 	public void processChangeToMember(Enum<?> label, Object value) {
 		if (label == MemberLabel.FunctionUnitBiomass) {
-			if (EnhancedProcessorInternalDialog.usesEmissionsAndFunctionalUnitFromAbstractProcessorClass(this)) {
+			if (usesEmissionsAndFunctionalUnitFromAbstractProcessorClass()) {
 				functionUnitBiomass = (double) value;
 			} else {
 				getEndProductFeature().processChangeToMember(label, value);
 			}
 		} else if (label == MemberLabel.EmissionFunctionUnit) {
-			if (EnhancedProcessorInternalDialog.usesEmissionsAndFunctionalUnitFromAbstractProcessorClass(this)) {
+			if (usesEmissionsAndFunctionalUnitFromAbstractProcessorClass()) {
 				emissionsByFunctionalUnit = (double) value;
 			} else {
 				getEndProductFeature().processChangeToMember(label, value);

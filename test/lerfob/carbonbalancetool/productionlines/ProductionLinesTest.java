@@ -429,7 +429,7 @@ public class ProductionLinesTest {
 				actualEmissions += unit.getAmountMap().get(Element.EmissionsCO2Eq);
 			}
 
-			double expectedEmissions = 3.5;
+			double expectedEmissions = 2.5;
 			Assert.assertEquals("Test for production line : " + "Sawing",
 					expectedEmissions, 
 					actualEmissions, 
