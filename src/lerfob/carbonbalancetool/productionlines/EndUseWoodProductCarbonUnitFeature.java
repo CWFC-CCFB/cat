@@ -21,6 +21,7 @@ package lerfob.carbonbalancetool.productionlines;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.List;
 
 import javax.swing.JComboBox;
 import javax.swing.event.ChangeEvent;
@@ -32,6 +33,7 @@ import lerfob.carbonbalancetool.productionlines.combustion.CombustionEmissions.C
 import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettings;
 import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettings.VariabilitySource;
 import repicea.gui.components.NumberFormatFieldFactory.NumberFieldDocument.NumberFieldEvent;
+import repicea.simulation.processsystem.ProcessorListTable.MemberInformation;
 import repicea.gui.components.NumberFormatFieldFactory.NumberFieldListener;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
@@ -46,6 +48,25 @@ public class EndUseWoodProductCarbonUnitFeature extends CarbonUnitFeature implem
 																					NumberFieldListener {
 
 	private static final long serialVersionUID = 20101020L;
+	
+	protected static enum MemberLabel implements TextableEnum {
+		UseClass("Use class", "Usage"),
+		Substitution("Substitution (Mg CO2 eq./FU)","Substitution (Mg CO2 eq./UF)");
+
+		MemberLabel(String englishText, String frenchText) {
+			setText(englishText, frenchText);
+		}
+		
+		@Override
+		public void setText(String englishText, String frenchText) {
+			REpiceaTranslator.setString(this, englishText, frenchText);
+		}
+		
+		@Override
+		public String toString() {return REpiceaTranslator.getString(this);}
+	}
+	
+	
 	
 	public static enum UseClass implements TextableEnum {
 		NONE("Industrial loss", "Perte industrielle", true), 
@@ -117,7 +138,7 @@ public class EndUseWoodProductCarbonUnitFeature extends CarbonUnitFeature implem
 	
 	protected CombustionProcess getCombustionProcess() {return combustionProcess;}
 	
-	protected double getEmissionsMgCO2ByFunctionalUnit() {return emissionsByFunctionalUnit;}
+	protected double getEmissionsMgCO2EqByFunctionalUnit() {return emissionsByFunctionalUnit;}
 	
 	protected UseClass getUseClass() {
 		if (useClass == null) {
@@ -136,7 +157,7 @@ public class EndUseWoodProductCarbonUnitFeature extends CarbonUnitFeature implem
 		return getUserInterfacePanel();
 	}
 
-	protected double getSubstitutionCO2EqFunctionalUnit(CATCompartmentManager manager) {
+	protected double getSubstitutionMgCO2EqByFunctionalUnit(CATCompartmentManager manager) {
 		if (manager != null) {
 			return relativeSubstitutionCO2EqFonctionalUnit * CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.SubstitutionFactors, manager, toString());
 		} else {
@@ -177,6 +198,7 @@ public class EndUseWoodProductCarbonUnitFeature extends CarbonUnitFeature implem
 			return disposableProportion;		// former implementation
 		}
 	}
+	@Deprecated
 	protected void setDisposableProportion(double disposableProportion) {this.disposableProportion = disposableProportion;} 
 	
 	/**
@@ -226,8 +248,6 @@ public class EndUseWoodProductCarbonUnitFeature extends CarbonUnitFeature implem
 				((AbstractProcessorButton) getProcessor().getUI()).setChanged(true);
 				emissionsByFunctionalUnit = value;
 			}
-//		} else {
-//			super.numberChanged(e);
 		}
 	}
 
@@ -251,8 +271,6 @@ public class EndUseWoodProductCarbonUnitFeature extends CarbonUnitFeature implem
 					((AbstractProcessorButton) getProcessor().getUI()).setChanged(true);
 					useClass = newUseClass;
 				}
-//			} else if (obj instanceof LifetimeMode) {
-//				super.itemStateChanged(evt);
 			} else if (obj instanceof CombustionProcess) {
 				CombustionProcess newCombustionProcess = (CombustionProcess) obj;
 				if (newCombustionProcess != combustionProcess) {
@@ -284,44 +302,30 @@ public class EndUseWoodProductCarbonUnitFeature extends CarbonUnitFeature implem
 		this.lca = lca;
 	}
 
-//	@SuppressWarnings("deprecation")
-//	@Override
-//	public boolean equals(Object obj) {
-//		if (!(obj instanceof EndUseWoodProductCarbonUnitFeature)) {
-//			return false;
-//		} else {
-//			EndUseWoodProductCarbonUnitFeature cuf = (EndUseWoodProductCarbonUnitFeature) obj;
-//			if (!cuf.getProcessor().getName().equals(getProcessor().getName())) {	// make sure the name is the same
-//				return false;
-//			}
-//			if (cuf.disposable != disposable) {
-//				return false;
-//			}
-//			if (cuf.disposableProportion != disposableProportion) {
-//				return false;
-//			}
-//			if (cuf.useClass != useClass) {
-//				return false;
-//			}
-//			if (cuf.averageSubstitution != averageSubstitution) {
-//				return false;
-//			}
-//			if (cuf.relativeSubstitutionCO2EqFonctionalUnit != this.relativeSubstitutionCO2EqFonctionalUnit) {
-//				return false;
-//			}
-//			if (cuf.biomassOfFunctionalUnit != this.biomassOfFunctionalUnit) {
-//				return false;
-//			}
-//			if (cuf.emissionsByFunctionalUnit != this.emissionsByFunctionalUnit) {
-//				return false;
-//			}
-//			if (cuf.lca != null) {
-//				if (!cuf.lca.equals(lca)) {
-//					return false;
-//				}
-//			}
-//		}
-//		return super.equals(obj);
-//	}
+	
+	@Override
+	public List<MemberInformation> getInformationsOnMembers() {
+		List<MemberInformation> memberInfo = super.getInformationsOnMembers();
+		memberInfo.add(new MemberInformation(AbstractProductionLineProcessor.MemberLabel.FunctionUnitBiomass, double.class, getBiomassOfFunctionalUnitMg()));
+		memberInfo.add(new MemberInformation(AbstractProductionLineProcessor.MemberLabel.EmissionFunctionUnit, double.class, getEmissionsMgCO2EqByFunctionalUnit()));
+		memberInfo.add(new MemberInformation(MemberLabel.UseClass, UseClass.class, getUseClass()));
+		memberInfo.add(new MemberInformation(MemberLabel.Substitution, double.class, relativeSubstitutionCO2EqFonctionalUnit));
+		return memberInfo;
+	}
+
+	@Override
+	public void processChangeToMember(Enum<?> label, Object value) {
+		if (label == AbstractProductionLineProcessor.MemberLabel.FunctionUnitBiomass) {
+			biomassOfFunctionalUnit = (double) value;
+		} else if (label == AbstractProductionLineProcessor.MemberLabel.EmissionFunctionUnit) {
+			emissionsByFunctionalUnit = (double) value;
+		} else if (label == MemberLabel.UseClass) {
+			setUseClass((UseClass) value);
+		} else if (label == MemberLabel.Substitution) {
+			relativeSubstitutionCO2EqFonctionalUnit = (double) value;
+		} else {
+			super.processChangeToMember(label, value);
+		}
+	}
 
 }

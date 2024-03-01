@@ -27,6 +27,7 @@ import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
 import repicea.simulation.MonteCarloSimulationCompliantObject;
 import repicea.simulation.covariateproviders.treelevel.SpeciesNameProvider;
 import repicea.simulation.covariateproviders.treelevel.SpeciesTypeProvider;
+import repicea.simulation.covariateproviders.treelevel.TreeStatusProvider;
 import repicea.simulation.processsystem.AmountMap;
 import repicea.simulation.processsystem.ProcessUnit;
 
@@ -37,7 +38,8 @@ import repicea.simulation.processsystem.ProcessUnit;
  */
 public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvider, 
 																SpeciesNameProvider, 
-																SpeciesTypeProvider {
+																SpeciesTypeProvider,
+																TreeStatusProvider {
 
 	public final static String AllSpecies = "AllSpecies";
 	
@@ -100,8 +102,9 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 	private final List<CarbonUnitStatus> status; 
 	private final CarbonUnitFeature carbonUnitFeature;
 	private final String speciesName;
-	private SpeciesType speciesType;
-	private BiomassType biomassType;
+	private final SpeciesType speciesType;
+	private final BiomassType biomassType;
+	private final StatusClass statusClass;
 	
 	/**
 	 * Initial carbon in this product (Mg)
@@ -118,6 +121,7 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 	 * @param initialAmounts a map that contains the amount of each element to be processed
 	 * @param speciesName the name of the species
 	 * @param speciesType the type of species (Broadleaved or Coniferous)
+	 * @param statusClass the status class of the tree (dead, cut, windfall)
 	 * @param biomassType the type of biomass (wood or bark)
 	 */
 	protected CarbonUnit(int dateIndex, 
@@ -126,6 +130,7 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 			AmountMap<Element> initialAmounts,
 			String speciesName,
 			SpeciesType speciesType,
+			StatusClass statusClass,
 			BiomassType biomassType) {
 		super(initialAmounts);
 		this.dateIndex = dateIndex;
@@ -133,6 +138,7 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 		this.samplingUnitID = samplingUnitID;
 		this.speciesName = speciesName;
 		this.speciesType = speciesType;
+		this.statusClass = statusClass;
 		status = new ArrayList<CarbonUnitStatus>();
 		actualized = false;
 		this.biomassType = biomassType; 
@@ -155,6 +161,7 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 		this.samplingUnitID = originalCarbonUnit.samplingUnitID;
 		this.speciesName = originalCarbonUnit.getSpeciesName();
 		this.speciesType = originalCarbonUnit.getSpeciesType();
+		this.statusClass = originalCarbonUnit.getStatusClass();
 		status = new ArrayList<CarbonUnitStatus>();
 		actualized = false;
 		this.biomassType = originalCarbonUnit.getBiomassType(); 
@@ -301,9 +308,11 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 						if (samplingUnitID.equals(otherUnit.samplingUnitID)) {
 							if (speciesName.equals(otherUnit.speciesName)) {
 								if (speciesType == otherUnit.speciesType) {
-									if (getBiomassType() == otherUnit.getBiomassType()) {
-										if (!actualized && !otherUnit.actualized) { // if both units have not been actualized yet
-											return true;
+									if (statusClass == otherUnit.statusClass) {
+										if (getBiomassType() == otherUnit.getBiomassType()) {
+											if (!actualized && !otherUnit.actualized) { // if both units have not been actualized yet
+												return true;
+											}
 										}
 									}
 								}
@@ -352,6 +361,17 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 
 	@Override
 	public SpeciesType getSpeciesType() {return speciesType;}
+
+	/**
+	 * Does nothing for this class.<p>
+	 * The status class is set through the constructor and is final.
+	 * @param statusClass a StatusClass enum
+	 */
+	@Override
+	public void setStatusClass(StatusClass statusClass) {}
+
+	@Override
+	public StatusClass getStatusClass() {return statusClass;}
 	
 	
 }

@@ -36,6 +36,7 @@ import lerfob.carbonbalancetool.productionlines.EndUseWoodProductCarbonUnitFeatu
 import repicea.io.REpiceaFileFilterList;
 import repicea.serial.SerializerChangeMonitor;
 import repicea.simulation.covariateproviders.treelevel.SpeciesTypeProvider.SpeciesType;
+import repicea.simulation.covariateproviders.treelevel.TreeStatusProvider.StatusClass;
 import repicea.simulation.processsystem.AmountMap;
 import repicea.simulation.processsystem.Processor;
 import repicea.util.ExtendedFileFilter;
@@ -49,7 +50,7 @@ import repicea.util.ExtendedFileFilter;
 public final class ProductionLineManager extends AbstractDesigner<ProductionLine> {
 
 	private static final long serialVersionUID = 20130127L;
-
+	
 	static {
 		SerializerChangeMonitor.registerClassNameChange("marketmodel.WoodProductMarketManager", 	"lerfob.carbonbalancetool.productionlines.ProductionLineManager");
 		SerializerChangeMonitor.registerClassNameChange("marketmodel.WoodProductMarketModel", 	"lerfob.carbonbalancetool.productionlines.ProductionLine");
@@ -242,8 +243,13 @@ public final class ProductionLineManager extends AbstractDesigner<ProductionLine
 	 * @param amountMap a Map which contains the amounts of the different elements
 	 * @throws Exception
 	 */
-	public void processWoodPiece(String marketName,	int creationDate, String speciesName, SpeciesType speciesType, AmountMap<Element> amountMap) throws Exception {
-		CarbonUnitMap<CarbonUnitStatus> carbonUnits = processWoodPieceIntoThisProductionLine(marketName, creationDate, speciesName, speciesType, amountMap);
+	public void processWoodPiece(String marketName,	
+			int creationDate, 
+			String speciesName, 
+			SpeciesType speciesType, 
+			StatusClass statusClass,
+			AmountMap<Element> amountMap) throws Exception {
+		CarbonUnitMap<CarbonUnitStatus> carbonUnits = processWoodPieceIntoThisProductionLine(marketName, creationDate, speciesName, speciesType, statusClass, amountMap);
 		getCarbonUnitMap().add(carbonUnits);
 	}
 	
@@ -256,7 +262,12 @@ public final class ProductionLineManager extends AbstractDesigner<ProductionLine
 	 * @return a CarbonUnitMap instance
 	 * @throws Exception
 	 */
-	protected CarbonUnitMap<CarbonUnitStatus> processWoodPieceIntoThisProductionLine(String productionLineName, int dateIndex, String speciesName, SpeciesType speciesType, AmountMap<Element> amountMap) throws Exception {
+	protected CarbonUnitMap<CarbonUnitStatus> processWoodPieceIntoThisProductionLine(String productionLineName, 
+			int dateIndex, 
+			String speciesName, 
+			SpeciesType speciesType, 
+			StatusClass statusClass,
+			AmountMap<Element> amountMap) throws Exception {
 		CarbonUnitMap<CarbonUnitStatus> carbonUnits = new CarbonUnitMap<CarbonUnitStatus>(CarbonUnitStatus.EndUseWoodProduct);
 		try {
 			int index = getProductionLineNames().indexOf(productionLineName);
@@ -265,11 +276,11 @@ public final class ProductionLineManager extends AbstractDesigner<ProductionLine
 			} else {
 				ProductionLine model = getContent().get(index);
 				if (model.isLandfillSite()) {
-					sendToTheLandfill(dateIndex, speciesName, speciesType, amountMap);
+					sendToTheLandfill(dateIndex, speciesName, speciesType, statusClass, amountMap);
 				} else if (model.isLeftInForestModel()) {
-					leftThisPieceInTheForest(dateIndex, speciesName, speciesType, amountMap);
+					leftThisPieceInTheForest(dateIndex, speciesName, speciesType, statusClass, amountMap);
 				} else {
-					carbonUnits.add(model.createCarbonUnitFromAWoodPiece(dateIndex, speciesName, speciesType, amountMap));
+					carbonUnits.add(model.createCarbonUnitFromAWoodPiece(dateIndex, speciesName, speciesType, statusClass, amountMap));
 				}
 				return carbonUnits;
 			}
@@ -284,8 +295,12 @@ public final class ProductionLineManager extends AbstractDesigner<ProductionLine
 	 * @param amountMap a Map which contains the amounts of the different elements
 	 * @throws Exception
 	 */
-	protected void sendToTheLandfill(int dateIndex, String speciesName, SpeciesType speciesType, AmountMap<Element> amountMap) throws Exception {
-		CarbonUnitMap<CarbonUnitStatus> carbonUnits = landfillModel.createCarbonUnitFromAWoodPiece(dateIndex, speciesName, speciesType, amountMap);
+	protected void sendToTheLandfill(int dateIndex, 
+			String speciesName, 
+			SpeciesType speciesType, 
+			StatusClass statusClass,
+			AmountMap<Element> amountMap) throws Exception {
+		CarbonUnitMap<CarbonUnitStatus> carbonUnits = landfillModel.createCarbonUnitFromAWoodPiece(dateIndex, speciesName, speciesType, statusClass, amountMap);
 
 		for (CarbonUnitStatus type : carbonUnits.keySet()) {
 			if (type != CarbonUnitStatus.EndUseWoodProduct && type != CarbonUnitStatus.IndustrialLosses) {
@@ -304,8 +319,12 @@ public final class ProductionLineManager extends AbstractDesigner<ProductionLine
 	 * @param amountMap a Map which contains the amounts of the different elements
 	 * @throws Exception
 	 */
-	public void leftThisPieceInTheForest(int dateIndex, String speciesName, SpeciesType speciesType, AmountMap<Element> amountMap) throws Exception {
-		leftInTheForestModel.createCarbonUnitFromAWoodPiece(dateIndex, speciesName, speciesType, amountMap);
+	public void leftThisPieceInTheForest(int dateIndex, 
+			String speciesName, 
+			SpeciesType speciesType, 
+			StatusClass statusClass,
+			AmountMap<Element> amountMap) throws Exception {
+		leftInTheForestModel.createCarbonUnitFromAWoodPiece(dateIndex, speciesName, speciesType, statusClass, amountMap);
 	}
 	
 	@Override

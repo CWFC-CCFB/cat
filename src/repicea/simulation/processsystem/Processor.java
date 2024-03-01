@@ -1,5 +1,5 @@
 /*
- * This file is part of the repicea-simulation library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2009-2014 Mathieu Fortin for Rouge-Epicea
  *
@@ -24,7 +24,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,10 +34,37 @@ import javax.swing.event.CaretListener;
 import repicea.gui.REpiceaPanel;
 import repicea.gui.REpiceaUIObject;
 import repicea.gui.REpiceaUIObjectWithParent;
+import repicea.simulation.processsystem.ProcessorListTable.MemberHandler;
+import repicea.simulation.processsystem.ProcessorListTable.MemberInformation;
+import repicea.util.REpiceaTranslator;
+import repicea.util.REpiceaTranslator.TextableEnum;
 
+/**
+ * A Processor instance represents a node in the flux configuration.<p>
+ * Its UI is a {@link ProcessorButton} instance. Once double-clicked, the ProcessorButton instance
+ * creates a {@link ProcessorInternalDialog} instance, which contains the characteristics of the Processor.
+ * @author Mathieu Fortin - 2014
+ * @see ProcessorButton
+ */
 @SuppressWarnings("serial")
-public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, CaretListener, Serializable {
+public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, CaretListener, Serializable, MemberHandler, ResourceReleasable {
 
+	protected static enum MemberLabel implements TextableEnum {
+		NameField("Name", "Nom");
+		
+		MemberLabel(String englishName, String frenchName) {
+			setText(englishName, frenchName);
+		}
+
+		@Override
+		public void setText(String englishText, String frenchText) {
+			REpiceaTranslator.setString(this, englishText, frenchText);
+		}
+		
+		@Override
+		public String toString() {return REpiceaTranslator.getString(this);}
+	}
+	
 	private Point originalLocation;
 	protected transient ProcessorButton guiInterface;
 	
@@ -71,8 +97,9 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 	
 	
 	/**
-	 * A terminal processor cannot have any subprocessor by definition. This method returns true if the processor belong to 
-	 * this category.
+	 * A terminal processor cannot have any subprocessor by definition. <p>
+	 * 
+	 * This method returns true if the processor belong to this category.
 	 * @return a boolean
 	 */
 	public boolean isTerminalProcessor() {return isTerminal;}
@@ -270,9 +297,6 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 			if (sum != 100d) {
 			}
 			boolean isValid = Math.abs(sum - 100d) < 1E-12;
-//			if (!isValid) {
-//				int u = 0;
-//			}
 			return isValid;
 		} else {
 			return true;
@@ -294,6 +318,27 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 
 	protected void setPartOfEndlessLoop(boolean bool) {
 		this.markedAsPartOfEndlessLoop = bool;
+	}
+
+	@Override
+	public List<MemberInformation> getInformationsOnMembers() {
+		List<MemberInformation> cellValues = new ArrayList<MemberInformation>();
+		cellValues.add(new MemberInformation(MemberLabel.NameField, String.class, name));
+		return cellValues;
+	}
+	
+	@Override
+	public void processChangeToMember(Enum<?> label, Object value) {
+		if (label == MemberLabel.NameField) {
+			setName(value.toString());
+		}
+	}
+
+	@Override
+	public void releaseResources() {
+		if (guiInterface != null) {
+			guiInterface.releaseResources();
+		}
 	}
 
 }

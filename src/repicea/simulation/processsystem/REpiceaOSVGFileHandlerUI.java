@@ -1,5 +1,5 @@
 /*
- * This file is part of the repicea library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2009-2021 Mathieu Fortin for Rouge-Epicea
  *

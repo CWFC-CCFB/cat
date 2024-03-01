@@ -23,6 +23,8 @@ import java.awt.Container;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.AbstractButton;
 import javax.swing.JComboBox;
@@ -37,6 +39,15 @@ import repicea.gui.permissions.REpiceaGUIPermissionProvider;
 
 class SystemComponentMouseAdapter extends MouseAdapter {
 
+	private static final List<Class<? extends Component>> ComponentsToBeEnabledDisabled = new ArrayList<Class<? extends Component>>();
+	static {
+		ComponentsToBeEnabledDisabled.add(JTextComponent.class);
+		ComponentsToBeEnabledDisabled.add(JSlider.class);
+		ComponentsToBeEnabledDisabled.add(AbstractButton.class);
+		ComponentsToBeEnabledDisabled.add(JComboBox.class);
+		
+	}
+	
 	private final REpiceaGUIPermissionProvider readWriteProvider;
 	
 	
@@ -63,10 +74,13 @@ class SystemComponentMouseAdapter extends MouseAdapter {
 				((Refreshable) internalDlg).refreshInterface();
 			}
 			if (!isEnablingGranted) {
-				CommonGuiUtility.enableThoseComponents(internalDlg, JTextComponent.class, isEnablingGranted);
-				CommonGuiUtility.enableThoseComponents(internalDlg, JSlider.class, isEnablingGranted);
-				CommonGuiUtility.enableThoseComponents(internalDlg, AbstractButton.class, isEnablingGranted);
-				CommonGuiUtility.enableThoseComponents(internalDlg, JComboBox.class, isEnablingGranted);
+				for (Class<? extends Component> c : ComponentsToBeEnabledDisabled) {
+					CommonGuiUtility.enableThoseComponents(internalDlg, c, isEnablingGranted);
+				}
+//				CommonGuiUtility.enableThoseComponents(internalDlg, JTextComponent.class, isEnablingGranted);
+//				CommonGuiUtility.enableThoseComponents(internalDlg, JSlider.class, isEnablingGranted);
+//				CommonGuiUtility.enableThoseComponents(internalDlg, AbstractButton.class, isEnablingGranted);
+//				CommonGuiUtility.enableThoseComponents(internalDlg, JComboBox.class, isEnablingGranted);
 			}
 			showable.showUI(systemManagerDialog);
 		}

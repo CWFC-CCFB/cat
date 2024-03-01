@@ -1,5 +1,5 @@
 /*
- * This file is part of the lerfob-forestools library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2010-2014 Mathieu Fortin for LERFOB AgroParisTech/INRA, 
  *
@@ -22,6 +22,10 @@ import java.util.List;
 
 import repicea.gui.REpiceaPanel;
 import repicea.simulation.processsystem.ProcessUnit;
+import repicea.simulation.processsystem.ProcessorListTable.MemberInformation;
+import repicea.simulation.processsystem.ResourceReleasable;
+import repicea.util.REpiceaTranslator;
+import repicea.util.REpiceaTranslator.TextableEnum;
 
 /**
  * An abstract for all Processor-derived classes (except the LogCategoryProcessor), which ensures
@@ -30,8 +34,26 @@ import repicea.simulation.processsystem.ProcessUnit;
  * @author Mathieu Fortin - May 2014
  */
 @SuppressWarnings("serial")
-public abstract class AbstractProductionLineProcessor extends AbstractProcessor {
+public abstract class AbstractProductionLineProcessor extends AbstractProcessor implements ResourceReleasable {
 
+	protected static enum MemberLabel implements TextableEnum {
+		FunctionUnitBiomass("Functional unit (FU) biomass (Mg)", "Biomasse de l'unit\u00E9 fonctionnelle (UF, Mg)"),
+		EmissionFunctionUnit("Emissions (Mg CO2 eq./FU)", "Emissions (Mg CO2 eq./UF)");
+
+		MemberLabel(String englishText, String frenchText) {
+			setText(englishText, frenchText);
+		}
+		
+		@Override
+		public void setText(String englishText, String frenchText) {
+			REpiceaTranslator.setString(this, englishText, frenchText);
+		}
+		
+		@Override
+		public String toString() {return REpiceaTranslator.getString(this);}
+		
+	}
+	
 	protected CarbonUnitFeature woodProductFeature;
 
 	protected CarbonUnitFeature getEndProductFeature() {return woodProductFeature;}
@@ -54,5 +76,45 @@ public abstract class AbstractProductionLineProcessor extends AbstractProcessor 
 	@Override
 	protected abstract List<ProcessUnit> createProcessUnitsFromThisProcessor(ProcessUnit unit, Number intake);
 	
+	@Override
+	public List<MemberInformation> getInformationsOnMembers() {
+		List<MemberInformation> cellValues = super.getInformationsOnMembers();
+		if (usesEmissionsAndFunctionalUnitFromAbstractProcessorClass()) {
+			cellValues.add(new MemberInformation(MemberLabel.FunctionUnitBiomass, double.class, functionUnitBiomass));
+			cellValues.add(new MemberInformation(MemberLabel.EmissionFunctionUnit, double.class, emissionsByFunctionalUnit));
+		} 
+		if (mustDisplaySpecificAdditionalFeatures()) {
+			cellValues.addAll(woodProductFeature.getInformationsOnMembers());
+		}
+		return cellValues;
+	}
+
+	@Override
+	public void processChangeToMember(Enum<?> label, Object value) {
+		if (label == MemberLabel.FunctionUnitBiomass) {
+			if (usesEmissionsAndFunctionalUnitFromAbstractProcessorClass()) {
+				functionUnitBiomass = (double) value;
+			} else {
+				getEndProductFeature().processChangeToMember(label, value);
+			}
+		} else if (label == MemberLabel.EmissionFunctionUnit) {
+			if (usesEmissionsAndFunctionalUnitFromAbstractProcessorClass()) {
+				emissionsByFunctionalUnit = (double) value;
+			} else {
+				getEndProductFeature().processChangeToMember(label, value);
+			}
+		} else {
+			woodProductFeature.processChangeToMember(label, value);
+			super.processChangeToMember(label, value);
+		}
+	}
+	
+	@Override
+	public void releaseResources() {
+		super.releaseResources();
+		if (woodProductFeature != null) {
+			woodProductFeature.releaseResources();
+		}
+	}
 	
 }

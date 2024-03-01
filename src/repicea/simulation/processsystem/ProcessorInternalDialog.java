@@ -1,5 +1,5 @@
 /*
- * This file is part of the repicea library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2009-2014 Mathieu Fortin for Rouge-Epicea
  *
@@ -34,6 +34,15 @@ import repicea.gui.UIControlManager;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
 
+/**
+ * A dialog to set the processor characteristics.<p>
+ * 
+ * There are common features such as the processor names. The class automatically asks the processor 
+ * if there are specific features through the {@link Processor#getProcessFeaturesPanel()}, which returns an
+ * REpiceaPanel instance. This method can be overriden in derived class.
+ * 
+ * @author Mathieu Fortin - 2014
+ */
 @SuppressWarnings("serial")
 public class ProcessorInternalDialog extends REpiceaDialog {
 
@@ -64,7 +73,7 @@ public class ProcessorInternalDialog extends REpiceaDialog {
 	
 	private final Processor caller;
 
-	protected JTextField processorTextField;
+	private JTextField processorTextField;
 	
 	private JPanel bottomComponent;
 	private JPanel topComponent;
@@ -122,18 +131,6 @@ public class ProcessorInternalDialog extends REpiceaDialog {
 		}
 		bottomComponent.add(bottomPanel, BorderLayout.CENTER);
 		
-//		SystemManagerDialog dlg = (SystemManagerDialog) CommonGuiUtility.getParentComponent(this, SystemManagerDialog.class);
-//		boolean isEnablingGranted = dlg.getCaller().getGUIPermission().isEnablingGranted();
-//		if (!isEnablingGranted) {
-//			CommonGuiUtility.enableThoseComponents(bottomComponent, JTextComponent.class, isEnablingGranted);
-//			CommonGuiUtility.enableThoseComponents(bottomComponent, AbstractButton.class, isEnablingGranted);
-//			CommonGuiUtility.enableThoseComponents(bottomComponent, JComboBox.class, isEnablingGranted);
-//			CommonGuiUtility.enableThoseComponents(bottomComponent, JSlider.class, isEnablingGranted);
-//		}
-
-//		pack();
-//		validate();
-//		repaint();
 	}
 
 
@@ -146,18 +143,6 @@ public class ProcessorInternalDialog extends REpiceaDialog {
 	public void doNotListenToAnymore() {
 		processorTextField.removeCaretListener(getCaller());
 	}
-
-//	private void checkComponentPermissions(JPanel panel) {
-//		boolean isEnablingGranted = this.getCaller().getGuiInterface().getGUIPermission().isEnablingGranted();
-////		SystemManagerDialog dlg = (SystemManagerDialog) CommonGuiUtility.getParentComponent(this, SystemManagerDialog.class);
-////		boolean isEnablingGranted = dlg.getCaller().getGUIPermission().isEnablingGranted();
-//		if (!isEnablingGranted) {
-//			CommonGuiUtility.enableThoseComponents(panel, JTextComponent.class, isEnablingGranted);
-//			CommonGuiUtility.enableThoseComponents(panel, AbstractButton.class, isEnablingGranted);
-//			CommonGuiUtility.enableThoseComponents(panel, JComboBox.class, isEnablingGranted);
-//			CommonGuiUtility.enableThoseComponents(panel, JSlider.class, isEnablingGranted);
-//		}
-//	}
 
 	@Override
 	public void refreshInterface() {

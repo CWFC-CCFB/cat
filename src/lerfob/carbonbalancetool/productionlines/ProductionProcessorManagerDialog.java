@@ -26,6 +26,8 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.DefaultComboBoxModel;
@@ -55,6 +57,9 @@ import repicea.gui.UIControlManager;
 import repicea.gui.components.REpiceaComboBoxOpenButton;
 import repicea.io.REpiceaFileFilter;
 import repicea.io.REpiceaFileFilterList;
+import repicea.serial.SerializerChangeMonitor;
+import repicea.simulation.processsystem.Processor;
+import repicea.simulation.processsystem.ProcessorListTable;
 import repicea.simulation.processsystem.SystemLayout;
 import repicea.simulation.processsystem.SystemManagerDialog;
 import repicea.simulation.processsystem.SystemPanel;
@@ -69,6 +74,10 @@ import repicea.util.REpiceaTranslator.TextableEnum;
 public class ProductionProcessorManagerDialog extends SystemManagerDialog implements OwnedWindow, 
 																					PropertyChangeListener,
 																					ItemListener {
+	
+	static {
+		SerializerChangeMonitor.registerClassNameChange("lerfob.carbonbalancetool.productionlines.BroadleavedExtractionProcessor", "lerfob.carbonbalancetool.productionlines.StatusSpeciesTypeExtractionProcessor");
+	}
 	
 	static {
 		UISetup.Icons.put(CreateLeftInForestProcessorButton.class.getName(), CommonGuiUtility.retrieveIcon(ProductionProcessorManagerDialog.class, "IconLeftInForest.png"));
@@ -121,6 +130,26 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 			return REpiceaTranslator.getString(this);
 		}
 	}
+	
+	static class InternalProcessorListTable extends ProcessorListTable {
+
+		InternalProcessorListTable(ProductionProcessorManager caller) {
+			super(caller);
+		}
+		
+		protected List<Processor> getProcessorList() {
+			List<Processor> processors = new ArrayList<Processor>();
+			for (Processor p : caller.getList()) {
+				if (p instanceof AbstractProductionLineProcessor || p instanceof AbstractExtractionProcessor) {
+					processors.add(p);
+				}
+			}
+			return processors;
+		}
+		
+	}
+	
+	
 
 	static {
 		UISetup.ToolTips.put(CreateProductionLineProcessorButton.class.getName(), MessageID.ProcessorButtonToolTip.toString());
@@ -184,6 +213,11 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 			}
 		}
 	}
+	
+	protected ProcessorListTable createProcessorListPanel() {
+		return new InternalProcessorListTable(getCaller());
+	}
+	
 	
 	@Override
 	protected JMenu createFileMenu() {

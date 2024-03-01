@@ -1,5 +1,5 @@
 /*
- * This file is part of the lerfob-forestools library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2010-2012 Mathieu Fortin for LERFOB INRA/AgroParisTech, 
  *
@@ -29,13 +29,18 @@ import repicea.gui.UIControlManager;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
 
+/**
+ * A panel with additional characteristics for {@link AbstractProductionLineProcessor} instances.<p>
+ * The {@link AbstractProductionLineProcessor} instance provides this panel to the {@link EnhancedProcessorInternalDialog} instance
+ * when the user double clicks on the {@link repicea.simulation.processsystem.ProcessorButton} instance in the flux configuration.
+ * @author Mathieu Fortin - 2012
+ */
 public class CarbonUnitFeaturePanel extends REpiceaPanel {
 	
 	private static final long serialVersionUID = 20101020L;
 
 	public static enum MessageID implements TextableEnum {
 		WoodProductFeatureLabel("Specific features", "Caract\u00E9ristiques sp\u00E9cifiques"),
-//		AverageLifeTime("Lifetime (yr)", "Dur\u00E9e de vie (ann\u00E9es)")
 		;
 		
 		MessageID(String englishText, String frenchText) {
@@ -53,9 +58,6 @@ public class CarbonUnitFeaturePanel extends REpiceaPanel {
 		}
 	}
 	
-//	protected JComboBox<LifetimeMode> lifetimeModeList;
-	
-//	protected JFormattedNumericField averageLifetimeTextField;
 	
 	private CarbonUnitFeature caller;
 	
@@ -72,14 +74,7 @@ public class CarbonUnitFeaturePanel extends REpiceaPanel {
 	protected CarbonUnitFeature getCaller() {return caller;}
 	protected void setCaller(CarbonUnitFeature caller) {this.caller = caller;}
 	
-	protected void initializeFields() {
-//		averageLifetimeTextField = NumberFormatFieldFactory.createNumberFormatField(Type.Double, Range.Positive, false);
-//		averageLifetimeTextField.setText(((Double) getCaller().averageLifetime).toString());
-//		averageLifetimeTextField.setPreferredSize(new Dimension(100, averageLifetimeTextField.getFontMetrics(averageLifetimeTextField.getFont()).getHeight() + 2));
-//		
-//		lifetimeModeList = new JComboBox<LifetimeMode>(LifetimeMode.values());
-//		lifetimeModeList.setSelectedItem(getCaller().getLifetimeMode());
-	}
+	protected void initializeFields() {} // this method is required by derived classes so leave it there
 	
 	protected void createUI() {
 		setLayout(new BorderLayout());
@@ -98,11 +93,6 @@ public class CarbonUnitFeaturePanel extends REpiceaPanel {
 		mainPanel.add(Box.createVerticalStrut(5));
 	}
 
-	
-	
-	
-	
-	
 	@Override
 	public void setEnabled(boolean b) {
 		super.setEnabled(b);
@@ -110,16 +100,10 @@ public class CarbonUnitFeaturePanel extends REpiceaPanel {
 	}
 
 	@Override
-	public void listenTo() {
-//		averageLifetimeTextField.addNumberFieldListener(getCaller());
-//		lifetimeModeList.addItemListener(getCaller());
-	}
+	public void listenTo() {}
 
 	@Override
-	public void doNotListenToAnymore() {
-//		averageLifetimeTextField.removeNumberFieldListener(getCaller());
-//		lifetimeModeList.removeItemListener(getCaller());
-	}
+	public void doNotListenToAnymore() {}
 
 	/*
 	 * Useless for this class (non-Javadoc)

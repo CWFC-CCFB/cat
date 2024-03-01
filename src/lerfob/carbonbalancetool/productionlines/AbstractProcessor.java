@@ -1,5 +1,5 @@
 /*
- * This file is part of the lerfob-forestools library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2010-2015 Mathieu Fortin for LERFOB AgroParisTech/INRA, 
  *
@@ -25,10 +25,16 @@ import java.util.List;
 
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
 import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONImportReader;
+import repicea.gui.REpiceaPanel;
 import repicea.simulation.processsystem.AmountMap;
 import repicea.simulation.processsystem.ProcessUnit;
 import repicea.simulation.processsystem.Processor;
 
+
+/**
+ * An abstract class derived from the original {@link repicea.simulation.processsystem.Processor} class to ensure
+ * common methods for all the processors in CAT.<p>
+ */
 @SuppressWarnings("serial")
 public abstract class AbstractProcessor extends Processor {
 
@@ -40,7 +46,7 @@ public abstract class AbstractProcessor extends Processor {
 	/**
 	 * Add emissions to the ProcessUnit before sending them to the super method. <p>
 	 * The emissions are added only if the processor has subprocessors (meaning it is not
-	 * and end use product). Otherwise the emissions will be accounted for through the 
+	 * an end use product). Otherwise the emissions will be accounted for through the 
 	 * CarbonUnitFeature instance.
 	 * @param inputUnits a List of ProcessUnit instances sent to this Processor instance
 	 * @see Processor#doProcess(List)
@@ -48,12 +54,41 @@ public abstract class AbstractProcessor extends Processor {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public Collection<ProcessUnit> doProcess(List<ProcessUnit> inputUnits) {
-		if (hasSubProcessors()) {
+		if (usesEmissionsAndFunctionalUnitFromAbstractProcessorClass()) {
 			for (ProcessUnit processUnit : inputUnits) {
 				AbstractProcessor.updateProcessEmissions(processUnit.getAmountMap(), functionUnitBiomass, emissionsByFunctionalUnit);
 			}
 		}
 		return super.doProcess(inputUnits);
+	}
+
+	/**
+	 * Check if the processor is using emissions and functional unit definitions from the
+	 * AbstractcProcessorClass as opposed to those in the EndUseProductCarbonUnitFeature class.<p>
+	 * There are three cases where this happens:
+	 * <ul>
+	 * <li> the instance inherits from the AbstractExtractionProcessor class;
+	 * <li> the instance is a LandfillProcessor instance;
+	 * <li> the instance is a ProductionLineProcessor but it has some sub processors.
+	 * </ul>
+	 * @return a boolean
+	 */
+	protected boolean usesEmissionsAndFunctionalUnitFromAbstractProcessorClass() {
+		return this instanceof AbstractExtractionProcessor ||
+				this instanceof LandfillProcessor || 
+				(this instanceof ProductionLineProcessor && hasSubProcessors());
+	}
+	
+	/**
+	 * Check if specific features must be displayed.<p>
+	 * 
+	 * Specific features are not available when dealing with an AbstractProductionLineProcessor instance 
+	 * that has sub processors. This happens with ProductionLineProcessor instances when they are not end
+	 * use products.
+	 * @return a boolean
+	 */
+	protected boolean mustDisplaySpecificAdditionalFeatures() {
+		return !(this instanceof ProductionLineProcessor && hasSubProcessors());
 	}
 
 	
@@ -108,12 +143,15 @@ public abstract class AbstractProcessor extends Processor {
 	}
 	
 
-//	/*
-//	 * For extended visibility.
-//	 */
-//	@Override
-//	protected Point getOriginalLocation() {
-//		return super.getOriginalLocation();
-//	}
+	/*
+	 * For extended visibility.
+	 */
+	@Override
+	protected REpiceaPanel getProcessFeaturesPanel() {
+		return super.getProcessFeaturesPanel();
+	}
 
+	
+
+	
 }
