@@ -45,6 +45,11 @@ import repicea.simulation.processsystem.Processor;
  */
 public class AffiliereJSONImportReader {
 
+	private static final List<String> NodeTypesToBeDiscarded = new ArrayList<String>();
+	static {
+		NodeTypesToBeDiscarded.add("echange");		// we do not want import / export processors MF2024-03-01
+	}
+	
 	public enum AFFiliereUnit {
 		VolumeM3("1000m3"), 
 		DryBiomassMg("1000t");
@@ -105,23 +110,23 @@ public class AffiliereJSONImportReader {
 		this(new FileInputStream(file), study, unit);
 	}
 
-	/**
-	 * Constructor.
-	 * @param url the url of the file to be read.
-	 * @throws IOException if the url cannot produce an input stream.
-	 */
-	public AffiliereJSONImportReader(URL url, AFFiliereStudy study, AFFiliereUnit unit) throws IOException {
-		this(url.openStream(), study, unit);
-	}
+//	/**
+//	 * Constructor.
+//	 * @param url the url of the file to be read.
+//	 * @throws IOException if the url cannot produce an input stream.
+//	 */
+//	public AffiliereJSONImportReader(URL url, AFFiliereStudy study, AFFiliereUnit unit) throws IOException {
+//		this(url.openStream(), study, unit);
+//	}
 
-	/**
-	 * Constructor.
-	 * @param file the File instance to be read.
-	 * @throws FileNotFoundException if the file cannot be found.
-	 */
-	public AffiliereJSONImportReader(File file) throws FileNotFoundException {
-		this(new FileInputStream(file), null, null);
-	}
+//	/**
+//	 * Constructor.
+//	 * @param file the File instance to be read.
+//	 * @throws FileNotFoundException if the file cannot be found.
+//	 */
+//	public AffiliereJSONImportReader(File file) throws FileNotFoundException {
+//		this(new FileInputStream(file), null, null);
+//	}
 
 	/**
 	 * Constructor.
@@ -153,6 +158,13 @@ public class AffiliereJSONImportReader {
 		}
 	}
 	
+	private static boolean containsUndesiredNodeTypeTag(Object[] tags) {
+		for (Object o : tags) {
+			if (NodeTypesToBeDiscarded.contains(o.toString()))
+				return true;
+		}
+		return false;
+	}
 	
 	@SuppressWarnings("unchecked")
 	private AffiliereJSONImportReader(InputStream is, AFFiliereStudy study, AFFiliereUnit unit) {
@@ -170,18 +182,21 @@ public class AffiliereJSONImportReader {
 		processors = new HashMap<String, Processor>();
 		endProductProcessors = new ArrayList<Processor>();
 		ioProcessors = new ArrayList<Processor>();
-		List<String> nodeCategories = new ArrayList<String>();
 		for (Object o : processorJSONMap.values()) {
 			LinkedHashMap<String, Object> oMap = (LinkedHashMap<String, Object>) o;
-			String id = oMap.get("idNode").toString();
-			Processor p = AbstractProcessor.createProcessor(oMap);
-			processors.put(id, p);
 			LinkedHashMap<String, Object> tagMap = (LinkedHashMap<String, Object>) oMap.get("tags");
-			addToListIfRelevant(p, tagMap, "Catégorie noeud", "Produit fini", endProductProcessors);
-			addToListIfRelevant(p, tagMap, "Type de noeud", "echange", ioProcessors);
-//			System.out.println(id + "-" + formatTagMap(tagMap));
+			Object[] nodeTypeTags = (Object[]) tagMap.get("Type de noeud");
+			if (!containsUndesiredNodeTypeTag(nodeTypeTags)) {
+				String id = oMap.get("idNode").toString();
+				Processor p = AbstractProcessor.createProcessor(oMap);
+				processors.put(id, p);
+				addToListIfRelevant(p, tagMap, "Catégorie noeud", "Produit fini", endProductProcessors);
+			}
 		}
-//		System.out.println(nodeCategories);
+		
+		for (Processor p : endProductProcessors) {
+			System.out.println(p.getName());
+		}
 
 		Map<Processor, List<FutureLink>> linkMap = new HashMap<Processor, List<FutureLink>>();
 		
@@ -193,10 +208,6 @@ public class AffiliereJSONImportReader {
 				if (linkProperties.containsKey("idSource") && linkProperties.get("idSource").equals(fatherProcessorName)) {
 					Processor fatherProcessor = processors.get(fatherProcessorName);
 					boolean isEndProductProcessor = endProductProcessors.contains(fatherProcessor);
-
-					if (isEndProductProcessor) {
-						int u = 0;
-					}
 					if (linkProperties.containsKey("idTarget")) {
 						String childProcessorName = (String) linkProperties.get("idTarget");
 						Processor childProcessor = processors.get(childProcessorName);

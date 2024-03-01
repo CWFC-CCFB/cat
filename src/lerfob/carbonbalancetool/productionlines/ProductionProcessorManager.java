@@ -47,6 +47,8 @@ import lerfob.carbonbalancetool.productionlines.ProductionProcessorManagerDialog
 import lerfob.carbonbalancetool.productionlines.WoodyDebrisProcessor.WoodyDebrisProcessorID;
 import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONExportWriter;
 import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONImportReader;
+import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONImportReader.AFFiliereStudy;
+import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONImportReader.AFFiliereUnit;
 import lerfob.treelogger.basictreelogger.BasicTreeLogger;
 import lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLogger;
 import lerfob.treelogger.maritimepine.MaritimePineBasicTreeLogger;
@@ -299,7 +301,7 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		}
 		switch(iFormat) {
 		case AFFILIERE:
-			AffiliereJSONImportReader reader = new AffiliereJSONImportReader(new File(filename));
+			AffiliereJSONImportReader reader = new AffiliereJSONImportReader(new File(filename), AFFiliereStudy.BACCFIRE, AFFiliereUnit.DryBiomassMg);
 			reset();
 			for (Processor p : reader.getProcessors().values()) {
 				registerObject(p);
