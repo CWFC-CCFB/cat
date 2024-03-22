@@ -510,6 +510,7 @@ public class CATTask extends AbstractGenericTask {
 		setProgress((int) ((double) (currentTask.ordinal()) * 100d / Task.values().length));
 		if (!caller.getCarbonToolSettings().formerImplementation) {
 			getProcessorManager().actualizeCarbonUnits(caller.getCarbonCompartmentManager());
+			caller.getCarbonCompartmentManager().getMEMS().Simulate();
 		} else {
 			ProductionLineManager marketManager = caller.getCarbonToolSettings().getProductionLines();
 			marketManager.actualizeCarbonUnits(caller.getCarbonCompartmentManager());

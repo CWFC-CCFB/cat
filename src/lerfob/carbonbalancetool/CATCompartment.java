@@ -108,7 +108,16 @@ public class CATCompartment implements Comparable {
 		/**
 		 * The net substitution, i.e. the energy substitution less the carbon emissions.
 		 */
-		NetSubs("Cumulative net flux", "Flux net cumulatif", true, new Color(200,0,0));
+		NetSubs("Cumulative net flux", "Flux net cumulatif", true, new Color(200,0,0)),
+		/**
+		 * The humus layer
+		 */
+		Humus("Humus", "Humus", false, new Color(128,64,64)),
+		/**
+		 * The soil layer (0-15cm)
+		 */
+		MineralSoil("Mineral Soil", "Sol Min/u00E9ral", false, new Color(96,48,48)),
+		Soil("Soil", "Sol", true, new Color(96,48,48));
 
 		private static List<CompartmentInfo> naturalOrder;
 		private static Map<CompartmentInfo, PoolCategory> poolCategoryMap;

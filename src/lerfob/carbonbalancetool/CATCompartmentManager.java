@@ -28,6 +28,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 
 import lerfob.carbonbalancetool.CATCompartment.CompartmentInfo;
+import lerfob.mems.CATMEMSWrapper;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
 import lerfob.carbonbalancetool.productionlines.CarbonUnitList;
@@ -109,6 +110,8 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	private ManagementType managementType;
 	
 	protected CATSingleSimulationResult summary;
+
+	private CATMEMSWrapper memsWrapper;
 	
 	
 	/**
@@ -124,6 +127,9 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		this.carbonAccountingToolSettings = settings;
 		this.carbonCompartments = new TreeMap<CompartmentInfo, CATCompartment>();	// TreeMap to make sure the merge compartments are not called before the regular compartment
 		isSimulationValid = false;
+
+		memsWrapper = new CATMEMSWrapper();
+
 		initializeCompartments();
 	}
 		
@@ -329,6 +335,9 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	protected void resetManager() {
 		clearTreeCollections();
 		resetCompartments();
+
+		memsWrapper.PrepareSimulation(this.timeTable.size());
+
 		if (getCarbonToolSettings().formerImplementation) {
 			ProductionLineManager productionLines = carbonAccountingToolSettings.getProductionLines();
 			productionLines.resetCarbonUnitMap();
@@ -465,6 +474,18 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 				substitutionNet.addFatherCompartment(carbonCompartments.get(CompartmentInfo.LfillND));
 				this.carbonCompartments.put(compartmentInfo, substitutionNet);
 				break;
+			case Humus:
+				carbonCompartments.put(compartmentInfo,	new CATCompartment(this, compartmentInfo));
+				break;
+			case MineralSoil:
+				carbonCompartments.put(compartmentInfo,	new CATCompartment(this, compartmentInfo));
+				break;
+			case Soil:
+				CATCompartment soil = new CATCompartment(this, compartmentInfo);
+				soil.addFatherCompartment(carbonCompartments.get(CompartmentInfo.Humus));
+				soil.addFatherCompartment(carbonCompartments.get(CompartmentInfo.MineralSoil));
+				carbonCompartments.put(compartmentInfo,	soil);
+				break;
 			}
 		}
 
@@ -570,8 +591,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	@Override
 	public HierarchicalLevel getHierarchicalLevel() {return null;}
 
-
-	
+	public CATMEMSWrapper getMEMS() { return memsWrapper; }
 }
 
 

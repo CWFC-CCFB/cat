@@ -267,9 +267,20 @@ class CATCompartmentCompileLibrary {
 		case NetSubs:
 			carbonCompartment.mergeWithFatherCompartments();
 			break;
+		case Humus:
+			for (int i = 0; i < timeTable.size(); i++) {
+				carbonCompartment.setCarbonIntoArray(i, manager.getMEMS().GetCarbonOutput(i).humus);
+			}
+			break;
+		case MineralSoil:
+			for (int i = 0; i < timeTable.size(); i++) {
+				carbonCompartment.setCarbonIntoArray(i, manager.getMEMS().GetCarbonOutput(i).soil);
+			}
+			break;
+		case Soil:
+			carbonCompartment.mergeWithFatherCompartments();
+			break;
 		}
-		
-	
 	}
 	
 	private boolean isInfiniteSequenceAllowed(CATCompartment carbonCompartment) {

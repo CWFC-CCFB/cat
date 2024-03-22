@@ -482,9 +482,24 @@ public class CarbonAccountingToolTest {
 		cat.requestShutdown();
 	}
 
-	
-	
-	
+	@Test
+	public void testMEMSIntegration() throws Exception {
+		String filename = ObjectUtility.getPackagePath(getClass()) + "io" + File.separator + "ExampleYieldTable.csv";
+		String ifeFilename = ObjectUtility.getPackagePath(getClass()) + "io" + File.separator + "ExampleYieldTable.ife";
+		String refFilename = ObjectUtility.getPackagePath(getClass()) + "io" + File.separator + "ExampleYieldTableReference.xml";
+		CarbonAccountingTool cat = new CarbonAccountingTool(CATMode.SCRIPT);
+		cat.initializeTool(null);
+		CATYieldTableRecordReader recordReader = new CATYieldTableRecordReader(CATSpecies.ABIES);
+		ImportFieldManager ifm = ImportFieldManager.createImportFieldManager(ifeFilename, filename);
+		recordReader.initInScriptMode(ifm);
+		recordReader.readAllRecords();
+		cat.setStandList(recordReader.getStandList());
+		cat.calculateCarbon();
+		CATSingleSimulationResult result = cat.getCarbonCompartmentManager().getSimulationSummary();
+		Map<CompartmentInfo, Estimate<Matrix, SymmetricMatrix, ?>> obsMap = result.getBudgetMap();
+
+	}
+
 	public static void main(String[] args) throws Exception {
 		CarbonAccountingToolTest test = new CarbonAccountingToolTest();
 		test.testMemoryLeakage();
