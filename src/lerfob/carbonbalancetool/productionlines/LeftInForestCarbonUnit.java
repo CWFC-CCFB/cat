@@ -62,9 +62,8 @@ public class LeftInForestCarbonUnit extends CarbonUnit {
 	 * through a static collection in the manager.
 	 * @param compartmentManager a CATCompartmentManager instance
 	 */
-	@SuppressWarnings({ "deprecation", "rawtypes", "unchecked" })
 	@Override
-	protected void actualizeCarbon(CATCompartmentManager compartmentManager) throws Exception {
+	protected void actualizeCarbon(CATCompartmentManager compartmentManager) {
 		super.actualizeCarbon(compartmentManager);
 
 		double[] releasedCarbonArray = getReleasedCarbonArray();

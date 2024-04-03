@@ -100,6 +100,7 @@ public class LandfillCarbonUnitFeature extends CarbonUnitFeature implements Chan
 	
 	/**
 	 * Constructor for GUI mode.
+	 * @param processor an AbstractProductionLineProcessor instance
 	 */
 	protected LandfillCarbonUnitFeature(AbstractProductionLineProcessor processor) {
 		super(processor);

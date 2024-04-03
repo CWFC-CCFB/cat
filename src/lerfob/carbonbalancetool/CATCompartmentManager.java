@@ -1,8 +1,9 @@
 /*
- * This file is part of the lerfob-forestools library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2010-2013 Mathieu Fortin AgroParisTech/INRA UMR LERFoB, 
- *				2019-2020 Mathieu Fortin Canadian Forest Service
+ * Copyright (C) 2019-2024 His Majesty the King in right of Canada
+ * Author, Mathieu Fortin, Canadian Forest Service
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -115,7 +116,8 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	
 	
 	/**
-	 * Constructor for this class
+	 * Constructor.
+	 * @param caller the CarbonAccountingTool instance
 	 * @param settings a CATSettings instance
 	 */
 	protected CATCompartmentManager(CarbonAccountingTool caller, CATSettings settings) {
@@ -242,7 +244,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	
 	/**
 	 * Initialize the carbon balance simulation. <p>
-	 * This method determines <p>
+	 * This method determines 
 	 * <ul>
 	 * <li> the management type (even aged or uneven aged)
 	 * <li> the rotation length (or cutting cycle in case of uneven-aged management)
@@ -377,9 +379,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 
 	@SuppressWarnings({ "unchecked"})
 	protected void resetCompartmentsAndSetCarbonUnitCollections() {
-		if (getCarbonToolSettings().isVerboseEnabled()) {
-			System.out.println("Resetting compartment...");
-		}
+		REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.FINEST, null, "Resetting compartment...");
 		CarbonUnitList joinEndUseProductRecyclageList = new CarbonUnitList();
 		CarbonUnitList leftInForestList;
 		CarbonUnitList degradableLandfillList;

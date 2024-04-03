@@ -412,8 +412,9 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 	
 	
 	/**
-	 * This method returns the basic density factor for this tree.
-	 * @param tree a CarbonToolCompatibleTree
+	 * Provide the basic density factor for this tree.
+	 * @param tree a CATCompatibleTree instance
+	 * @param subject a MonteCarloSimulationCompliantObject instance (typically the CATCompartmentManager instance)
 	 * @return a double (Mg/m3)
 	 */
 	public double getBasicWoodDensityFromThisTree(CATCompatibleTree tree, MonteCarloSimulationCompliantObject subject) {
@@ -428,15 +429,16 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 			value = tree.getCATSpecies().getBasicWoodDensity();
 		}
 		if (subject != null && !isStochastic) {	// isStochastic = false if the provider is not stochastic or if the tree does not implement the provider
-			return value * CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BasicDensity, subject, getSubjectId(VariabilitySource.BasicDensity, tree));
+			return value * CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BasicDensity, subject, getGroupId(VariabilitySource.BasicDensity, tree));
 		} else {
 			return value;
 		}
 	}
 
 	/**
-	 * This method returns the carbon content ratio for this tree, INCLUDING bark.
-	 * @param tree a CarbonToolCompatibleTree
+	 * Provide the carbon content ratio for this tree, INCLUDING bark.
+	 * @param tree a CATCompatibleTree instance
+	 * @param subject a MonteCarloSimulationCompliantObject instance (typically the CATCompartmentManager instance)
 	 * @return a double
 	 */
 	public double getCarbonContentFromThisTree(CATCompatibleTree tree, MonteCarloSimulationCompliantObject subject) {
@@ -451,7 +453,7 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 			value = carbonContentFactors.get(tree.getCATSpecies().getSpeciesType());
 		}
 		if (subject != null && !isStochastic) {	// isStochastic = false if the provider is not stochastic or if the tree does not implement the provider
-			return value * CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.CarbonContent, subject, getSubjectId(VariabilitySource.CarbonContent, tree));
+			return value * CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.CarbonContent, subject, getGroupId(VariabilitySource.CarbonContent, tree));
 		} else {
 			return value;
 		}
@@ -459,8 +461,9 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 
 	
 	/**
-	 * This method returns the belowground carbon content of a particular instance
-	 * @param tree a CarbonToolCompatibleTree instance
+	 * Provide the belowground carbon content for this tree.
+	 * @param tree a CATCompatibleTree instance
+	 * @param subject a MonteCarloSimulationCompliantObject instance (typically the CATCompartmentManager instance)
 	 * @return the carbon content (Mg)
 	 */
 	public double getBelowGroundCarbonMg(CATCompatibleTree tree, MonteCarloSimulationCompliantObject subject) {
@@ -469,9 +472,9 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 			CATBelowGroundCarbonProvider t = (CATBelowGroundCarbonProvider) tree;
 			double value = t.getBelowGroundCarbonMg() * tree.getNumber() * tree.getPlotWeight();
 			if (!t.isBelowGroundCarbonPredictorStochastic()) {	// will rely on sensitivity analysis instead
-				double biomassModifier = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BiomassExpansionFactor, subject, getSubjectId(VariabilitySource.BiomassExpansionFactor, tree));
-				double woodDensityModifier = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BasicDensity, subject, getSubjectId(VariabilitySource.BasicDensity, tree));
-				double carbonModifier = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.CarbonContent, subject, getSubjectId(VariabilitySource.CarbonContent, tree));
+				double biomassModifier = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BiomassExpansionFactor, subject, getGroupId(VariabilitySource.BiomassExpansionFactor, tree));
+				double woodDensityModifier = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BasicDensity, subject, getGroupId(VariabilitySource.BasicDensity, tree));
+				double carbonModifier = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.CarbonContent, subject, getGroupId(VariabilitySource.CarbonContent, tree));
 				value *= biomassModifier * woodDensityModifier * carbonModifier;
 			}
 			return value;
@@ -480,8 +483,9 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 	}
 	
 	/**
-	 * This method returns the belowground biomass of a particular instance
-	 * @param tree a CarbonToolCompatibleTree instance
+	 * Provide the belowground biomass of this tree
+	 * @param tree a CATCompatibleTree instance
+	 * @param subject a MonteCarloSimulationCompliantObject instance (typically the CATCompartmentManager instance)
 	 * @return the biomass (Mg)
 	 */
 	double getBelowGroundBiomassMg(CATCompatibleTree tree, MonteCarloSimulationCompliantObject subject) {
@@ -490,8 +494,8 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 			CATBelowGroundBiomassProvider t = (CATBelowGroundBiomassProvider) tree;
 			double value = t.getBelowGroundBiomassMg() * tree.getNumber() * tree.getPlotWeight();
 			if (!t.isBelowGroundBiomassPredictorStochastic()) { // will rely on sensitivity analysis instead
-				double biomassModifier = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BiomassExpansionFactor, subject, getSubjectId(VariabilitySource.BiomassExpansionFactor, tree));
-				double woodDensityModifier = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BasicDensity, subject, getSubjectId(VariabilitySource.BasicDensity, tree));
+				double biomassModifier = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BiomassExpansionFactor, subject, getGroupId(VariabilitySource.BiomassExpansionFactor, tree));
+				double woodDensityModifier = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BasicDensity, subject, getGroupId(VariabilitySource.BasicDensity, tree));
 				value *= biomassModifier * woodDensityModifier;
 			}
 			return value;
@@ -500,9 +504,10 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 	}
 
 	/**
-	 * This method returns the belowground volume of a particular instance, INCLUDING bark and 
+	 * Provide the belowground volume of a particular tree, INCLUDING bark 
 	 * @param tree a CarbonToolCompatibleTree instance
-	 * @return the volume (M3)
+	 * @param subject a MonteCarloSimulationCompliantObject instance (typically the CATCompartmentManager instance)
+	 * @return the volume (m3)
 	 */
 	double getBelowGroundVolumeM3(CATCompatibleTree tree, MonteCarloSimulationCompliantObject subject) {
 		boolean tier2Implementation = rootExpansionFactorFromModel && tree instanceof CATBelowGroundVolumeProvider;
@@ -516,7 +521,7 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 			value = getAboveGroundVolumeM3(tree, subject) * (rootExpansionFactors.get(tree.getCATSpecies().getSpeciesType()) - 1);		// minus 1 is required because we want to get only the belowground part
 		}
 		if (subject != null && !isStochastic) {	// isStochastic = false if the provider is not stochastic or if the tree does not implement the provider
-			return value * CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BiomassExpansionFactor, subject, getSubjectId(VariabilitySource.BiomassExpansionFactor, tree));
+			return value * CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BiomassExpansionFactor, subject, getGroupId(VariabilitySource.BiomassExpansionFactor, tree));
 		} else {
 			return value;
 		}
@@ -524,9 +529,10 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 
 	
 	/**
-	 * This method returns the aboveground carbon of a particular tree (Mg), INCLUDING bark.
-	 * @param tree a CarbonCompatibleTree
-	 * @return a double
+	 * Provide the aboveground carbon of this tree, INCLUDING bark.
+	 * @param tree a CATCompatibleTree instance
+	 * @param subject a MonteCarloSimulationCompliantObject instance (typically the CATCompartmentManager instance)
+	 * @return a double (Mg)
 	 */
 	public double getAboveGroundCarbonMg(CATCompatibleTree tree, MonteCarloSimulationCompliantObject subject) {
 		boolean tier2Implementation = branchExpansionFactorFromModel && tree instanceof CATAboveGroundCarbonProvider;
@@ -534,9 +540,9 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 			CATAboveGroundCarbonProvider t = (CATAboveGroundCarbonProvider) tree;
 			double value = t.getAboveGroundCarbonMg() * tree.getNumber() * tree.getPlotWeight();
 			if (!t.isAboveGroundCarbonPredictorStochastic()) {	// then rely on sensitivity analysis if enabled
-				double biomassModifier = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BiomassExpansionFactor, subject, getSubjectId(VariabilitySource.BiomassExpansionFactor, tree));
-				double woodDensityModifier = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BasicDensity, subject, getSubjectId(VariabilitySource.BasicDensity, tree));
-				double carbonModifier = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.CarbonContent, subject, getSubjectId(VariabilitySource.CarbonContent, tree));
+				double biomassModifier = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BiomassExpansionFactor, subject, getGroupId(VariabilitySource.BiomassExpansionFactor, tree));
+				double woodDensityModifier = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BasicDensity, subject, getGroupId(VariabilitySource.BasicDensity, tree));
+				double carbonModifier = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.CarbonContent, subject, getGroupId(VariabilitySource.CarbonContent, tree));
 				value *= biomassModifier * woodDensityModifier * carbonModifier;
 			}
 			return value;
@@ -545,9 +551,10 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 	}
 	
 	/**
-	 * This method returns the aboveground biomass of a particular tree in Mg.
-	 * @param tree a CarbonCompatibleTree
-	 * @return a double
+	 * Provide the aboveground biomass of this tree.
+	 * @param tree a CATCompatibleTree instance
+	 * @param subject a MonteCarloSimulationCompliantObject instance (typically the CATCompartmentManager instance)
+	 * @return the aboveground biomass (Mg)
 	 */
 	double getAboveGroundBiomassMg(CATCompatibleTree tree, MonteCarloSimulationCompliantObject subject) {
 		boolean tier2Implementation = branchExpansionFactorFromModel && tree instanceof CATAboveGroundBiomassProvider;
@@ -555,8 +562,8 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 			CATAboveGroundBiomassProvider t = (CATAboveGroundBiomassProvider) tree;
 			double value = t.getAboveGroundBiomassMg() * tree.getNumber() * tree.getPlotWeight();
 			if (!t.isAboveGroundBiomassPredictorStochastic()) { // then rely on sensitivity analysis if enabled
-				double biomassModifier = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BiomassExpansionFactor, subject, getSubjectId(VariabilitySource.BiomassExpansionFactor, tree));
-				double woodDensityModifier = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BasicDensity, subject, getSubjectId(VariabilitySource.BasicDensity, tree));
+				double biomassModifier = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BiomassExpansionFactor, subject, getGroupId(VariabilitySource.BiomassExpansionFactor, tree));
+				double woodDensityModifier = CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BasicDensity, subject, getGroupId(VariabilitySource.BasicDensity, tree));
 				value *= biomassModifier * woodDensityModifier;
 			}
 			return value;
@@ -566,11 +573,11 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 
 	
 	/**
-	 * This method returns the aboveground volume of a particular tree (m3), INCLUDING bark and
+	 * Provide the aboveground volume of a particular tree (m3), INCLUDING bark and
 	 * all weighting factors.
-	 * @param tree a CarbonCompatibleTree
-	 * @param subject a MonteCarloSimulationCompliantObject 
-	 * @return a double
+	 * @param tree a CATCompatibleTree instance
+	 * @param subject a MonteCarloSimulationCompliantObject instance (typically the CATCompartmentManager instance)
+	 * @return the aboveground volume (m3)
 	 */
 	double getAboveGroundVolumeM3(CATCompatibleTree tree, MonteCarloSimulationCompliantObject subject) {
 		boolean tier2Implementation = branchExpansionFactorFromModel && tree instanceof CATAboveGroundVolumeProvider;
@@ -585,14 +592,22 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 		}
 		
 		if (subject != null && !isStochastic) {	// isStochastic = false if the provider is not stochastic or if the tree does not implement the provider
-			String subjectId = getSubjectId(VariabilitySource.BiomassExpansionFactor, tree);
+			String subjectId = getGroupId(VariabilitySource.BiomassExpansionFactor, tree);
 			return value * CATSensitivityAnalysisSettings.getInstance().getModifier(VariabilitySource.BiomassExpansionFactor, subject, subjectId);
 		} else {
 			return value;
 		}
 	}
 
-	protected String getSubjectId(VariabilitySource source, CATCompatibleTree tree) {
+	/**
+	 * Build a string from the species name or species type.<p>
+	 * This string is then used as a group for the sensitivity analysis.
+	 * @param source a VariabilitySource enum
+	 * @param tree a CATCompatibleTree instance
+	 * @return a string that stands for the group id
+	 * @see VariabilitySource
+	 */
+	protected String getGroupId(VariabilitySource source, CATCompatibleTree tree) {
 		switch(source) {
 		case BiomassExpansionFactor:
 			if (branchExpansionFactorFromModel || rootExpansionFactorFromModel) {
@@ -620,9 +635,9 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 	
 	
 	/**
-	 * This method returns the overbark commercial volume of the tree weighted by the expansion factor.
-	 * @param tree a CarbonCompatibleTree
-	 * @return a double
+	 * Provide the overbark commercial volume of the tree weighted by the expansion factor.
+	 * @param tree a CATCompatibleTree instance
+	 * @return the overbark commercial volume (m3)
 	 */
 	private double getCommercialVolumeM3ForThisTree(CATCompatibleTree tree) {
 		return getOverbarkCommercialVolumeM3(tree) * tree.getNumber() * tree.getPlotWeight();
@@ -643,59 +658,30 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 	}
 	
 	/**
-	 * This method returns the commercial biomass of the tree weighted by the expansion factor.
-	 * @param tree a CarbonCompatibleTree
-	 * @return a double
+	 * Provide commercial biomass of this tree weighted by the expansion factor.
+	 * @param tree a CATCompatibleTree instance
+	 * @param subject a MonteCarloSimulationCompliantObject instance (typically the CATCompartmentManager instance)
+	 * @return the commercial biomass (Mg)
 	 */
 	private double getCommercialBiomassMg(CATCompatibleTree tree, MonteCarloSimulationCompliantObject subject) {
 		return getCommercialVolumeM3ForThisTree(tree) * getBasicWoodDensityFromThisTree(tree, subject);
 	}
 
 	/**
-	 * This method returns the commercial biomass of the tree weighted by the expansion factor.
+	 * Provide the carbon in the commercial part of this tree weighted by the expansion factor.
 	 * @param tree a CarbonCompatibleTree
-	 * @return a double
+	 * @param subject a MonteCarloSimulationCompliantObject instance (typically the CATCompartmentManager instance)
+	 * @return the carbon in the commercial part of the tree (Mg)
 	 */
 	public double getCommercialCarbonMg(CATCompatibleTree tree, MonteCarloSimulationCompliantObject subject) {
 		return getCommercialBiomassMg(tree, subject) * getCarbonContentFromThisTree(tree, subject);
 	}
 	
-
-
-//	/**
-//	 * This method returns the aboveground volume for a collection of trees.
-//	 * @param trees a Collection of CarbonToolCompatibleTree instances
-//	 * @return a double
-//	 */
-//	public double getAboveGroundVolumeM3(Collection<CATCompatibleTree> trees, MonteCarloSimulationCompliantObject subject) {
-//		double totalAboveGroundVolumeM3 = 0d;
-//		if (trees != null) {
-//			for (CATCompatibleTree tree : trees) {
-//				totalAboveGroundVolumeM3 += getAboveGroundVolumeM3(tree, subject);
-//			}
-//		}
-//		return totalAboveGroundVolumeM3;
-//	}
-
-//	/**
-//	 * This method returns the aboveground biomass for a collection of trees.
-//	 * @param trees a Collection of CarbonToolCompatibleTree instances
-//	 * @return a double
-//	 */
-//	public double getAboveGroundBiomassMg(Collection<CATCompatibleTree> trees, MonteCarloSimulationCompliantObject subject) {
-//		double totalAboveGroundBiomassMg = 0d;
-//		if (trees != null) {
-//			for (CATCompatibleTree tree : trees) {
-//				totalAboveGroundBiomassMg += getAboveGroundBiomassMg(tree, subject);
-//			}
-//		}
-//		return totalAboveGroundBiomassMg;
-//	}
-
 	/**
-	 * This method returns the aboveground carbon for a collection of trees.
-	 * @param trees a Collection of CarbonToolCompatibleTree instances
-	 * @return a double
+	 * Provide the aboveground carbon for a collection of trees.
+	 * @param trees a Collection of CATCompatibleTree instances
+	 * @param subject a MonteCarloSimulationCompliantObject instance (typically the CATCompartmentManager instance)
+	 * @return the aboveground carbon content (Mg)
 	 */
 	public double getAboveGroundCarbonMg(Collection<CATCompatibleTree> trees, MonteCarloSimulationCompliantObject subject) {
 		double totalAboveGroundCarbonMg = 0d;
@@ -707,6 +693,12 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 		return totalAboveGroundCarbonMg;
 	}
 
+	/**
+	 * Provide the belowground carbon for a collection of trees.
+	 * @param trees a Collection of CATCompatibleTree instances
+	 * @param subject a MonteCarloSimulationCompliantObject instance (typically the CATCompartmentManager instance)
+	 * @return the belowground carbon content (Mg)
+	 */
 	public double getBelowGroundCarbonMg(Collection<CATCompatibleTree> trees, MonteCarloSimulationCompliantObject subject) {
 		double totalBelowGroundCarbonMg = 0d;
 		if (trees != null) {
@@ -717,48 +709,13 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 		return totalBelowGroundCarbonMg;
 	}
 
-//	public double getBelowGroundBiomassMg(Collection<CATCompatibleTree> trees, MonteCarloSimulationCompliantObject subject) {
-//		double totalBelowGroundBiomassMg = 0d;
-//		if (trees != null) {
-//			for (CATCompatibleTree tree : trees) {
-//				totalBelowGroundBiomassMg += getBelowGroundBiomassMg(tree, subject);
-//			}
-//		}
-//		return totalBelowGroundBiomassMg;
-//	}
 
-	//	public double getBelowGroundVolumeM3(Collection<CATCompatibleTree> trees, MonteCarloSimulationCompliantObject subject) {
-//		double totalBelowGroundVolumeM3 = 0d;
-//		if (trees != null) {
-//			for (CATCompatibleTree tree : trees) {
-//				totalBelowGroundVolumeM3 += getBelowGroundVolumeM3(tree, subject);
-//			}
-//		}
-//		return totalBelowGroundVolumeM3;
-//	}
-
-	
-//	public double getCommercialVolumeM3(Collection<CATCompatibleTree> trees) {
-//		double commercialVolumeM3 = 0d;
-//		if (trees != null) {
-//			for (CATCompatibleTree tree : trees) {
-//				commercialVolumeM3 += getCommercialVolumeM3ForThisTree(tree);
-//			}
-//		}
-//		return commercialVolumeM3;
-//	}
-	
-
-//	public double getCommercialBiomassMg(Collection<CATCompatibleTree> trees, MonteCarloSimulationCompliantObject subject) {
-//		double commercialBiomassMg = 0d;
-//		if (trees != null) {
-//			for (CATCompatibleTree tree : trees) {
-//				commercialBiomassMg += getCommercialBiomassMg(tree, subject);
-//			}
-//		}
-//		return commercialBiomassMg;
-//	}
-
+	/**
+	 * Provide the carbon in the commercial part for a collection of trees.
+	 * @param trees a Collection of CATCompatibleTree instances
+	 * @param subject a MonteCarloSimulationCompliantObject instance (typically the CATCompartmentManager instance)
+	 * @return the carbon content in the commercial part of trees (Mg)
+	 */
 	public double getCommercialCarbonMg(Collection<CATCompatibleTree> trees, MonteCarloSimulationCompliantObject subject) {
 		double commercialCarbonMg = 0d;
 		if (trees != null) {

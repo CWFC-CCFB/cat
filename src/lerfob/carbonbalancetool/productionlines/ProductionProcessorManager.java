@@ -252,10 +252,9 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 
 	private transient CarbonUnitMap<CarbonUnitStatus> carbonUnitMap;
 
-//	private DecayFunction decayFunction;
-
 	/**
 	 * Constructor.
+	 * @param defaultPermission a DefaultREpiceaGUIPermission instance
 	 */
 	public ProductionProcessorManager(DefaultREpiceaGUIPermission defaultPermission) {
 		super(defaultPermission);
@@ -267,16 +266,6 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		defaultTreeLoggerDescriptions.add(new TreeLoggerDescription(CATDiameterBasedTreeLogger.class));
 		defaultTreeLoggerDescriptions.add(new TreeLoggerDescription(MaritimePineBasicTreeLogger.class.getName()));
 		defaultTreeLoggerDescriptions.add(new TreeLoggerDescription(EuropeanBeechBasicTreeLogger.class.getName()));
-//		try {
-//			Class<?> petroTreeLoggerClass = ClassLoader.getSystemClassLoader().loadClass("quebecmrnfutility.treelogger.petrotreelogger.PetroTreeLogger");
-//			defaultTreeLoggerDescriptions.add(new TreeLoggerDescription(petroTreeLoggerClass.getName()));
-//		} catch (ClassNotFoundException e) {}
-//		
-//		try {
-//			Class<?> sybilleTreeLoggerClass = ClassLoader.getSystemClassLoader().loadClass("quebecmrnfutility.treelogger.sybille.SybilleTreeLogger");
-//			defaultTreeLoggerDescriptions.add(new TreeLoggerDescription(sybilleTreeLoggerClass.getName()));
-//		} catch (ClassNotFoundException e) {}
-
 		setAvailableTreeLoggers(defaultTreeLoggerDescriptions);
 	}
 
@@ -291,7 +280,7 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	 * Import a flux configuration from a particular file under a given format.
 	 * @param filename the name of the file
 	 * @param iFormat an ImportFormat enum that defines the expected format
-	 * @throws FileNotFoundException 
+	 * @throws FileNotFoundException if the file can be found
 	 */
 	public void importFrom(String filename, ImportFormat iFormat) throws FileNotFoundException {
 		if (iFormat == null || filename == null) {
@@ -586,10 +575,11 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	}
 
 	/**
-	 * This method returns true if the ProductionProcessorManager instance is valid
-	 * or false otherwise. To be valid, all the LogCategoryProcessor must have at
-	 * least one sub processor. Moreover, all the processors must be valid, i.e. the
+	 * Validate the ProductionProcessorManager instance. <p>
+	 * To be valid, all the LogCategoryProcessor must have at least one sub processor. 
+	 * Moreover, all the processors must be valid, i.e. the
 	 * sum of the fluxes to the sub processors must be equal to 100%.
+	 * @throws ProductionProcessorManagerException if the ProductionProcessorManager instance cannot be validated
 	 */
 	public void validate() throws ProductionProcessorManagerException {
 		for (Processor logCategoryProcessor : logCategoryProcessors) {
@@ -610,43 +600,45 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	}
 
 	/**
-	 * The main method for this class. The different kinds of produced carbon units
-	 * are stored in the carbon unit map, which is accessible through the
-	 * getCarbonUnits(CarbonUnitType) method.
+	 * Process the wood pieces into wood products.<p>
+	 * 
+	 * The different kinds of produced carbon units are stored in the carbon unit map, 
+	 * which is accessible through the getCarbonUnits(CarbonUnitType) method.
 	 * 
 	 * @param logCategory a TreeLogCategory instance
 	 * @param dateIndex   the index of the date in the time scale
-	 * @param amountMap   a Map which contains the amounts of the different elements
+	 * @param samplingUnitID a String that stands for the sampling unit, typically the plot
+	 * @param amountMaps a Map which contains the amounts of the different elements
+	 * @param tree a CATCompatibleTree instance
 	 */
 	public void processWoodPiece(LogCategory logCategory, 
 			int dateIndex, 
 			String samplingUnitID,
 			Map<BiomassType, AmountMap<Element>> amountMaps, 
 			CATCompatibleTree tree) {
-//			String speciesName, 
-//			SpeciesType speciesType,
-//			StatusClass statusClass) {
 		Processor processor = findLeftHandSideProcessor(logCategory);
-		processAmountMap(processor, dateIndex, samplingUnitID, amountMaps, tree.getSpeciesName(), tree.getSpeciesType(), tree.getStatusClass());
+		processAmountMap(processor, dateIndex, samplingUnitID, amountMaps, tree.getSpeciesName(), tree.getSpeciesType(), tree.getStatusClass(), null); // woodyDebrisType is set to null
 	}
 
 	/**
-	 * This method calculates the carbon units in the woody debris.
+	 * Process the carbon unit as woody debris.
 	 * 
 	 * @param dateIndex the index of the date in the time scale
-	 * @param amountMap a Map which contains the amounts of the different elements
-	 * @param type      a WoodyDebrisProcessorID enum variable
+	 * @param samplingUnitID a String that stands for the sampling unit, typically the plot
+	 * @param amountMaps a Map which contains the amounts of the different elements
+	 * @param tree a CATCompatibleTree instance
+	 * @param woodyDebrisType a WoodyDebrisProcessorID enum variable
 	 */
 	public void processWoodyDebris(int dateIndex, 
 			String samplingUnitID,
 			Map<BiomassType, AmountMap<Element>> amountMaps, 
 			CATCompatibleTree tree,
-//			String speciesName, 
-//			SpeciesType speciesType, 
-//			StatusClass statusClass,
-			WoodyDebrisProcessorID type) {
-		Processor processor = findWoodyDebrisProcessor(type);
-		processAmountMap(processor, dateIndex, samplingUnitID, amountMaps, tree.getSpeciesName(), tree.getSpeciesType(), tree.getStatusClass());
+			WoodyDebrisProcessorID woodyDebrisType) {
+		if (woodyDebrisType == null) {
+			throw new InvalidParameterException("The woodyDebrisType argument cannot be null!");
+		}
+		Processor processor = findWoodyDebrisProcessor(woodyDebrisType);
+		processAmountMap(processor, dateIndex, samplingUnitID, amountMaps, tree.getSpeciesName(), tree.getSpeciesType(), tree.getStatusClass(), woodyDebrisType);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -656,11 +648,12 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 			Map<BiomassType, AmountMap<Element>> amountMaps, 
 			String speciesName, 
 			SpeciesType speciesType,
-			StatusClass statusClass) {
+			StatusClass statusClass,
+			WoodyDebrisProcessorID woodyDebrisType) {
 		List<ProcessUnit> inputUnits = new ArrayList<ProcessUnit>();
 		if (!amountMaps.isEmpty()) {
 			for (BiomassType bt : amountMaps.keySet()) {
-				inputUnits.add(new CarbonUnit(dateIndex, samplingUnitID, null, amountMaps.get(bt), speciesName, speciesType, statusClass, bt));
+				inputUnits.add(new CarbonUnit(dateIndex, samplingUnitID, null, amountMaps.get(bt), speciesName, speciesType, statusClass, bt, woodyDebrisType));
 			}
 			Collection<CarbonUnit> processedUnits = (Collection) processor.doProcess(inputUnits);
 			getCarbonUnitMap().add(processedUnits);
@@ -672,49 +665,35 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 
 	/**
 	 * This method actualizes the different carbon units. It proceeds in the
-	 * following order : </br>
-	 * &nbsp 1- the carbon units in the wood products</br>
-	 * &nbsp 2- the carbon units recycled from the disposed wood products</br>
-	 * &nbsp 3- the carbon units left in the forest</br>
-	 * &nbsp 4- the carbon units at the landfill site</br>
-	 * 
+	 * following order : 
+	 * <ol>
+	 * <li> the carbon units in the wood products
+	 * <li> the carbon units recycled from the disposed wood products
+	 * <li> the carbon units left in the forest
+	 * <li> the carbon units at the landfill site
+	 * </ol>
 	 * @param compartmentManager the CATCompartmentManager instance
-	 * @throws Exception
 	 */
-	public void actualizeCarbonUnits(CATCompartmentManager compartmentManager) throws Exception {
+	public void actualizeCarbonUnits(CATCompartmentManager compartmentManager) {
 		actualizeCarbonUnitsOfThisType(CarbonUnitStatus.EndUseWoodProduct, compartmentManager);
 		actualizeCarbonUnitsOfThisType(CarbonUnitStatus.Recycled, compartmentManager);
 		actualizeCarbonUnitsOfThisType(CarbonUnitStatus.DeadWood, compartmentManager);
 		actualizeCarbonUnitsOfThisType(CarbonUnitStatus.LandFillDegradable, compartmentManager);
 	}
 
-	private void actualizeCarbonUnitsOfThisType(CarbonUnitStatus type, CATCompartmentManager compartmentManager)
-			throws Exception {
-		try {
-			CarbonUnitList list = getCarbonUnits(type);
-			REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.FINEST, getClass().getSimpleName(),
-					"Carbon units of type " + type.name() + ". Before actualization, " + list.toString());
-			for (int i = 0; i < list.size(); i++) { // the condition based on the size of the list makes sure that newly
-													// created HWPs will be actualized.
-				CarbonUnit carbonUnit = list.get(i);
-				carbonUnit.actualizeCarbon(compartmentManager);
-			}
-
-			REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.FINEST, getClass().getSimpleName(),
-					"Carbon units of type " + type.name() + " actualized. After actualization, " + list.toString());
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new Exception("An exception occurred while actualizing carbon units of type " + type.name() + " : "
-					+ e.getMessage());
+	private void actualizeCarbonUnitsOfThisType(CarbonUnitStatus type, CATCompartmentManager compartmentManager) {
+		CarbonUnitList list = getCarbonUnits(type);
+		REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.FINEST, getClass().getSimpleName(),
+				"Carbon units of type " + type.name() + ". Before actualization, " + list.toString());
+		for (int i = 0; i < list.size(); i++) { // the condition based on the size of the list makes sure that newly
+												// created HWPs will be actualized.
+			CarbonUnit carbonUnit = list.get(i);
+			carbonUnit.actualizeCarbon(compartmentManager);
 		}
-	}
 
-//	protected DecayFunction getDecayFunction() {
-//		if (decayFunction == null) {
-//			decayFunction = new ExponentialDecayFunction();
-//		}
-//		return decayFunction;
-//	}
+		REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.FINEST, getClass().getSimpleName(),
+				"Carbon units of type " + type.name() + " actualized. After actualization, " + list.toString());
+	}
 
 	protected CarbonUnitMap<CarbonUnitStatus> getCarbonUnitMap() {
 		if (carbonUnitMap == null) {

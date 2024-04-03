@@ -1,9 +1,9 @@
 /*
- * This file is part of the lerfob-foresttools library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2010-2014 Mathieu Fortin for LERFOB AgroParisTech/INRA, 
- * Copyright (C) 2022 Her Majesty the Queen in right of Canada
- * Author: Mathieu Fortin, Canadian Wood Fibre Centre
+ * Copyright (C) 2022-2024 His Majesty the King in right of Canada
+ * Author: Mathieu Fortin, Canadian Forest Service
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -102,9 +102,10 @@ import repicea.util.REpiceaTranslator.TextableEnum;
  * @author M. Fortin - June 2010
  */
 @SuppressWarnings({"serial"})
-public class CATFrame extends REpiceaFrame implements PropertyChangeListener, ItemListener,
-																		Refreshable, 
-																		AcceptableDropComponent<ArrayList<CATCompatibleStand>> {
+public class CATFrame extends REpiceaFrame implements PropertyChangeListener, 
+														ItemListener,
+														Refreshable, 
+														AcceptableDropComponent<ArrayList<CATCompatibleStand>> {
 
 	static {
 		UIControlManager.setTitle(CATFrame.class, CarbonAccountingTool.englishTitle, CarbonAccountingTool.frenchTitle);
@@ -250,8 +251,8 @@ public class CATFrame extends REpiceaFrame implements PropertyChangeListener, It
 	
 	/**
 	 * General constructor of this class.
-	 * @param caller = a CarbonStorageCalculator object
-	 * @throws Exception
+	 * @param caller the CarbonAccountingTool instance
+	 * @param owner the parent window if any
 	 */
 	protected CATFrame(final CarbonAccountingTool caller, Window owner) {
 		super(owner);

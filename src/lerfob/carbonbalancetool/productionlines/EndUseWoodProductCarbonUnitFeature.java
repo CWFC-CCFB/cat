@@ -130,6 +130,7 @@ public class EndUseWoodProductCarbonUnitFeature extends CarbonUnitFeature implem
 	
 	/**
 	 * Constructor in GUI mode.
+	 * @param processor a ProductionlineProcessor instance
 	 */
 	protected EndUseWoodProductCarbonUnitFeature(ProductionLineProcessor processor) {
 		super(processor);

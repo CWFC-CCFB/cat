@@ -73,7 +73,7 @@ public class PythonAccessPoint extends CarbonAccountingTool {
 	/**
 	 * Main constructor.
 	 * @param verbose a boolean 
-	 * @throws Exception
+	 * @throws Exception if CAT has already been initialized
 	 */
 	public PythonAccessPoint(boolean verbose) throws Exception {
 		super(CATMode.SCRIPT);
@@ -84,7 +84,7 @@ public class PythonAccessPoint extends CarbonAccountingTool {
 
 	/**
 	 * Constructor for tests.
-	 * @throws Exception
+	 * @throws Exception if CAT has already been initialized
 	 */
 	protected PythonAccessPoint() throws Exception {
 		this(false);
@@ -92,10 +92,10 @@ public class PythonAccessPoint extends CarbonAccountingTool {
 	
 	/**
 	 * This method sets the species for the simulation
-	 * @param species a String either "beech" or "pine"
-	 * @throws IOException 
+	 * @param species a String either "beech", "pine", "douglas", or "oak"
+	 * @throws InterruptedException if the engine is inadvertently unlocked
 	 */
-	public void setSpecies(String species) throws Exception {
+	public void setSpecies(String species) throws InterruptedException {
 		CATSpecies speciesCode;
 		if (species.toLowerCase().trim().equals("beech")) {
 			speciesCode = CATSpecies.FAGUS_SYLVATICA;
@@ -132,7 +132,7 @@ public class PythonAccessPoint extends CarbonAccountingTool {
 		return defaultTreeLoggerDescriptions;
 	}
 
-	private void setSpeciesAndSettings(CATSpecies speciesCode) throws Exception {
+	private void setSpeciesAndSettings(CATSpecies speciesCode) throws InterruptedException {
 		if (!speciesCode.equals(speciesForSimulation)) {
 			speciesForSimulation = speciesCode;
 			String filename;
@@ -145,7 +145,7 @@ public class PythonAccessPoint extends CarbonAccountingTool {
 			} else if (speciesForSimulation.equals(CATSpecies.QUERCUS)) {
 				filename = ObjectUtility.getRelativePackagePath(getClass()) + "GrandEstForestSector.prl";;
 			} else {
-				throw new Exception("The species is not recognized!");
+				throw new InvalidParameterException("The species is not recognized!");
 			}
 			System.out.println("Loading settings : " + filename);
 			setProductionManager(filename);
@@ -159,14 +159,6 @@ public class PythonAccessPoint extends CarbonAccountingTool {
 		setBiomassParameters(biomassFilename);
 	}
 
-//	/*
-//	 * For extended visibility only (non-Javadoc)
-//	 * @see lerfob.carbonbalancetool.CarbonAccountingTool#getCarbonToolSettings()
-//	 */
-//	@Override
-//	protected CATSettings getCarbonToolSettings() {
-//		return super.getCarbonToolSettings();
-//	}
 	
 	@Override
 	protected void shutdown(int shutdownCode) {
@@ -389,10 +381,9 @@ public class PythonAccessPoint extends CarbonAccountingTool {
 	
 	/**
 	 * Start method for connection to Python.
-	 * @param args
-	 * @throws Exception 
+	 * @param args the parameters of the server
 	 */
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 //		System.out.println("Running on repicea " + REpiceaAppVersion.getInstance().getRevision());
 //		System.out.println("Running on lerfobforesttools " + LerfobForesttoolsAppVersion.getInstance().getRevision());
 		List<String> argumentList = Arrays.asList(args);
@@ -429,19 +420,24 @@ public class PythonAccessPoint extends CarbonAccountingTool {
 			}
 		}
 		
-		PythonAccessPoint pap = new PythonAccessPoint(verbose);
-		
-		GatewayServer gatewayServer;
-		String portMessage;
-		if (listeningPort != null && callbackPort != null) {
-			portMessage = "ports " + listeningPort.toString() + " and " + callbackPort.toString() + "...";
-			gatewayServer = new GatewayServer(pap, listeningPort, callbackPort, 0, 0, null);
-		} else {
-			portMessage = "default ports 25333 and 25334...";
-			gatewayServer = new GatewayServer(pap); // default port
+		try {
+			PythonAccessPoint pap = new PythonAccessPoint(verbose);
+			
+			GatewayServer gatewayServer;
+			String portMessage;
+			if (listeningPort != null && callbackPort != null) {
+				portMessage = "ports " + listeningPort.toString() + " and " + callbackPort.toString() + "...";
+				gatewayServer = new GatewayServer(pap, listeningPort, callbackPort, 0, 0, null);
+			} else {
+				portMessage = "default ports 25333 and 25334...";
+				gatewayServer = new GatewayServer(pap); // default port
+			}
+			gatewayServer.start();
+			System.out.println("Gateway Server started on " + portMessage);
+		} catch (Exception e) {
+			System.out.println("An error occurred while starting the Python gateway server!");
+			e.printStackTrace();
 		}
-		gatewayServer.start();
-		System.out.println("Gateway Server started on " + portMessage);
 	}
 	
 }

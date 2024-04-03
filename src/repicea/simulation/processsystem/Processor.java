@@ -89,6 +89,7 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 
 	/**
 	 * General constructor with name.
+	 * @param name the name of the processor instance
 	 */
 	public Processor(String name) {
 		this();
@@ -108,6 +109,7 @@ public class Processor implements REpiceaUIObjectWithParent, REpiceaUIObject, Ca
 	/**
 	 * Process the ProcessUnit through this processor and eventually its subprocessors.
 	 * @param inputUnits a List of ProcessUnit instances sent to this Processor instance
+	 * @return a Collection of ProcessUnit instances as a result of the process
 	 */
 	@SuppressWarnings("rawtypes")
 	public Collection<ProcessUnit> doProcess(List<ProcessUnit> inputUnits) {

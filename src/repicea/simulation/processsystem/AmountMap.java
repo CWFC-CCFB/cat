@@ -1,5 +1,5 @@
 /*
- * This file is part of the repicea-simulation library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2009-2014 Mathieu Fortin for Rouge-Epicea
  *
@@ -38,9 +38,9 @@ public class AmountMap<E extends Enum<?>> extends HashMap<E, Double> implements 
 	}
 
 	/**
-	 * This method add a particular amount in a key.
-	 * @param key
-	 * @param amount
+	 * Add a particular amount in a key.
+	 * @param key an enum constant that stands for the type of element
+	 * @param amount the amount to be added
 	 */
 	public void add(E key, double amount) {
 		if (containsKey(key)) {
@@ -74,16 +74,13 @@ public class AmountMap<E extends Enum<?>> extends HashMap<E, Double> implements 
 	
 	
 	/**
-	 * This method scales the AmountMap instances contained in more complex Map instances. It is recursive.
-	 * IMPORTANT: the original map is changed. This avoid creating new instances which raise an exception
-	 * when the Map class does not have any empty constructor.
-	 * @param oMap
+	 * Scale the AmountMap instances contained in more complex Map instances. <p>
+	 * This method is recursive. <b>IMPORTANT</b>: the original map is changed. 
+	 * @param oMap a Map instance
 	 * @param scalar the multiplier factor
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static void scaleMap(Map oMap, double scalar) {
-//		try {
-//			Map newMap = oMap.getClass().newInstance();
 		for (Object key : oMap.keySet()) {
 			Object value = oMap.get(key);
 			if (value instanceof AmountMap) {
@@ -93,10 +90,6 @@ public class AmountMap<E extends Enum<?>> extends HashMap<E, Double> implements 
 				scaleMap(innerMap, scalar);
 			}
 		}
-//			return newMap;
-//		} catch (Exception e) {
-//			throw new InvalidParameterException("Unable to scale the Map instance!");
-//		}
 	}
 
 //	/**

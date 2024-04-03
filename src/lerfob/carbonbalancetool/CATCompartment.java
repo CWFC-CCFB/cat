@@ -122,19 +122,15 @@ public class CATCompartment implements Comparable {
 		private static List<CompartmentInfo> naturalOrder;
 		private static Map<CompartmentInfo, PoolCategory> poolCategoryMap;
 		
-//		private boolean isFlux;
 		private boolean resultFromGrouping;
 		private Color color;
 
 		CompartmentInfo(String englishText, String frenchText, boolean resultFromGrouping, Color color) {
-//			this.isFlux = isFlux;
 			this.resultFromGrouping = resultFromGrouping;
 			this.color = color;
 			setText(englishText, frenchText);
 		}
-		
-//		boolean isFlux() {return isFlux;}
-		
+				
 		
 		PoolCategory getPoolCategory() {
 			if (poolCategoryMap == null) {
@@ -302,10 +298,11 @@ public class CATCompartment implements Comparable {
 	
 	
 	/**
-	 * This method calculates and integrates the carbon for this compartment by calling the 
-	 * method library and using the appropriate method.
+	 * Calculate and integrate the carbon of this compartment.<p>
+	 * The method refers to the CATCompartmentCompileLibrary instance for the proper 
+	 * calculation and integration methods.
 	 */
-	public void calculateAndIntegrateCarbon() throws Exception {
+	public void calculateAndIntegrateCarbon() {
 		carbonMethodLibrary.selectCalculatorFunction(this);
 	}
 	

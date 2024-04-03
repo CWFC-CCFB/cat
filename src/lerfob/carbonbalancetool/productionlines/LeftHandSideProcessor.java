@@ -52,7 +52,7 @@ public abstract class LeftHandSideProcessor extends AbstractProcessor {
 		}
 
 		/**
-		 * Enabling is mainly set in the {@link repicea.simulation.processsystem.SystemComponentMouseAdapter} class.<p>
+		 * Enabling is mainly set in the repicea.simulation.processsystem.SystemComponentMouseAdapter class.<p>
 		 * See the ComponentsToBeEnabledDisabled static member of that class for the list of components.
 		 */
 		@Override

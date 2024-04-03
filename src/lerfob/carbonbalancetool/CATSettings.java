@@ -1,5 +1,5 @@
 /*
- * This file is part of the lerfob-forestools library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2010-2013 Mathieu Fortin AgroParisTech/INRA UMR LERFoB, 
  *
@@ -213,20 +213,16 @@ public final class CATSettings {
 	protected final Map<ProductionManagerName, ProductionProcessorManagerWrapper> productionManagerMap = new TreeMap<ProductionManagerName, ProductionProcessorManagerWrapper>();
 	protected final Map<BiomassParametersName, BiomassParametersWrapper> biomassParametersMap = new TreeMap<BiomassParametersName, BiomassParametersWrapper>();
 
-//	protected int currentProcessorManagerIndex = 0;
-//	protected int currentBiomassParametersIndex = 0; 
-
 	private ProductionManagerName currentProcessorManager = ProductionManagerName.values()[0];
 	private BiomassParametersName currentBiomassParameters = BiomassParametersName.values()[0]; 
 
-	private boolean verbose;
 	
 	/**
 	 * Constructor.
+	 * @param settings a SettingMemory instance
 	 */
 	public CATSettings(SettingMemory settings) {			
 		this.settings = settings;
-		verbose = false;
 		readProcessorManagers();
 		readBiomassParametersVector();
 		productionLines = new ProductionLineManager();
@@ -279,7 +275,6 @@ public final class CATSettings {
 			if (processorManagerName == ProductionManagerName.customized) {
 				productionProcessorManager = new ProductionProcessorManager();
 				productionManagerMap.put(processorManagerName, new ProductionProcessorManagerWrapper(processorManagerName, productionProcessorManager));
-//				customizedManager = processorManagers.get(processorManagers.size() - 1).manager;
 			} else {
 				try {
 					productionProcessorManager = new ProductionProcessorManager(new DefaultREpiceaGUIPermission(false));
@@ -374,8 +369,9 @@ public final class CATSettings {
 
 
 	/**
-	 * This method returns true if the settings are valid.
-	 * @return a boolean
+	 * Check the validity of the settings.
+	 * @return a boolean true if valid or false otherwise
+	 * @throws ProductionProcessorManagerException if the ProductionProcessorManager instance cannot be validated
 	 */
 	public boolean isValid() throws ProductionProcessorManagerException {
 		if (formerImplementation) { 			// former implementation
@@ -458,11 +454,11 @@ public final class CATSettings {
 	}
 
 	/**
-	 * This method should be called in script mode.	
-	 * @param treeLogger
+	 * Initialize the settings in in script mode.	
+	 * @param treeLogger a TreeLogger instance
 	 * @param productionLinesFilename the path to the production lines file
 	 * @param woodDispatcherFilename the path to the wood dispatcher file 
-	 * @throws IOException
+	 * @throws IOException if some file cannot be read
 	 */
 	@SuppressWarnings("rawtypes")
 	@Deprecated
@@ -499,13 +495,4 @@ public final class CATSettings {
 	@Deprecated
 	protected WoodPieceDispatcher getWoodSupplySetup() {return woodSupply;}
 
-
-	protected void setVerboseEnabled(boolean bool) {
-		this.verbose = bool;
-	}
-
-	public boolean isVerboseEnabled() {return verbose;}
-
-	
-	
 }

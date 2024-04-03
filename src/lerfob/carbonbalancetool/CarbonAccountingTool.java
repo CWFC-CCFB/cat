@@ -209,20 +209,10 @@ public class CarbonAccountingTool extends AbstractGenericEngine implements REpic
 	public CATSettings getCarbonToolSettings() {
 		return carbonCompartmentManager.getCarbonToolSettings();
 	}
-
-	/**
-	 * This method enables messages all along the process chain. By default, the
-	 * verbose is disabled
-	 * @param bool
-	 */
-	public void setVerboseEnabled(boolean bool) {
-		getCarbonToolSettings().setVerboseEnabled(bool);
-	}
-	
 	
 	/**
-	 * Initializes CAT without parent window.
-	 * @throws Exception
+	 * Initialize CAT without parent window.
+	 * @throws Exception if CAT has already been initialized
 	 */
 	public void initializeTool() throws Exception {
 		initializeTool(null);
@@ -238,9 +228,10 @@ public class CarbonAccountingTool extends AbstractGenericEngine implements REpic
 	}
 	
 	/**
-	 * This method initializes the carbon accounting tool either in script or in GUI mode. This method can
-	 * be called only once per instance. 
+	 * Initialize the carbon accounting tool either in script or in GUI mode.<p>
+	 * This method can be called only once per instance. 
 	 * @param parentFrame the parent frame which can be null
+	 * @throws Exception if CAT has already been initialized
 	 */
 	public void initializeTool(Window parentFrame) throws Exception {
 		if (initialized) {
@@ -418,9 +409,9 @@ public class CarbonAccountingTool extends AbstractGenericEngine implements REpic
 	protected CATCompartmentManager getCarbonCompartmentManager() {return carbonCompartmentManager;}
 
 	/**
-	 * This method launches the calculation of the different carbon compartments.
-	 * @throws InterruptedException if the engine lock is interrupted
-	 * @throws InvalidParameterException if the CarbonToolSettings instance is invalid
+	 * Launch the calculation of the different carbon compartments.
+	 * @throws InterruptedException if the engine is inadvertently unlocked
+	 * @throws ProductionProcessorManagerException if the ProductionProcessorManager instance cannot be validated
 	 */
 	public void calculateCarbon() throws ProductionProcessorManagerException, InterruptedException {
 		if (carbonCompartmentManager.getCarbonToolSettings().isValid()) {
@@ -464,12 +455,11 @@ public class CarbonAccountingTool extends AbstractGenericEngine implements REpic
 	}
 
 	/**
-	 * This method returns an export tool adapted to the carbon accounting tool. In script mode, the export
-	 * tool can then be used to export the data in dbf file format.
-	 * @return a CarbonAccountingToolExport instance
-	 * @throws Exception 
+	 * Produce an export tool for CAT.<p>
+	 * In script mode, the export tool can then be used to export the data to csv or dbf files.
+	 * @return a CATExportTool instance
 	 */
-	public CATExportTool createExportTool() throws Exception {
+	public CATExportTool createExportTool() {
 		return new CATExportTool(getCarbonCompartmentManager().getCarbonToolSettings().getSettingMemory(), 
 				getCarbonCompartmentManager().getSimulationSummary());
 	}
@@ -533,10 +523,9 @@ public class CarbonAccountingTool extends AbstractGenericEngine implements REpic
 	}
 
 	/**
-	 * This method sets the biomass parameters for the next simulation in script mode.
+	 * Set the biomass parameters for the simulation in script mode.
 	 * @param filename a String that defines the filename (.bpf) of the biomass parameters
-	 * @throws InterruptedException 
-	 * @throws IOException 
+	 * @throws InterruptedException if the engine is inadvertently unlocked
 	 */
 	public void setBiomassParameters(String filename) throws InterruptedException {
 		this.biomassParametersFilename = filename;
@@ -553,10 +542,9 @@ public class CarbonAccountingTool extends AbstractGenericEngine implements REpic
 	}
 	
 	/**
-	 * This method sets the production lines for the next simulation in script mode. 
+	 * Set the production lines for the simulation in script mode. 
 	 * @param filename a String that defines the filename (.prl) of the processor manager
-	 * @throws InterruptedException 
-	 * @throws IOException 
+	 * @throws InterruptedException if the engine is inadvertently unlocked
 	 */
 	public void setProductionManager(String filename) throws InterruptedException {
 		this.productionManagerFilename = filename;
@@ -600,9 +588,10 @@ public class CarbonAccountingTool extends AbstractGenericEngine implements REpic
 	public boolean isInitialized() {return initialized;}
 	
 	/**
-	 * Entry point for CAT in stand alone modes
+	 * Entry point for CAT in stand alone modes.
+	 * @param args a series of parameters 
 	 */
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 		String languageOption = "-l";
 		String logLevelOption = "-loglevel";
 		List<String> arguments = Arrays.asList(args);
@@ -642,7 +631,12 @@ public class CarbonAccountingTool extends AbstractGenericEngine implements REpic
 //		ConsoleHandler ch = new ConsoleHandler();
 //		REpiceaLogManager.getLogger(CarbonAccountingTool.LOGGER_NAME).addHandler(ch);
 		CarbonAccountingTool tool = new CarbonAccountingTool();
-		tool.initializeTool();
+		try {
+			tool.initializeTool();
+		} catch (Exception e) {
+			System.out.println("Unable to initialize CAT.");
+			e.printStackTrace();
+		}
 	}
 
 

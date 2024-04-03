@@ -219,24 +219,20 @@ public class CATUtilityMaps {
 
 	
 	/**
-	 * This method returns a Map with the species name as keys and the total amount map as values.
-	 * An additional key is also set in the map. That is the all-species amount map.
-	 * @return a Map instance
+	 * Provide a Map with the species names as keys and the total amount maps as values.<p>
+	 * @param list a CarbonUnitList instance
+	 * @param speciesList a List of strings, those being the species names
+	 * @return a CATSpeciesAmountMap instance
 	 */
 	public static CATSpeciesAmountMap convertToSpeciesMap(CarbonUnitList list, List<String> speciesList) {
 		CATSpeciesAmountMap outputMap = new CATSpeciesAmountMap(speciesList);
 		for (CarbonUnit carbonUnit : list) {
 			String speciesName = carbonUnit.getSpeciesName();
-//			if (!outputMap.containsKey(CarbonUnit.AllSpecies)) {
-//				outputMap.put(CarbonUnit.AllSpecies, new AmountMap<Element>());
-//			}
 			if (!outputMap.containsKey(speciesName)) {
 				outputMap.put(speciesName, new AmountMap<Element>());
 			}
 			AmountMap<Element> carrier = outputMap.get(speciesName);
 			carrier.putAll(carbonUnit.getAmountMap());
-//			AmountMap<Element> allSpeciesCarrier = outputMap.get(CarbonUnit.AllSpecies);
-//			allSpeciesCarrier.putAll(carbonUnit.getAmountMap());
 		}
 		return outputMap;
 	}

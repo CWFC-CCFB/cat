@@ -86,6 +86,7 @@ public class CATYieldTableRecordReader extends REpiceaRecordReader {
 	
 	/**
 	 * General constructor.
+	 * @param catSpecies a CATSpecies enum that stands for tree species in this stand
 	 */
 	public CATYieldTableRecordReader(CATSpecies catSpecies) {
 		super();

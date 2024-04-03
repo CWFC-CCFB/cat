@@ -272,10 +272,19 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 	 * This method returns a collection of end products that can be produced from this piece of wood. 
 	 * This collection is defined by the end product features associated in the tree log category of this 
 	 * piece.
-	 * @return a collection of EndProduct instances (Collection) 
+	 * @param dateIndex the index of the creation date
+	 * @param speciesName the name of the species
+	 * @param speciesType a SpeciesType enum
+	 * @param statusClass a StatusClass enum
+	 * @param amountMap an AmountMap instance
+	 * @return a CarbonUnitMap instance 
 	 */
 	@Deprecated
-	protected CarbonUnitMap<CarbonUnitStatus> processWoodPiece(int dateIndex, String speciesName, SpeciesType speciesType, StatusClass statusClass, AmountMap<Element> amountMap) throws Exception {
+	protected CarbonUnitMap<CarbonUnitStatus> processWoodPiece(int dateIndex, 
+			String speciesName, 
+			SpeciesType speciesType, 
+			StatusClass statusClass, 
+			AmountMap<Element> amountMap) {
 
 		CarbonUnitMap<CarbonUnitStatus> outputMap = new CarbonUnitMap<CarbonUnitStatus>(CarbonUnitStatus.EndUseWoodProduct);
 
@@ -329,7 +338,7 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 					getProductionLine().getManager().getCarbonUnits(CarbonUnitStatus.LandFillNonDegradable).add((LandfillCarbonUnit) woodProduct); 
 					
 				} else {				// is left in the forest
-					woodProduct = new CarbonUnit(dateIndex, sampleUnitID, woodProductFeature, processedAmountMap, speciesName, speciesType, statusClass, BiomassType.Wood);
+					woodProduct = new CarbonUnit(dateIndex, sampleUnitID, woodProductFeature, processedAmountMap, speciesName, speciesType, statusClass, BiomassType.Wood, null); // woodyDebrisType set to null
 					getProductionLine().getManager().getCarbonUnits(CarbonUnitStatus.DeadWood).add(woodProduct);
 				}
 

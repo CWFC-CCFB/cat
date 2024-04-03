@@ -40,7 +40,7 @@ class CATCompartmentCompileLibrary {
 	 * @param carbonCompartment = a carbon compartment (CarbonCompartment object)
 	 */
 	@SuppressWarnings("unchecked")
-	void selectCalculatorFunction(CATCompartment carbonCompartment) throws Exception {
+	void selectCalculatorFunction(CATCompartment carbonCompartment) {
 		CATCompartmentManager manager = carbonCompartment.getCompartmentManager();
 		
 		Collection<? extends CarbonUnit> carbonUnits;

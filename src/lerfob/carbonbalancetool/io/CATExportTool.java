@@ -18,12 +18,14 @@
  */
 package lerfob.carbonbalancetool.io;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.logging.Level;
 
 import lerfob.carbonbalancetool.CATCompartment.CompartmentInfo;
 import lerfob.carbonbalancetool.CATSimulationDifference;
@@ -32,6 +34,7 @@ import lerfob.carbonbalancetool.CATTimeTable;
 import lerfob.carbonbalancetool.CATUtilityMaps.MonteCarloEstimateMap;
 import lerfob.carbonbalancetool.CATUtilityMaps.SpeciesMonteCarloEstimateMap;
 import lerfob.carbonbalancetool.CATUtilityMaps.UseClassSpeciesMonteCarloEstimateMap;
+import lerfob.carbonbalancetool.CarbonAccountingTool;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
 import lerfob.carbonbalancetool.productionlines.EndUseWoodProductCarbonUnitFeature.UseClass;
@@ -48,6 +51,7 @@ import repicea.math.SymmetricMatrix;
 import repicea.stats.estimates.Estimate;
 import repicea.stats.estimates.MonteCarloEstimate;
 import repicea.util.BrowserCaller;
+import repicea.util.REpiceaLogManager;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
 
@@ -504,10 +508,10 @@ public class CATExportTool extends REpiceaExportTool {
 	
 	/**
 	 * Constructor. 
+	 * @param memorySettings a SettingMemory instance
 	 * @param summary a CarbonAccountingToolExportSummary instance
-	 * @throws Exception 
 	 */
-	public CATExportTool(SettingMemory memorySettings, CATSimulationResult summary) throws Exception { 
+	public CATExportTool(SettingMemory memorySettings, CATSimulationResult summary) { 
 		super(true);			// enables multiple selection 
 		this.summary = summary;
 		this.settings = memorySettings;
@@ -521,13 +525,17 @@ public class CATExportTool extends REpiceaExportTool {
 		super.setSaveFileEnabled(bool);
 	}
 	
-	private void setHelper() throws NoSuchMethodException, SecurityException {
-		Method callHelp = BrowserCaller.class.getMethod("openUrl", String.class);
-		String url = "http://www.inra.fr/capsis/help_"+ 
-				REpiceaTranslator.getCurrentLanguage().getLocale().getLanguage() +
-				"/capsis/extension/modeltool/carbonaccountingtool/export";
-		AutomatedHelper helper = new AutomatedHelper(callHelp, new Object[]{url});
-		UIControlManager.setHelpMethod(REpiceaExportToolDialog.class, helper);
+	private void setHelper() {
+		try {
+			Method callHelp = BrowserCaller.class.getMethod("openUrl", String.class);
+			String url = "http://www.inra.fr/capsis/help_"+ 
+					REpiceaTranslator.getCurrentLanguage().getLocale().getLanguage() +
+					"/capsis/extension/modeltool/carbonaccountingtool/export";
+			AutomatedHelper helper = new AutomatedHelper(callHelp, new Object[]{url});
+			UIControlManager.setHelpMethod(REpiceaExportToolDialog.class, helper);
+		} catch (Exception e) {
+			REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.SEVERE, "CATExportTool", "Unable to set helper: " + e.getMessage());
+		}
 	}
 	
 
@@ -579,12 +587,13 @@ public class CATExportTool extends REpiceaExportTool {
 	}
 
 	/**
-	 * This method sets the selected options to all the possible options. It is 
-	 * typically called by external applications. 
-	 * @throws Exception
+	 * Set the selected exrpot options to all possible options.<p>
+	 * It is typically called by external applications. 
+	 * @return a list of enum constant
+	 * @throws IOException if one of selected options is not available
 	 */
 	@SuppressWarnings("rawtypes")
-	public List<Enum> setAllAvailableOptions() throws Exception {
+	public List<Enum> setAllAvailableOptions() throws IOException {
 		List<Enum> availableOptions = getAvailableExportOptions();
 		setSelectedOptions(availableOptions);
 		return availableOptions;

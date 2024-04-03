@@ -125,13 +125,9 @@ public class CATGrowthSimulationRecordReader extends REpiceaRecordReader {
 	
 	/**
 	 * General constructor.
-	 * @param scale an ApplicationScale enum
 	 */
 	public CATGrowthSimulationRecordReader() {
 		super();
-//		if (scale == null) {
-//			throw new InvalidParameterException("The scale parameter cannot be null!");
-//		}
 		this.scale = TestUnevenAgedInfiniteSequence ? ApplicationScale.Stand : ApplicationScale.FMU;
 		setPopUpWindowEnabled(true);
 		standMap = new TreeMap<Integer, Map<Boolean, CATGrowthSimulationCompositeStand>>();

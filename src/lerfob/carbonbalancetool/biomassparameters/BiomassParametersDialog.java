@@ -144,8 +144,8 @@ public class BiomassParametersDialog extends REpiceaDialog implements IOUserInte
 	
 	/**
 	 * Constructor.
-	 * @param window
-	 * @param caller
+	 * @param window the parent window of this dialog
+	 * @param caller the BiomassParameters instance whose parameters are displayed through this dialog
 	 */
 	protected BiomassParametersDialog(Window window, BiomassParameters caller) {
 		super(window);

@@ -74,10 +74,10 @@ public class CarbonUnitList extends ArrayList<CarbonUnit> {
 	
 
 	/**
-	 * This method filters the CarbonUnitList instance.
-	 * @param clazz
-	 * @param methodName
-	 * @param expectedValue
+	 * Filter the CarbonUnitList instance.
+	 * @param clazz a Class of CarbonUnit
+	 * @param methodName the method name
+	 * @param expectedValue the expected value
 	 * @return a CarbonUnitList instance
 	 */
 	public CarbonUnitList filterList(Class<? extends CarbonUnit> clazz, String methodName, Object expectedValue) {

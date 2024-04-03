@@ -1,5 +1,5 @@
 /*
- * This file is part of the repicea-simulation library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2009-2015 Mathieu Fortin for Rouge-Epicea
  *
@@ -37,6 +37,10 @@ import repicea.gui.REpiceaShowableUIWithParent;
 import repicea.gui.Refreshable;
 import repicea.gui.permissions.REpiceaGUIPermissionProvider;
 
+/**
+ * A MouseAdapter-derived class for enabling and disabling components.
+ * @author Mathieu Fortin - 2015
+ */
 class SystemComponentMouseAdapter extends MouseAdapter {
 
 	private static final List<Class<? extends Component>> ComponentsToBeEnabledDisabled = new ArrayList<Class<? extends Component>>();

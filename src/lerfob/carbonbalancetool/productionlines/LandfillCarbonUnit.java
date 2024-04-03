@@ -33,9 +33,10 @@ public class LandfillCarbonUnit extends CarbonUnit {
 	 * @param amountMap an AmountMap instance
 	 * @param speciesName the name of the species
 	 * @param speciesType the type of species (Broadleaved or Coniferous)
+	 * @param statusClass a StatusClass enum
 	 * @param biomassType the type of biomass (wood or bark)
 	 * @param landfillStatus a CarbonUnitStatus enum (either LandFillDegradable or LandFillNonDegradable)
-	 * @deprecated Use the {@link #LandfillCarbonUnit(int, String, LandfillCarbonUnitFeature, AmountMap, CarbonUnit, CarbonUnitStatus)} constructor instead
+	 * @deprecated Use the LandfillCarbonUnit(int, LandfillCarbonUnitFeature, AmountMap, CarbonUnit, CarbonUnitStatus) constructor instead
 	 */
 	protected LandfillCarbonUnit(int dateIndex, 
 							String sampleUnitID,
@@ -46,7 +47,7 @@ public class LandfillCarbonUnit extends CarbonUnit {
 							StatusClass statusClass,
 							BiomassType biomassType,
 							CarbonUnitStatus landfillStatus) {
-		super(dateIndex, sampleUnitID, landfillCarbonUnitFeature, amountMap, speciesName, speciesType, statusClass, biomassType);
+		super(dateIndex, sampleUnitID, landfillCarbonUnitFeature, amountMap, speciesName, speciesType, statusClass, biomassType, null); // woodyDebrisType set to null
 		addStatus(landfillStatus);
 	}
 	

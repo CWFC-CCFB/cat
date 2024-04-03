@@ -47,14 +47,14 @@ public class CarbonUnitFeature implements Serializable, REpiceaUIObject, MemberH
 	 * IMPORTANT: This field can be either the average lifetime or the half-life. The conversion is handled 
 	 * by the getAverageLifetime() method.
 	 * @deprecated the average life time and the half life are now members of the DecayFunction class
-	 * @see {@link  lerfob.carbonbalancetool.productionlines.DecayFunction}
+	 * @see lerfob.carbonbalancetool.productionlines.DecayFunction
 	 */
 	@Deprecated
 	protected double averageLifetime;
 	
 	/**
 	 * @deprecated the lifetime model is now a member of the DecayFunction class
-	 * @see {@link  lerfob.carbonbalancetool.productionlines.DecayFunction}
+	 * @see lerfob.carbonbalancetool.productionlines.DecayFunction
 	 */
 	@Deprecated
 	private LifetimeMode lifetimeMode;

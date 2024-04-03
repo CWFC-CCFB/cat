@@ -56,7 +56,7 @@ public class ProcessorListTable extends JTable implements Refreshable, CellEdito
 		
 		/**
 		 * General constructor.
-		 * @param fieldName the field name
+		 * @param label an enum constant that stands for the field name
 		 * @param type the type of the field (String, double, ...)
 		 * @param value the value of the member
 		 */

@@ -1,5 +1,5 @@
 /*
- * This file is part of the lerfob-forestools library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2010-2013 Mathieu Fortin AgroParisTech/INRA UMR LERFoB, 
  *
@@ -131,7 +131,6 @@ public class CATProductCompartment extends CATCompartment {
 		CATTimeTable timeScale = getCompartmentManager().getTimeTable();
 		Map<Integer, CATUseClassSpeciesAmountMap> outputMap = new HashMap<Integer, CATUseClassSpeciesAmountMap>();
 		if (carbonUnits != null && !carbonUnits.isEmpty()) {
-//			for (Integer date : timeScale) {
 			for (int i = 0; i < timeScale.size(); i++) {
 				int dateYr = timeScale.getDateYrAtThisIndex(i);
 				CarbonUnitList subList;
@@ -161,16 +160,12 @@ public class CATProductCompartment extends CATCompartment {
 		return outputMap;
 	}
 
-
-	
-	
-	
-	
-
 	/**
-	 * This method returns the proportion of use class.
+	 * Provide the proportion of products by use class.
 	 * @param withRecycling a boolean that takes the value true if recycled products are to be included
+	 * @param element an Element enum constant
 	 * @return a TreeMap instance
+	 * @see Element
 	 */
 	protected TreeMap<UseClass, Map<String, Double>> getProductProportions(boolean withRecycling, Element element) {
 		TreeMap<UseClass, Map<String, Double>> outputMap = new TreeMap<UseClass, Map<String, Double>>();  // UseClass / SpeciesName
@@ -243,13 +238,12 @@ public class CATProductCompartment extends CATCompartment {
 
 	/**
 	 * This method returns the amount of nutrients per hectare (kg/ha) for each use class.
+	 * @param withRecycling a boolean that takes the value true if recycled products are to be included
 	 * @return a Map instance
 	 */
 	protected Map<CarbonUnitStatus, CATUseClassSpeciesAmountMap> getHWPContentByUseClassPerHa(boolean withRecycling) {
-//		double areaFactor = 1d / getCompartmentManager().getLastStand().getAreaHa();
 		double areaFactor = 1d / getCompartmentManager().getTimeTable().getLastStandForThisRealization().getAreaHa();
 		Map<CarbonUnitStatus, CATUseClassSpeciesAmountMap> outputMap = getAmountByUseClass(withRecycling);
-//		Map<CarbonUnitStatus, CATUseClassSpeciesAmountMap> scaledMap = AmountMap.scaleMap(outputMap, areaFactor);
 		AmountMap.scaleMap(outputMap, areaFactor);
 		return outputMap;
 	}
@@ -257,7 +251,6 @@ public class CATProductCompartment extends CATCompartment {
 	protected Map<Integer, CATUseClassSpeciesAmountMap> getWoodProductEvolutionPerHa() {
 		double areaFactor = 1d / getCompartmentManager().getTimeTable().getLastStandForThisRealization().getAreaHa();
 		Map<Integer, CATUseClassSpeciesAmountMap> outerMap = getWoodProductEvolution();
-//		Map<Integer, CATUseClassSpeciesAmountMap> scaledMap = AmountMap.scaleMap(outerMap, areaFactor);
 		AmountMap.scaleMap(outerMap, areaFactor);
 		return outerMap;
 	}
