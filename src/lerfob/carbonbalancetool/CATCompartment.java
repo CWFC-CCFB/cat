@@ -140,6 +140,7 @@ public class CATCompartment implements Comparable {
 				poolCategoryMap.put(AbGround, PoolCategory.Forest);
 				poolCategoryMap.put(Roots, PoolCategory.Forest);
 				poolCategoryMap.put(DeadBiom, PoolCategory.Forest);
+				poolCategoryMap.put(Soil, PoolCategory.Forest);
 				
 				poolCategoryMap.put(TotalProducts, PoolCategory.HarvestedWoodProducts);
 				poolCategoryMap.put(Products, PoolCategory.HarvestedWoodProducts);
@@ -177,6 +178,7 @@ public class CATCompartment implements Comparable {
 				naturalOrder.add(AbGround);
 				naturalOrder.add(Roots);
 				naturalOrder.add(DeadBiom);
+				naturalOrder.add(Soil);
 				naturalOrder.add(TotalProducts);
 				naturalOrder.add(Products);
 				naturalOrder.add(LfillDeg);

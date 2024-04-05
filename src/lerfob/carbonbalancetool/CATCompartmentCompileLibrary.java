@@ -271,11 +271,13 @@ class CATCompartmentCompileLibrary {
 			for (int i = 0; i < timeTable.size(); i++) {
 				carbonCompartment.setCarbonIntoArray(i, manager.getMEMS().GetCarbonOutput(i).humus);
 			}
+			carbonCompartment.setIntegratedCarbon(integrateCarbonOverHorizon(carbonCompartment) / revolutionPeriod);
 			break;
 		case MineralSoil:
 			for (int i = 0; i < timeTable.size(); i++) {
 				carbonCompartment.setCarbonIntoArray(i, manager.getMEMS().GetCarbonOutput(i).soil);
 			}
+			carbonCompartment.setIntegratedCarbon(integrateCarbonOverHorizon(carbonCompartment) / revolutionPeriod);
 			break;
 		case Soil:
 			carbonCompartment.mergeWithFatherCompartments();
