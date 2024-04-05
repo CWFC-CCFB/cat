@@ -338,7 +338,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		clearTreeCollections();
 		resetCompartments();
 
-		memsWrapper.PrepareSimulation(this.timeTable.size());
+		memsWrapper.PrepareSimulation(this.timeTable);
 
 		if (getCarbonToolSettings().formerImplementation) {
 			ProductionLineManager productionLines = carbonAccountingToolSettings.getProductionLines();

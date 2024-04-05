@@ -67,12 +67,18 @@ public class LeftInForestCarbonUnit extends CarbonUnit {
 		super.actualizeCarbon(compartmentManager);
 
 		double[] releasedCarbonArray = getReleasedCarbonArray();
+
 		//todo : add the right proportion of those values to mems
 		double proportion = 1.0;
-		//todo : find if the carbon units are destined to humus or soil properly
-		for (int i = getIndexInTimeScale(); i < getTimeTable().size(); i++) {
-			compartmentManager.getMEMS().AddCarbonInputToHumus(i, proportion * releasedCarbonArray[i]);
+
+		if (getWoodyDebrisType() != null) {
+			boolean addToHumus = getWoodyDebrisType() == WoodyDebrisProcessor.WoodyDebrisProcessorID.FineWoodyDebris || getWoodyDebrisType() == WoodyDebrisProcessor.WoodyDebrisProcessorID.CommercialWoodyDebris;
+
+			for (int i = getIndexInTimeScale(); i < getTimeTable().size(); i++) {
+				compartmentManager.getMEMS().AddCarbonInput(i, proportion * releasedCarbonArray[i], addToHumus);
+			}
 		}
+
 //		double proportion;
 //		for (int i = getIndexInTimeScale(); i < getTimeTable().size(); i++) {
 //			proportion = releasedCarbonArray[i] / getInitialCarbon();
