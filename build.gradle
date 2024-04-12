@@ -26,7 +26,6 @@ repositories {
 		url "https://repo1.maven.org/maven2/"
 	}
     mavenCentral()
-    mavenLocal()
 }
 
 println "Using java version " + JavaVersion.current()
@@ -82,9 +81,7 @@ dependencies {
     implementation group: 'org.apache.xmlgraphics', name: 'batik-svggen', version: '1.14'
 	implementation group: 'org.apache.xmlgraphics', name: 'batik-dom', version: '1.14'
 	implementation group: 'org.apache.xmlgraphics', name: 'batik-codec', version: '1.14'
-
-    implementation group: 'io.github.cwfc-ccfb', name: 'mems', version: '[1.0.1,)'
-
+    
     testImplementation "junit:junit:4.12"    
 }
 
