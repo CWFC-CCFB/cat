@@ -19,6 +19,7 @@
  */
 package lerfob.carbonbalancetool.productionlines.affiliere;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -47,15 +48,19 @@ public class AffiliereJSONImportExportTest {
 		Assert.assertEquals("Testing nb of processors", 108, ((List) mp.get(1)).size());
 	}
 
-	@Ignore // TODO remove when the thing is working MF20240301
 	@Test
 	public void testAffiliereExportToFile() throws IOException {
 		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportExportTest.class) + "hardwood_recycling_en.prl";
 		ProductionProcessorManager manager = new ProductionProcessorManager();
 		manager.load(filename);
-		manager.showUI(null);
-		manager.exportTo(ObjectUtility.getPackagePath(AffiliereJSONImportExportTest.class) + "CATTestExportToAffiliere.json", ExportFormat.AFFILIERE);
-		int u = 0;
+//		manager.showUI(null);
+		String exportFilename = ObjectUtility.getPackagePath(AffiliereJSONImportExportTest.class) + "CATTestExportToAffiliere.json"; 
+		File f = new File(exportFilename);
+		if (f.exists()) {
+			f.delete();
+		}
+		manager.exportTo(exportFilename, ExportFormat.AFFILIERE);
+		Assert.assertTrue("Testing if file exists", f.exists());
 	}
 	
 	

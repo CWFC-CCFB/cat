@@ -22,7 +22,9 @@ package lerfob.carbonbalancetool.productionlines.affiliere;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import com.cedarsoftware.util.io.JsonWriter;
 
@@ -42,7 +44,9 @@ public class AffiliereJSONExportWriter {
 		JsonWriter writer = null;
 		try {
 			FileOutputStream fos = new FileOutputStream(new File(filename));
-			writer = new JsonWriter(fos);
+			Map<String, Object> jsonSettingsMap = new HashMap<String, Object>();
+			jsonSettingsMap.put(JsonWriter.TYPE, false);
+			writer = new JsonWriter(fos,jsonSettingsMap);
 			writer.write(managerRep);	
 		} finally {
 			if (writer != null) {
