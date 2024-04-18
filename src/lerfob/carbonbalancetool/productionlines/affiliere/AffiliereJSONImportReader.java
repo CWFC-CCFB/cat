@@ -35,7 +35,6 @@ import java.util.Map;
 import com.cedarsoftware.util.io.JsonReader;
 
 import lerfob.carbonbalancetool.productionlines.AbstractProcessor;
-import lerfob.carbonbalancetool.productionlines.ProductionLineProcessor;
 import repicea.simulation.processsystem.Processor;
 
 /**
@@ -74,21 +73,17 @@ public class AffiliereJSONImportReader {
 		}
 	}
 	
-	public static final String NameTag = "name";
-	public static final String XTag = "x";
-	public static final String YTag = "y";
-	
-	
-	
 	private static class FutureLink {
 		final Processor fatherProcessor;
 		final Processor childProcessor;
 		final double value;
+		final boolean isPercent;
 		
-		FutureLink(Processor fatherProcessor, Processor childProcessor, double value) {
+		FutureLink(Processor fatherProcessor, Processor childProcessor, double value, boolean isPercent) {
 			this.fatherProcessor = fatherProcessor;
 			this.childProcessor = childProcessor;
 			this.value = value;
+			this.isPercent = isPercent;
 		}
 	}
 		
@@ -137,16 +132,16 @@ public class AffiliereJSONImportReader {
 		this(url.openStream(), null, null);
 	}
 
-	private String formatTagMap(LinkedHashMap<String,Object> oMap) {
-		StringBuilder sb = new StringBuilder();
-		for (String k : oMap.keySet()) {
-			sb.append(k);
-			sb.append("=");
-			sb.append(((Object[]) oMap.get(k))[0].toString());
-			sb.append(",");
-		}
-		return "{" + sb.toString() + "}";
-	}
+//	private String formatTagMap(LinkedHashMap<String,Object> oMap) {
+//		StringBuilder sb = new StringBuilder();
+//		for (String k : oMap.keySet()) {
+//			sb.append(k);
+//			sb.append("=");
+//			sb.append(((Object[]) oMap.get(k))[0].toString());
+//			sb.append(",");
+//		}
+//		return "{" + sb.toString() + "}";
+//	}
 	
 	private void addToListIfRelevant(Processor p, LinkedHashMap<String, Object> oMap, String key, String expression, List<Processor> outputList) {
 		if (oMap.containsKey(key) ) {
@@ -177,17 +172,17 @@ public class AffiliereJSONImportReader {
 		JsonReader reader = new JsonReader(is);
 		mappedJSON = (LinkedHashMap<?,?>) reader.readObject();
 		reader.close();
-		LinkedHashMap<?,?> processorJSONMap = (LinkedHashMap<?,?>) mappedJSON.get("nodes");
-		LinkedHashMap<?,?> linkJSONMap = (LinkedHashMap<?,?>) mappedJSON.get("links");
+		LinkedHashMap<?,?> processorJSONMap = (LinkedHashMap<?,?>) mappedJSON.get(AffiliereJSONFormat.NODES_PROPERTY);
+		LinkedHashMap<?,?> linkJSONMap = (LinkedHashMap<?,?>) mappedJSON.get(AffiliereJSONFormat.LINKS_PROPERTY);
 		processors = new HashMap<String, Processor>();
 		endProductProcessors = new ArrayList<Processor>();
 		ioProcessors = new ArrayList<Processor>();
 		for (Object o : processorJSONMap.values()) {
 			LinkedHashMap<String, Object> oMap = (LinkedHashMap<String, Object>) o;
-			LinkedHashMap<String, Object> tagMap = (LinkedHashMap<String, Object>) oMap.get("tags");
-			Object[] nodeTypeTags = (Object[]) tagMap.get("Type de noeud");
+			LinkedHashMap<String, Object> tagMap = (LinkedHashMap<String, Object>) oMap.get(AffiliereJSONFormat.NODE_TAGS_PROPERTY);
+			Object[] nodeTypeTags = (Object[]) tagMap.get(AffiliereJSONFormat.NODE_TAGS_NODETYPE_PROPERTY);
 			if (!containsUndesiredNodeTypeTag(nodeTypeTags)) {
-				String id = oMap.get("idNode").toString();
+				String id = oMap.get(AffiliereJSONFormat.NODE_IDNODE_PROPERTY).toString();
 				Processor p = AbstractProcessor.createProcessor(oMap);
 				processors.put(id, p);
 				addToListIfRelevant(p, tagMap, "Catégorie noeud", "Produit fini", endProductProcessors);
@@ -205,17 +200,20 @@ public class AffiliereJSONImportReader {
 		for (String fatherProcessorName : processors.keySet()) {
 			for (Object linkValue : linkJSONMap.values()) {
 				LinkedHashMap<?,?> linkProperties = (LinkedHashMap<?,?>)  linkValue;
-				if (linkProperties.containsKey("idSource") && linkProperties.get("idSource").equals(fatherProcessorName)) {
+				if (linkProperties.containsKey(AffiliereJSONFormat.LINK_IDSOURCE_PROPERTY) && 
+						linkProperties.get(AffiliereJSONFormat.LINK_IDSOURCE_PROPERTY).equals(fatherProcessorName)) {
 					Processor fatherProcessor = processors.get(fatherProcessorName);
-					boolean isEndProductProcessor = endProductProcessors.contains(fatherProcessor);
-					if (linkProperties.containsKey("idTarget")) {
-						String childProcessorName = (String) linkProperties.get("idTarget");
+//					boolean isEndProductProcessor = endProductProcessors.contains(fatherProcessor);
+					if (linkProperties.containsKey(AffiliereJSONFormat.LINK_IDTARGET_PROPERTY)) {
+						String childProcessorName = (String) linkProperties.get(AffiliereJSONFormat.LINK_IDTARGET_PROPERTY);
 						Processor childProcessor = processors.get(childProcessorName);
 						if (childProcessor != null) {
-							LinkedHashMap<?, ?> valueMap = (LinkedHashMap<?,?>) linkProperties.get("value"); 
+							LinkedHashMap<?, ?> valueMap = (LinkedHashMap<?,?>) linkProperties.get(AffiliereJSONFormat.LINK_VALUE_PROPERTY); 
+							boolean isPercent = false;
 							double value;
-							if (valueMap.containsKey("proportion")) {
-								value = ((Number) valueMap.get("proportion")).doubleValue();
+							if (valueMap.containsKey(AffiliereJSONFormat.LINK_VALUE_PERCENT_PROPERTY)) {
+								value = ((Number) valueMap.get(AffiliereJSONFormat.LINK_VALUE_PERCENT_PROPERTY)).doubleValue();
+								isPercent = true;
 							} else {
 								if (valueMap.containsKey(studyUnitAttribute)) {
 									valueMap = (LinkedHashMap<?,?>) valueMap.get(studyUnitAttribute);
@@ -225,7 +223,7 @@ public class AffiliereJSONImportReader {
 							if (!linkMap.containsKey(fatherProcessor)) {
 								linkMap.put(fatherProcessor, new ArrayList<FutureLink>());
 							}
-							linkMap.get(fatherProcessor).add(new FutureLink(fatherProcessor, childProcessor, value));
+							linkMap.get(fatherProcessor).add(new FutureLink(fatherProcessor, childProcessor, value, isPercent));
 						}
 					}
 				}
@@ -234,13 +232,23 @@ public class AffiliereJSONImportReader {
 		
 		for (List<FutureLink> futureLinks : linkMap.values()) {
 			double sumValues = 0d;
+			Boolean lastIsPercent = null;
 			for (FutureLink fLink : futureLinks) {
+				if (lastIsPercent == null) {
+					lastIsPercent = fLink.isPercent;
+				} else {
+					if (!lastIsPercent.equals(fLink.isPercent)) { // check if the isPercent member is consistent across the links
+						throw new InvalidParameterException("It seems the values of some links are mix of percentage and absolute values!");
+					}
+				}
 				sumValues += fLink.value;
 			}
 			
-			for (FutureLink fLink : futureLinks) {
-				fLink.fatherProcessor.addSubProcessor(fLink.childProcessor);
-				fLink.fatherProcessor.getSubProcessorIntakes().put(fLink.childProcessor, fLink.value / sumValues * 100);
+			if (!lastIsPercent) {
+				for (FutureLink fLink : futureLinks) {
+					fLink.fatherProcessor.addSubProcessor(fLink.childProcessor);
+					fLink.fatherProcessor.getSubProcessorIntakes().put(fLink.childProcessor, fLink.value / sumValues * 100);
+				}
 			}
 		}
 	}
