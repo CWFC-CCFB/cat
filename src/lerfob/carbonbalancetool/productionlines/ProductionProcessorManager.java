@@ -46,7 +46,10 @@ import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManagerDialog.MessageID;
 import lerfob.carbonbalancetool.productionlines.WoodyDebrisProcessor.WoodyDebrisProcessorID;
 import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONExportWriter;
+import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONFormat;
 import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONImportReader;
+import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONImportReader.AFFiliereStudy;
+import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONImportReader.AFFiliereUnit;
 import lerfob.treelogger.basictreelogger.BasicTreeLogger;
 import lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLogger;
 import lerfob.treelogger.maritimepine.MaritimePineBasicTreeLogger;
@@ -299,7 +302,7 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		}
 		switch(iFormat) {
 		case AFFILIERE:
-			AffiliereJSONImportReader reader = new AffiliereJSONImportReader(new File(filename));
+			AffiliereJSONImportReader reader = new AffiliereJSONImportReader(new File(filename), AFFiliereStudy.BACCFIRE, AFFiliereUnit.DryBiomassMg);
 			reset();
 			for (Processor p : reader.getProcessors().values()) {
 				registerObject(p);
@@ -322,22 +325,20 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		}
 		switch(eFormat) {
 		case AFFILIERE:
-			new AffiliereJSONExportWriter(getMapRepresentation(), filename);
+			new AffiliereJSONExportWriter(getAffiliereJSONFormatRepresentation(), filename);
 			break;
 		default:
 			throw new InvalidParameterException("The export format " + eFormat.name() + " is not implemented yet!");
 		}
 	}
 
-	
-	private LinkedHashMap<String, Object> getMapRepresentation() {
+	private LinkedHashMap<String, Object> getAffiliereJSONFormatRepresentation() {
 		int idDispenser = 1;
 		Map<String, LinkedHashMap<String, Object>> nodeMap = new LinkedHashMap<String, LinkedHashMap<String, Object>>();
 		Map<Processor, String> processorToIdMap = new HashMap<Processor, String>();
 		for (Processor p : getList()) {
 			String idNode = "node" + idDispenser++;
-			LinkedHashMap<String, Object> nodeRep = ((AbstractProcessor) p).getMapRepresentation();
-			nodeRep.put("idNode", idNode);
+			LinkedHashMap<String, Object> nodeRep = ((AbstractProcessor) p).getAffiliereJSONFormatNodeRepresentation(idNode);
 			nodeMap.put(idNode, nodeRep);
 			processorToIdMap.put(p, idNode);
 		}
@@ -345,41 +346,45 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		for (Processor source : getList()) {
 			for (Processor target : source.getSubProcessors()) {
 				String idLink = "link" + idDispenser++;
-				linkMap.put(idLink, getLinkMapRepresentation(idLink, false, source, target, processorToIdMap)); // false: a typical production processor (not end of life)
+				linkMap.put(idLink, getAffiliereJSONFormatLinkRepresentation(idLink, false, source, target, processorToIdMap)); // false: a typical production processor (not end of life)
 			}
 			if (source instanceof ProductionLineProcessor) {
 				if (((ProductionLineProcessor) source).disposedToProcessor != null) {
 					String idLink = "link" + idDispenser++;
-					linkMap.put(idLink, getLinkMapRepresentation(idLink, true, source,
+					linkMap.put(idLink, getAffiliereJSONFormatLinkRepresentation(idLink, true, source,
 							((ProductionLineProcessor) source).disposedToProcessor, processorToIdMap)); // end of life
 																										// processor
 				}
 			}
 		}
 		LinkedHashMap<String, Object> outputMap = new LinkedHashMap<String, Object>();
-		outputMap.put("nodes", nodeMap);
-		outputMap.put("links", linkMap);
+		outputMap.put(AffiliereJSONFormat.VERSION_PROPERTY, "0.8");
+		outputMap.put(AffiliereJSONFormat.NODES_PROPERTY, nodeMap);
+		outputMap.put(AffiliereJSONFormat.LINKS_PROPERTY, linkMap);
 		return outputMap;
 	}
 
-	private static LinkedHashMap<String, Object> getLinkMapRepresentation(String idLink, 
+	private static LinkedHashMap<String, Object> getAffiliereJSONFormatLinkRepresentation(String idLink, 
 			boolean endOfLife, 
 			Processor source, 
 			Processor target,
 			Map<Processor, String> processorToIdMap) {
 		LinkedHashMap<String, Object> oMap = new LinkedHashMap<String, Object>();
-		oMap.put("idLink", idLink);
-		oMap.put("idSource", processorToIdMap.get(source));
-		oMap.put("idTarget", processorToIdMap.get(target));
-		oMap.put("linkType", endOfLife ? "EndOfLife" : "Production");
+		oMap.put(AffiliereJSONFormat.LINK_IDLINK_PROPERTY, idLink);
+		oMap.put(AffiliereJSONFormat.LINK_IDSOURCE_PROPERTY, processorToIdMap.get(source));
+		oMap.put(AffiliereJSONFormat.LINK_IDTARGET_PROPERTY, processorToIdMap.get(target));
+		oMap.put(AffiliereJSONFormat.LINK_LINKTYPE_PROPERTY, endOfLife ? "EndOfLife" : "Production");
 
 		LinkedHashMap<String, Object> value = new LinkedHashMap<String, Object>();
-		oMap.put("value", value);
+		oMap.put(AffiliereJSONFormat.LINK_VALUE_PROPERTY, value);
+		value.put(AffiliereJSONFormat.LINK_VALUE_ISPERCENT_PROPERTY, true);
 		if (endOfLife) {
-			value.put("proportion", 1d);
+			value.put(AffiliereJSONFormat.LINK_VALUE_PERCENT_PROPERTY, 100);
 		} else {
-			value.put("proportion", source.getSubProcessorIntakes().get(target).doubleValue() * .01);
+			value.put(AffiliereJSONFormat.LINK_VALUE_PERCENT_PROPERTY, source.getSubProcessorIntakes().get(target).doubleValue());
 		}
+		
+		oMap.put(AffiliereJSONFormat.LINK_STYLE_PROPERTY, "default");
 		return oMap;
 	}
 

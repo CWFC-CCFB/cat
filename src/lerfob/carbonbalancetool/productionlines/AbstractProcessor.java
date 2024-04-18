@@ -24,7 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
-import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONImportReader;
+import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONFormat;
 import repicea.gui.REpiceaPanel;
 import repicea.simulation.processsystem.AmountMap;
 import repicea.simulation.processsystem.ProcessUnit;
@@ -105,7 +105,7 @@ public abstract class AbstractProcessor extends Processor {
 	 * Create a Processor instance from a LinkedHashMap instance.<p>
 	 * 
 	 * @param oMap a LinkedHashMap<String, Object> instance
-	 * @return a Processor instance
+	 * @return a ProductionLineProcessor instance
 	 */
 	public static Processor createProcessor(LinkedHashMap<String, Object> oMap) {
 //		if (oMap.containsKey("class")) { // previously exported from CAT
@@ -124,21 +124,24 @@ public abstract class AbstractProcessor extends Processor {
 //			}
 //		} else { // likely imported from AFFiliere
 			ProductionLineProcessor p = new ProductionLineProcessor();
-			String name = (String) oMap.get(AffiliereJSONImportReader.NameTag);
-			int x = ((Number) oMap.get(AffiliereJSONImportReader.XTag)).intValue(); // + OFFSET;
-			int y = ((Number) oMap.get(AffiliereJSONImportReader.YTag)).intValue();
+			String name = (String) oMap.get(AffiliereJSONFormat.NODE_NAME_PROPERTY);
+			int x = ((Number) oMap.get(AffiliereJSONFormat.NODE_X_COORD_PROPERTY)).intValue(); // + OFFSET;
+			int y = ((Number) oMap.get(AffiliereJSONFormat.NODE_Y_COORD_PROPERTY)).intValue();
 			p.setName(name);
 			p.setOriginalLocation(new Point(x,y));
 			return p;
 //		}
 	}
 	
-	protected LinkedHashMap<String, Object> getMapRepresentation() {
+	protected LinkedHashMap<String, Object> getAffiliereJSONFormatNodeRepresentation(String idNode) {
 		LinkedHashMap<String, Object> oMap = new LinkedHashMap<String, Object>();
-		oMap.put(AffiliereJSONImportReader.NameTag, getName());
+		oMap.put(AffiliereJSONFormat.NODE_NAME_PROPERTY, getName());
 		Point loc = getOriginalLocation();
-		oMap.put(AffiliereJSONImportReader.XTag, loc.x);
-		oMap.put(AffiliereJSONImportReader.YTag, loc.y);
+		oMap.put(AffiliereJSONFormat.NODE_X_COORD_PROPERTY, loc.x);
+		oMap.put(AffiliereJSONFormat.NODE_Y_COORD_PROPERTY, loc.y);
+		oMap.put(AffiliereJSONFormat.NODE_IDNODE_PROPERTY, idNode);
+		oMap.put(AffiliereJSONFormat.NODE_TAGS_PROPERTY, new LinkedHashMap<String, Object>());
+		oMap.put(AffiliereJSONFormat.NODE_DIMENSIONS_PROPERTY, new LinkedHashMap<String, Object>());
 		return oMap;
 	}
 	

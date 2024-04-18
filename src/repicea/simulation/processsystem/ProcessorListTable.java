@@ -27,10 +27,14 @@ import java.util.Map;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
 import javax.swing.JTable;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 import repicea.gui.CommonGuiUtility;
 import repicea.gui.REpiceaAWTProperty;
@@ -183,6 +187,12 @@ public class ProcessorListTable extends JTable implements Refreshable, CellEdito
 			}
 		}
 		
+//		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(getModel());
+//		List<RowSorter.SortKey> sortKeys = new ArrayList<>();
+//		sortKeys.add(new RowSorter.SortKey(4, SortOrder.ASCENDING));
+//		sortKeys.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
+//		sorter.setSortKeys(sortKeys);
+//		setRowSorter(sorter);
 	}
 
 	
@@ -208,7 +218,7 @@ public class ProcessorListTable extends JTable implements Refreshable, CellEdito
 			Processor p = getProcessorList().get(rowIndex);
 			String columnName = ((DefaultTableModel) evt.getSource()).getColumnName(columnIndex);
 			Object newValue = ((DefaultTableModel) evt.getSource()).getValueAt(rowIndex, columnIndex);
-			Enum label = enumMap.get(columnName);
+			Enum<?> label = enumMap.get(columnName);
 			p.processChangeToMember(label, newValue);
 			System.out.println("Changing " + label.name() + " to " + newValue.toString());
 			// record a change

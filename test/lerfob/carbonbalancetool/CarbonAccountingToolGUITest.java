@@ -42,7 +42,7 @@ import lerfob.carbonbalancetool.CarbonAccountingTool.CATMode;
 import lerfob.carbonbalancetool.io.CATGrowthSimulationRecordReader;
 import lerfob.carbonbalancetool.io.CATSpeciesSelectionDialog;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManagerDialog;
-import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONImportTest;
+import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONImportExportTest;
 import repicea.gui.REpiceaAWTProperty;
 import repicea.gui.REpiceaGUITestRobot;
 import repicea.gui.UIControlManager;
@@ -358,7 +358,7 @@ public class CarbonAccountingToolGUITest {
 		};
 		ROBOT.startGUI(toRun, JDialog.class);
 
-		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportTest.class) + "EtudesAvecEtiquette4.json";
+		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportExportTest.class) + "EtudesAvecEtiquette4.json";
 		ROBOT.fillThisTextField("Filename", filename);
 		ROBOT.clickThisButton(CommonControlID.Open.name(), CATAWTProperty.AffiliereImportSuccessful);
 		
@@ -378,7 +378,7 @@ public class CarbonAccountingToolGUITest {
 		t.start();
 		ROBOT.letDispatchThreadProcess();
 
-		filename = ObjectUtility.getPackagePath(AffiliereJSONImportTest.class) + "hardwood_recycling_en.prl";
+		filename = ObjectUtility.getPackagePath(AffiliereJSONImportExportTest.class) + "hardwood_recycling_en.prl";
 		ROBOT.fillThisTextField("Filename", filename);
 		ROBOT.clickThisButton(CommonControlID.Open.name());
 		ROBOT.letDispatchThreadProcess();
