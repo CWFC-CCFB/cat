@@ -187,12 +187,12 @@ public class ProcessorListTable extends JTable implements Refreshable, CellEdito
 			}
 		}
 		
-		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(getModel());
-		List<RowSorter.SortKey> sortKeys = new ArrayList<>();
-		sortKeys.add(new RowSorter.SortKey(4, SortOrder.ASCENDING));
-		sortKeys.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
-		sorter.setSortKeys(sortKeys);
-		setRowSorter(sorter);
+//		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(getModel());
+//		List<RowSorter.SortKey> sortKeys = new ArrayList<>();
+//		sortKeys.add(new RowSorter.SortKey(4, SortOrder.ASCENDING));
+//		sortKeys.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
+//		sorter.setSortKeys(sortKeys);
+//		setRowSorter(sorter);
 	}
 
 	
