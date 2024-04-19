@@ -40,7 +40,7 @@ import static java.lang.Math.abs;
 public class SoilCarbonPredictorTest {
 
     String GetDataPath() {
-        return ObjectUtility.getRelativePackagePath(getClass()) + "data" + ObjectUtility.PathSeparator;
+        return ObjectUtility.getPackagePath(CATMEMSWrapper.class) + "data" + ObjectUtility.PathSeparator;
     }
 
     @Test

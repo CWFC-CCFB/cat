@@ -32,7 +32,7 @@ public class CATMEMSWrapper {
     CATTimeTable timeTable;
     public void PrepareSimulation(CATTimeTable timeTable) {
         // load the mcmc params
-        String path = ObjectUtility.getRelativePackagePath(getClass()) + "data" + ObjectUtility.PathSeparator;
+        String path = ObjectUtility.getPackagePath(getClass()) + "data" + ObjectUtility.PathSeparator;
         XmlDeserializer dser = new XmlDeserializer(path + "mcmcMems_Montmorency.zml");
 
         MetropolisHastingsAlgorithm mha = null;
