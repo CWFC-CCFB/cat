@@ -242,14 +242,9 @@ public class SoilCarbonPredictorTest {
         double MaxTemp = 17.79;  // between Jan 1 2013 to Dec 31st 2016 at MM
         double Trange = MaxTemp - MinTemp;
 
-        String path = ObjectUtility.getTrueRootPath(SoilCarbonPredictorTest.class);
-        File f = new File(path);
-        String rootPathProject = f.getParentFile().getAbsolutePath();
-        path = rootPathProject + File.separator + "java" + File.separator + "test" +
-                File.separator + "lerfob" +
-                File.separator + "mems" + File.separator + "mcmcMems.zml";
-
+        String path = GetDataPath() + "mcmcMems_Montmorency.zml";
         System.out.println("loading " + path);
+
         XmlDeserializer dser = new XmlDeserializer(path);
 
         MetropolisHastingsAlgorithm mha = (MetropolisHastingsAlgorithm)dser.readObject();

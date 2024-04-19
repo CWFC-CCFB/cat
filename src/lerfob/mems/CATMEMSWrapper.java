@@ -1,6 +1,12 @@
 package lerfob.mems;
 
 import lerfob.carbonbalancetool.CATTimeTable;
+import repicea.serial.UnmarshallingException;
+import repicea.serial.xml.XmlDeserializer;
+import repicea.stats.estimators.mcmc.MetropolisHastingsAlgorithm;
+import repicea.util.ObjectUtility;
+
+import java.io.File;
 
 public class CATMEMSWrapper {
     public class CarbonStock {
@@ -25,34 +31,54 @@ public class CATMEMSWrapper {
     SoilCarbonPredictorCompartments compartments;
     CATTimeTable timeTable;
     public void PrepareSimulation(CATTimeTable timeTable) {
-        // run a simulation to reach stability into compartment bins
-        // todo: use what input params ?  and what input npps ?
-        this.timeTable = timeTable;
-        int nbYears = timeTable.size();
+        // load the mcmc params
+        String path = ObjectUtility.getTrueRootPath(CATMEMSWrapper.class);
+        File f = new File(path);
+        String rootPathProject = f.getParentFile().getParentFile().getParentFile().getAbsolutePath();
+        path = rootPathProject + File.separator + "data" +
+                File.separator + "mems" + File.separator;
 
-        double MAT = 3.8;  // between Jan 1 2013 to Dec 31st 2016 at MM
-        double MinTemp = -9.48; // between Jan 1 2013 to Dec 31st 2016 at MM
-        double MaxTemp = 17.79;  // between Jan 1 2013 to Dec 31st 2016 at MM
-        double Trange = MaxTemp - MinTemp;
+        XmlDeserializer dser = new XmlDeserializer(path + "mcmcMems_Montmorency.zml");
 
-        compartments = new SoilCarbonPredictorCompartments(1.0, MAT, Trange);
+        MetropolisHastingsAlgorithm mha = null;
+        try {
+            mha = (MetropolisHastingsAlgorithm)dser.readObject();
 
-        SoilCarbonPredictorInput inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.MontmorencyForest, 304.0, 54.72, 15, 4.22, 0.7918, 66.97, 3.80);
-        predictor = new SoilCarbonPredictor(false);
-        for (int i = 0; i < 1000; i++) {
-            predictor.predictAnnualCStocks(compartments, inputs);
+            // run a simulation to reach stability into compartment bins
+            // todo: use what input params ?  and what input npps ?
+            this.timeTable = timeTable;
+            int nbYears = timeTable.size();
+
+            double MAT = 3.8;  // between Jan 1 2013 to Dec 31st 2016 at MM
+            double MinTemp = -9.48; // between Jan 1 2013 to Dec 31st 2016 at MM
+            double MaxTemp = 17.79;  // between Jan 1 2013 to Dec 31st 2016 at MM
+            double Trange = MaxTemp - MinTemp;
+
+            compartments = new SoilCarbonPredictorCompartments(1.0, MAT, Trange);
+
+            SoilCarbonPredictorInput inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.MontmorencyForest, 304.0, 54.72, 15, 4.22, 0.7918, 66.97, 3.80);
+            predictor = new SoilCarbonPredictor(false);
+            // read the fit params from mha and set them to the Predictor
+            predictor.SetParms(mha.getFinalParameterEstimates());
+
+            for (int i = 0; i < 1000; i++) {
+                predictor.predictAnnualCStocks(compartments, inputs);
+            }
+
+            // prepare the carbon stock array
+            inputAnnualStocksGCm2 = new CarbonStock[nbYears];
+            outputAnnualStocksMgHa = new CarbonStock[nbYears];
+
+            for (int i = 0; i < nbYears; i++) {
+                inputAnnualStocksGCm2[i] = new CarbonStock(0.0, 0.0);
+                outputAnnualStocksMgHa[i] = new CarbonStock(0.0, 0.0);
+            }
+
+            outputAnnualStocksMgHa[0].SetCarbon(compartments);
+
+        } catch (UnmarshallingException e) {
+            throw new RuntimeException(e);
         }
-
-        // prepare the carbon stock array
-        inputAnnualStocksGCm2 = new CarbonStock[nbYears];
-        outputAnnualStocksMgHa = new CarbonStock[nbYears];
-
-        for (int i = 0; i < nbYears; i++) {
-            inputAnnualStocksGCm2[i] = new CarbonStock(0.0, 0.0);
-            outputAnnualStocksMgHa[i] = new CarbonStock(0.0, 0.0);
-        }
-
-        outputAnnualStocksMgHa[0].SetCarbon(compartments);
     }
 
     public void AddCarbonInput(int index, double value, boolean addToHumus) {

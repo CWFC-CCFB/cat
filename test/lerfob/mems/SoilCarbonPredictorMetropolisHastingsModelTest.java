@@ -43,10 +43,11 @@ public class SoilCarbonPredictorMetropolisHastingsModelTest {
         SoilCarbonPredictorMetropolisHastingsModel model = new SoilCarbonPredictorMetropolisHastingsModel(compartments, inputs);
         String path = ObjectUtility.getTrueRootPath(SoilCarbonPredictorMetropolisHastingsModelTest.class);
         File f = new File(path);
-        String rootPathProject = f.getParentFile().getAbsolutePath();
-        path = rootPathProject + File.separator + "test" + 
-        		File.separator + "lerfob" +
-        		File.separator + "mems" + File.separator;
+        String rootPathProject = f.getParentFile().getParentFile().getParentFile().getAbsolutePath();
+        path = rootPathProject + File.separator + "test" +
+            File.separator + "lerfob" +
+            File.separator + "mems" +
+            File.separator + "data" + File.separator;
         f = new File(path);
         boolean folderExists = f.exists() && f.isDirectory();
         if (!folderExists) {
@@ -67,10 +68,10 @@ public class SoilCarbonPredictorMetropolisHastingsModelTest {
         mha.getSimulationParameters().nbAcceptedRealizations = 500000 + mha.getSimulationParameters().nbBurnIn;
         mha.doEstimation();
         
-        String mcmcFilename = path + "mcmcMems.zml";
+        String mcmcFilename = path + "mcmcMems_Montmorency.zml";
 //        XmlDeserializer deser = new XmlDeserializer(mcmcFilename);
 //        mha = (MetropolisHastingsAlgorithm) deser.readObject();
-        String outputFilename = path + "parameterEstimatesSet.csv";
+        String outputFilename = path + "parameterEstimatesSet_Montmorency.csv";
         mha.exportMetropolisHastingsSample(outputFilename);
         System.out.println(mha.getReport());
         XmlSerializer serializer = new XmlSerializer(mcmcFilename);
