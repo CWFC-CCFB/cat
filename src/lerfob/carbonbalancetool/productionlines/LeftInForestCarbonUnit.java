@@ -68,14 +68,11 @@ public class LeftInForestCarbonUnit extends CarbonUnit {
 
 		double[] releasedCarbonArray = getReleasedCarbonArray();
 
-		//todo : add the right proportion of those values to mems
-		double proportion = 1.0;
-
 		if (getWoodyDebrisType() != null) {
 			boolean addToHumus = getWoodyDebrisType() == WoodyDebrisProcessor.WoodyDebrisProcessorID.FineWoodyDebris || getWoodyDebrisType() == WoodyDebrisProcessor.WoodyDebrisProcessorID.CommercialWoodyDebris;
 
 			for (int i = getIndexInTimeScale(); i < getTimeTable().size(); i++) {
-				compartmentManager.getMEMS().AddCarbonInput(i, proportion * releasedCarbonArray[i], addToHumus);
+				compartmentManager.getMEMS().AddCarbonInput(i, releasedCarbonArray[i], addToHumus);
 			}
 		}
 

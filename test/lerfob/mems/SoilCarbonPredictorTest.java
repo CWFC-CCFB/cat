@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 
+import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -39,15 +40,7 @@ import static java.lang.Math.abs;
 public class SoilCarbonPredictorTest {
 
     String GetDataPath() {
-        String path = ObjectUtility.getTrueRootPath(SoilCarbonPredictorTest.class);
-        File f = new File(path);
-        String rootPathProject = f.getParentFile().getParentFile().getParentFile().getAbsolutePath();
-        path = rootPathProject + File.separator + "test" +
-                File.separator + "lerfob" +
-                File.separator + "mems" +
-                File.separator + "data" + File.separator;
-
-        return path;
+        return ObjectUtility.getRelativePackagePath(getClass()) + "data" + ObjectUtility.PathSeparator;
     }
 
     @Test
