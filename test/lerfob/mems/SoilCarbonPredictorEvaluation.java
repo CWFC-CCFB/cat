@@ -33,7 +33,7 @@ public class SoilCarbonPredictorEvaluation {
 
 	@Test
 	public void testAgainstFOMChronosequence() throws Exception {
-		String thisPath = ObjectUtility.getPackagePath(SoilCarbonPredictorEvaluation.class);
+		String thisPath = ObjectUtility.getPackagePath(getClass()) + "data" + ObjectUtility.PathSeparator;
 		String FOMFilename = thisPath + "ChronosequenceFOMFormatted.csv";
 		DataSet ds = new DataSet(FOMFilename, true); // true: autoload the file
 		Assert.assertEquals("Testing number of observations", 403, ds.getNumberOfObservations());
