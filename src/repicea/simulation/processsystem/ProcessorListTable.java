@@ -27,14 +27,19 @@ import java.util.Map;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
 import javax.swing.JTable;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 import repicea.gui.CommonGuiUtility;
 import repicea.gui.REpiceaAWTProperty;
 import repicea.gui.Refreshable;
+import repicea.simulation.processsystem.Processor.MemberLabel;
 
 /**
  * A class to display the processors and their features in a JTable instance.
@@ -93,7 +98,7 @@ public class ProcessorListTable extends JTable implements Refreshable, CellEdito
 	}
 	
 	protected final SystemManager caller;
-	private ProcessorListTableModel tableModel;
+//	private ProcessorListTableModel tableModel;
 	private final Map<String, Enum<?>> enumMap;
 	
 	public ProcessorListTable(SystemManager caller) {
@@ -104,8 +109,7 @@ public class ProcessorListTable extends JTable implements Refreshable, CellEdito
 	}
 	
 	protected void initUI() {
-		tableModel = new ProcessorListTableModel();
-		synchronizeTable(tableModel);
+		synchronizeTable();
 	}
 
 	private class ProcessorListTableModel extends DefaultTableModel {
@@ -151,7 +155,8 @@ public class ProcessorListTable extends JTable implements Refreshable, CellEdito
 	
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void synchronizeTable(ProcessorListTableModel tableModel) {
+	private void synchronizeTable() {
+		ProcessorListTableModel tableModel = new ProcessorListTableModel();
 		enumMap.clear();
 		List<Processor> processors = getProcessorList(); 
 		for (int row = 0; row < processors.size(); row++) {
@@ -182,7 +187,15 @@ public class ProcessorListTable extends JTable implements Refreshable, CellEdito
 				cModel.setCellEditor(new DefaultCellEditor(comboBox));
 			}
 		}
-		
+
+		int indexNameField = tableModel.findColumn(MemberLabel.NameField.toString());
+		if (indexNameField != -1) {
+			TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(getModel());
+			List<RowSorter.SortKey> sortKeys = new ArrayList<>();
+			sortKeys.add(new RowSorter.SortKey(indexNameField, SortOrder.ASCENDING));
+			sorter.setSortKeys(sortKeys);
+			setRowSorter(sorter);
+		}
 	}
 
 	
@@ -208,7 +221,7 @@ public class ProcessorListTable extends JTable implements Refreshable, CellEdito
 			Processor p = getProcessorList().get(rowIndex);
 			String columnName = ((DefaultTableModel) evt.getSource()).getColumnName(columnIndex);
 			Object newValue = ((DefaultTableModel) evt.getSource()).getValueAt(rowIndex, columnIndex);
-			Enum label = enumMap.get(columnName);
+			Enum<?> label = enumMap.get(columnName);
 			p.processChangeToMember(label, newValue);
 			System.out.println("Changing " + label.name() + " to " + newValue.toString());
 			// record a change

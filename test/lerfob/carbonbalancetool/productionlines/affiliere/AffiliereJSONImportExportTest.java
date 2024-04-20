@@ -19,6 +19,7 @@
  */
 package lerfob.carbonbalancetool.productionlines.affiliere;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -28,25 +29,41 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager;
+import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager.ExportFormat;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager.ImportFormat;
 import repicea.serial.MemorizerPackage;
 import repicea.simulation.processsystem.Processor;
 import repicea.util.ObjectUtility;
 
-public class AffiliereJSONImportTest {
+public class AffiliereJSONImportExportTest {
 
 	@SuppressWarnings("rawtypes")
 	@Test
 	public void testAffiliereReaderFromFile() throws IOException {
-//		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportTest.class) + "BACCFIRE V7.2_layout 1.json";
-		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportTest.class) + "EtudesAvecEtiquette4.json";
+		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportExportTest.class) + "BACCFIRE V7.2_desagrege_layout.json";
 		ProductionProcessorManager manager = new ProductionProcessorManager();
 		manager.importFrom(filename, ImportFormat.AFFILIERE);
 //		manager.showUI(null);
 		MemorizerPackage mp = manager.getMemorizerPackage();
-		Assert.assertEquals("Testing nb of processors", 94, ((List) mp.get(1)).size());
+		Assert.assertEquals("Testing nb of processors", 108, ((List) mp.get(1)).size());
 	}
-		
+
+	@Test
+	public void testAffiliereExportToFile() throws IOException {
+		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportExportTest.class) + "hardwood_recycling_en.prl";
+		ProductionProcessorManager manager = new ProductionProcessorManager();
+		manager.load(filename);
+//		manager.showUI(null);
+		String exportFilename = ObjectUtility.getPackagePath(AffiliereJSONImportExportTest.class) + "CATTestExportToAffiliere.json"; 
+		File f = new File(exportFilename);
+		if (f.exists()) {
+			f.delete();
+		}
+		manager.exportTo(exportFilename, ExportFormat.AFFILIERE);
+		Assert.assertTrue("Testing if file exists", f.exists());
+	}
+	
+	
 	@SuppressWarnings("rawtypes")
 	@Ignore
 	@Test
@@ -64,7 +81,7 @@ public class AffiliereJSONImportTest {
 	
 	
 	public static void main(String[] args) throws IOException {
-		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportTest.class) + "EtudesAvecEtiquette4.json";
+		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportExportTest.class) + "EtudesAvecEtiquette4.json";
 		ProductionProcessorManager manager = new ProductionProcessorManager();
 		manager.importFrom(filename, ImportFormat.AFFILIERE);
 		manager.showUI(null);
