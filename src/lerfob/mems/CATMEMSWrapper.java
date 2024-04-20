@@ -34,7 +34,7 @@ public class CATMEMSWrapper {
         String filename = path + "mcmcMems_Montmorency.zml";
 //        System.out.println("Filename is " + filename);
         XmlDeserializer dser = new XmlDeserializer(filename);
-
+        
         MetropolisHastingsAlgorithm mha = null;
         try {
             mha = (MetropolisHastingsAlgorithm)dser.readObject();

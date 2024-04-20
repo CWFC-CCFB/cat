@@ -39,8 +39,8 @@ import static java.lang.Math.abs;
 
 public class SoilCarbonPredictorTest {
 
-    String GetDaaataPath() {
-        return ObjectUtility.getPackagePath(CATMEMSWrapper.class) + "data" + ObjectUtility.PathSeparator;
+    String GetDataPath() {
+        return ObjectUtility.getPackagePath(getClass()) + "data" + ObjectUtility.PathSeparator;
     }
 
     @Test
@@ -212,7 +212,7 @@ public class SoilCarbonPredictorTest {
         try {
             ds.save(GetDataPath() + "stabilizationTest_MontmorencyForest.csv");
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            // do nothing if we couldn't save the results - we might be running integration tests
         }
 
         System.out.println("IterationStabilizationTestMontmorencyForest C1-C6 : " + compartments.getLitterBinsgCm2() + ", C5-C9-C10 : " + compartments.getSoilBinsgCm2());
@@ -268,7 +268,7 @@ public class SoilCarbonPredictorTest {
         try {
             ds.save(GetDataPath() + "stabilizationTest_MontmorencyForest_fitParms.csv");
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            // do nothing if we couldn't save the results - we might be running integration tests
         }
 
         System.out.println("IterationStabilizationTestMontmorencyForest C1-C6 : " + compartments.getLitterBinsgCm2() + ", C5-C9-C10 : " + compartments.getSoilBinsgCm2());
@@ -312,7 +312,7 @@ public class SoilCarbonPredictorTest {
         try {
             ds.save(GetDataPath() + "stabilizationTest_NullTMod.csv");
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            // do nothing if we couldn't save the results - we might be running integration tests
         }
 
         System.out.println("IterationStabilizationTestWithNullTMod C1-C6 : " + compartments.getLitterBinsgCm2() + ", C5-C9-C10 : " + compartments.getSoilBinsgCm2());
@@ -454,7 +454,7 @@ public class SoilCarbonPredictorTest {
         try {
             ds.save(GetDataPath() + "stabilizationTest_perturbation.csv");
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            // do nothing if we couldn't save the results - we might be running integration tests
         }
 
         Assert.assertTrue(ratioPerturbedYearCounter < 10);
