@@ -6,8 +6,6 @@ import repicea.serial.xml.XmlDeserializer;
 import repicea.stats.estimators.mcmc.MetropolisHastingsAlgorithm;
 import repicea.util.ObjectUtility;
 
-import java.io.File;
-
 public class CATMEMSWrapper {
     public class CarbonStock {
         public final static double factorGCm2ToMgHa = 0.01d;
@@ -32,8 +30,10 @@ public class CATMEMSWrapper {
     CATTimeTable timeTable;
     public void PrepareSimulation(CATTimeTable timeTable) {
         // load the mcmc params
-        String path = ObjectUtility.getPackagePath(getClass()) + "data" + ObjectUtility.PathSeparator;
-        XmlDeserializer dser = new XmlDeserializer(path + "mcmcMems_Montmorency.zml");
+        String path = ObjectUtility.getRelativePackagePath(getClass()) + "data" + ObjectUtility.PathSeparator;
+        String filename = path + "mcmcMems_Montmorency.zml";
+//        System.out.println("Filename is " + filename);
+        XmlDeserializer dser = new XmlDeserializer(filename);
 
         MetropolisHastingsAlgorithm mha = null;
         try {

@@ -105,30 +105,10 @@ public class SystemManager implements ListManager<Processor>,
 	public void load(String filename) throws IOException {
 		SystemManager newManager;
 		if (REpiceaFileFilter.getFileType(filename) == FileType.JSON) {
-			JSONDeserializer deserializer;
-			try {
-				deserializer = new JSONDeserializer(filename);
-			} catch (Exception e) {
-				InputStream is = getClass().getResourceAsStream("/" + filename);
-				if (is == null) {
-					throw new IOException("The filename is not a file and cannot be converted into a stream!");
-				} else {
-					deserializer = new JSONDeserializer(is);
-				}
-			}
+			JSONDeserializer deserializer = new JSONDeserializer(filename);
 			newManager = (SystemManager) deserializer.readObject();
 		} else {	// assuming xml file
-			XmlDeserializer deserializer;
-			try {
-				deserializer = new XmlDeserializer(filename);
-			} catch (Exception e) {
-				InputStream is = getClass().getResourceAsStream("/" + filename);
-				if (is == null) {
-					throw new IOException("The filename is not a file and cannot be converted into a stream!");
-				} else {
-					deserializer = new XmlDeserializer(is);
-				}
-			}
+			XmlDeserializer deserializer = new XmlDeserializer(filename);
 			newManager = (SystemManager) deserializer.readObject();
 		}
 		newManager.setFilename(filename);

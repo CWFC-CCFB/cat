@@ -39,7 +39,7 @@ import static java.lang.Math.abs;
 
 public class SoilCarbonPredictorTest {
 
-    String GetDataPath() {
+    String GetDaaataPath() {
         return ObjectUtility.getPackagePath(CATMEMSWrapper.class) + "data" + ObjectUtility.PathSeparator;
     }
 
@@ -235,10 +235,10 @@ public class SoilCarbonPredictorTest {
         double MaxTemp = 17.79;  // between Jan 1 2013 to Dec 31st 2016 at MM
         double Trange = MaxTemp - MinTemp;
 
-        String path = GetDataPath() + "mcmcMems_Montmorency.zml";
-        System.out.println("loading " + path);
+        String filename = ObjectUtility.getRelativePackagePath(CATMEMSWrapper.class) + "data" + ObjectUtility.PathSeparator + "mcmcMems_Montmorency.zml";
+        System.out.println("loading " + filename);
 
-        XmlDeserializer dser = new XmlDeserializer(path);
+        XmlDeserializer dser = new XmlDeserializer(filename);
 
         MetropolisHastingsAlgorithm mha = (MetropolisHastingsAlgorithm)dser.readObject();
 
