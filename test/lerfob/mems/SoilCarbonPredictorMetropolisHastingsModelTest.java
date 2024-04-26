@@ -24,47 +24,64 @@ import java.security.InvalidParameterException;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 
+import repicea.serial.xml.XmlDeserializer;
 import repicea.serial.xml.XmlSerializer;
 import repicea.stats.estimators.mcmc.MetropolisHastingsAlgorithm;
 import repicea.util.ObjectUtility;
 import repicea.util.REpiceaLogManager;
 
+/**
+ * This class can be used to fit mems to ground observations using
+ * the Metropolis-Hastings algorithm.
+ */
 public class SoilCarbonPredictorMetropolisHastingsModelTest {
 
 	public static void main(String argv[])  throws Exception {
+		MetropolisHastingsAlgorithm mha;
+		
+		// Read current file;
+//		String refPath = ObjectUtility.getPackagePath(CATMEMSWrapper.class) + "data" + File.separator;
+//		XmlDeserializer deser = new XmlDeserializer(refPath + "mcmcMems_Montmorency.zml");
+//		mha = (MetropolisHastingsAlgorithm) deser.readObject();
+//		System.out.println(mha.getReport());
+		
+		
         double MAT = 3.8;  // between Jan 1 2013 to Dec 31st 2016 at MM
         double MinTemp = -9.48; // between Jan 1 2013 to Dec 31st 2016 at MM
         double MaxTemp = 17.79;  // between Jan 1 2013 to Dec 31st 2016 at MM
         double Trange = MaxTemp - MinTemp;
 
         SoilCarbonPredictorCompartments compartments = new SoilCarbonPredictorCompartments(1.0, MAT, Trange);
-        SoilCarbonPredictorInput inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.MontmorencyForest, 304.0, 54.72, 15, 4.22, 0.7918, 66.97, 3.80);
+        SoilCarbonPredictorInput inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.MontmorencyForest, 
+        		304.0, 
+        		304.0 * 0.5,	// According to Jackson et al. (1997) Fine root productions is approximately 33% of total NPP 
+        		15, 
+        		4.22, 
+        		0.7918, 
+        		66.97, 
+        		3.80);
 
         SoilCarbonPredictorMetropolisHastingsModel model = new SoilCarbonPredictorMetropolisHastingsModel(compartments, inputs);
-        String path = ObjectUtility.getTrueRootPath(SoilCarbonPredictorMetropolisHastingsModelTest.class);
+        String path = ObjectUtility.getPackagePath(SoilCarbonPredictorMetropolisHastingsModelTest.class) + "data" + File.separator;
         File f = new File(path);
-        String rootPathProject = f.getParentFile().getParentFile().getParentFile().getAbsolutePath();
-        path = rootPathProject + File.separator + "test" +
-            File.separator + "lerfob" +
-            File.separator + "mems" +
-            File.separator + "data" + File.separator;
-        f = new File(path);
         boolean folderExists = f.exists() && f.isDirectory();
         if (!folderExists) {
         	throw new InvalidParameterException("Destination folder does not exist:" + path);
         }
-        MetropolisHastingsAlgorithm mha;
         String filename = path + "ChronosequenceFOMFormatted.csv";
         model.readFile(filename);
+        
+        mha = new MetropolisHastingsAlgorithm(model, "mh.log", "MH");
         
         Level l = Level.FINE;
         ConsoleHandler ch = new ConsoleHandler();
         ch.setLevel(l);
         REpiceaLogManager.getLogger("mh.log").setLevel(Level.FINE);
         REpiceaLogManager.getLogger("mh.log").addHandler(ch);
-        mha = new MetropolisHastingsAlgorithm(model, "mh.log", "MH");
+        REpiceaLogManager.getLogger("mh.log").log(Level.FINE, "Starting MEMS calibration...");
+        mha.getSimulationParameters().nbInitialGrid = 10000;
         mha.getSimulationParameters().nbInternalIter = 200000;
-        mha.getSimulationParameters().nbBurnIn = 50000;
+        mha.getSimulationParameters().nbBurnIn = 20000;
         mha.getSimulationParameters().nbAcceptedRealizations = 500000 + mha.getSimulationParameters().nbBurnIn;
         mha.doEstimation();
         
