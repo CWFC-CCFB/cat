@@ -1,12 +1,35 @@
-package lerfob.mems;
+/*
+ * This file is part of the CAT library.
+ *
+ * Copyright (C) 2024 His Majesty the King in Right of Canada
+ * Authors: Jean-Francois Lavoie and Mathieu Fortin, Canadian Wood Fibre Centre
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed with the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * Please see the license at http://www.gnu.org/copyleft/lesser.html.
+ */
+package lerfob.carbonbalancetool.memsconnectors;
 
 import lerfob.carbonbalancetool.CATTimeTable;
+import lerfob.mems.SoilCarbonPredictor;
+import lerfob.mems.SoilCarbonPredictorCompartments;
+import lerfob.mems.SoilCarbonPredictorInput;
 import repicea.serial.UnmarshallingException;
 import repicea.serial.xml.XmlDeserializer;
 import repicea.stats.estimators.mcmc.MetropolisHastingsAlgorithm;
 import repicea.util.ObjectUtility;
 
-public class CATMEMSWrapper {
+public class MEMSWrapper {
+	
     public class CarbonStock {
         public final static double factorGCm2ToMgHa = 0.01d;
         public final static double factorMgHaToGCm2 = 1.0d / factorGCm2ToMgHa;
@@ -30,7 +53,7 @@ public class CATMEMSWrapper {
     CATTimeTable timeTable;
     public void PrepareSimulation(CATTimeTable timeTable) {
         // load the mcmc params
-        String path = ObjectUtility.getRelativePackagePath(getClass()) + "data" + ObjectUtility.PathSeparator;
+        String path = ObjectUtility.getRelativePackagePath(SoilCarbonPredictor.class) + "data" + ObjectUtility.PathSeparator;
         String filename = path + "mcmcMems_Montmorency.zml";
 //        System.out.println("Filename is " + filename);
         XmlDeserializer dser = new XmlDeserializer(filename);

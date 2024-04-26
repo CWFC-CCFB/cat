@@ -19,23 +19,22 @@
  */
 package lerfob.mems;
 
-import java.io.File;
+import static java.lang.Math.abs;
+
 import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 
-import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+
 import repicea.serial.UnmarshallingException;
+import repicea.serial.xml.XmlDeserializer;
 import repicea.stats.data.DataSet;
 import repicea.stats.estimators.mcmc.MetropolisHastingsAlgorithm;
 import repicea.util.ObjectUtility;
-import repicea.serial.xml.XmlDeserializer;
-
-import static java.lang.Math.abs;
 
 public class SoilCarbonPredictorTest {
 
@@ -235,7 +234,7 @@ public class SoilCarbonPredictorTest {
         double MaxTemp = 17.79;  // between Jan 1 2013 to Dec 31st 2016 at MM
         double Trange = MaxTemp - MinTemp;
 
-        String filename = ObjectUtility.getRelativePackagePath(CATMEMSWrapper.class) + "data" + ObjectUtility.PathSeparator + "mcmcMems_Montmorency.zml";
+        String filename = ObjectUtility.getRelativePackagePath(SoilCarbonPredictor.class) + "data" + ObjectUtility.PathSeparator + "mcmcMems_Montmorency.zml";
         System.out.println("loading " + filename);
 
         XmlDeserializer dser = new XmlDeserializer(filename);

@@ -29,7 +29,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 
 import lerfob.carbonbalancetool.CATCompartment.CompartmentInfo;
-import lerfob.mems.CATMEMSWrapper;
+import lerfob.carbonbalancetool.memsconnectors.MEMSWrapper;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
 import lerfob.carbonbalancetool.productionlines.CarbonUnitList;
@@ -112,7 +112,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	
 	protected CATSingleSimulationResult summary;
 
-	private CATMEMSWrapper memsWrapper;
+	private MEMSWrapper memsWrapper;
 	
 	
 	/**
@@ -130,7 +130,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		this.carbonCompartments = new TreeMap<CompartmentInfo, CATCompartment>();	// TreeMap to make sure the merge compartments are not called before the regular compartment
 		isSimulationValid = false;
 
-		memsWrapper = new CATMEMSWrapper();
+		memsWrapper = new MEMSWrapper();
 
 		initializeCompartments();
 	}
@@ -591,7 +591,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	@Override
 	public HierarchicalLevel getHierarchicalLevel() {return null;}
 
-	public CATMEMSWrapper getMEMS() { return memsWrapper; }
+	public MEMSWrapper getMEMS() { return memsWrapper; }
 }
 
 
