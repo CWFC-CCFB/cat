@@ -28,6 +28,13 @@ import repicea.serial.xml.XmlDeserializer;
 import repicea.stats.estimators.mcmc.MetropolisHastingsAlgorithm;
 import repicea.util.ObjectUtility;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class MEMSWrapper {
 	
     public class CarbonStock {
@@ -51,52 +58,60 @@ public class MEMSWrapper {
     SoilCarbonPredictor predictor;
     SoilCarbonPredictorCompartments compartments;
     CATTimeTable timeTable;
-    public void PrepareSimulation(CATTimeTable timeTable) {
-        // load the mcmc params
-        String path = ObjectUtility.getRelativePackagePath(SoilCarbonPredictor.class) + "data" + ObjectUtility.PathSeparator;
-        String filename = path + "mcmcMems_Montmorency.zml";
-//        System.out.println("Filename is " + filename);
-        XmlDeserializer dser = new XmlDeserializer(filename);
-        
-        MetropolisHastingsAlgorithm mha = null;
-        try {
-            mha = (MetropolisHastingsAlgorithm)dser.readObject();
+    static ConcurrentHashMap<MEMSSite.SiteName, MEMSSite> sites = new ConcurrentHashMap<MEMSSite.SiteName, MEMSSite>();
 
-            // run a simulation to reach stability into compartment bins
-            // todo: use what input params ?  and what input npps ?
-            this.timeTable = timeTable;
-            int nbYears = timeTable.size();
+    MEMSSite.SiteName currentSiteName;
 
-            double MAT = 3.8;  // between Jan 1 2013 to Dec 31st 2016 at MM
-            double MinTemp = -9.48; // between Jan 1 2013 to Dec 31st 2016 at MM
-            double MaxTemp = 17.79;  // between Jan 1 2013 to Dec 31st 2016 at MM
-            double Trange = MaxTemp - MinTemp;
+    public MEMSWrapper() {
+    }
+    public static List<MEMSSite.SiteName> getSitesList() {
+        return Arrays.asList(MEMSSite.SiteName.values());
+    }
+    public void PrepareSimulation(CATTimeTable timeTable, MEMSSite.SiteName siteName) {
 
-            compartments = new SoilCarbonPredictorCompartments(1.0, MAT, Trange);
+        currentSiteName = siteName;
 
-            SoilCarbonPredictorInput inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.MontmorencyForest, 304.0, 54.72, 15, 4.22, 0.7918, 66.97, 3.80);
-            predictor = new SoilCarbonPredictor(false);
-            // read the fit params from mha and set them to the Predictor
-            predictor.SetParms(mha.getFinalParameterEstimates());
+        if (!sites.containsKey(currentSiteName)) {
+            String sitesPath = ObjectUtility.getRelativePackagePath(SoilCarbonPredictor.class) + "data" + ObjectUtility.PathSeparator + "sites" + ObjectUtility.PathSeparator;
 
-            for (int i = 0; i < 1000; i++) {
-                predictor.predictAnnualCStocks(compartments, inputs);
+            // load the site params
+            String filename = sitesPath + currentSiteName.name() + ".site.zml";
+            XmlDeserializer dser = new XmlDeserializer(filename);
+
+            try {
+                sites.put(currentSiteName, (MEMSSite) dser.readObject());
+            } catch (UnmarshallingException e) {
+                throw new RuntimeException(e);
             }
-
-            // prepare the carbon stock array
-            inputAnnualStocksGCm2 = new CarbonStock[nbYears];
-            outputAnnualStocksMgHa = new CarbonStock[nbYears];
-
-            for (int i = 0; i < nbYears; i++) {
-                inputAnnualStocksGCm2[i] = new CarbonStock(0.0, 0.0);
-                outputAnnualStocksMgHa[i] = new CarbonStock(0.0, 0.0);
-            }
-
-            outputAnnualStocksMgHa[0].SetCarbon(compartments);
-
-        } catch (UnmarshallingException e) {
-            throw new RuntimeException(e);
         }
+
+        MEMSSite currentSite = sites.get(currentSiteName);
+
+        // run a simulation to reach stability into compartment bins
+        // todo: use what input params ?  and what input npps ?
+        this.timeTable = timeTable;
+        int nbYears = timeTable.size();
+
+        compartments = new SoilCarbonPredictorCompartments(1.0, currentSite.getMAT(), currentSite.getTRange());
+
+        predictor = new SoilCarbonPredictor(false);
+        // read the fit params from mha and set them to the Predictor
+        predictor.SetParms(currentSite.getMetropolisHastingsAlgorithm().getFinalParameterEstimates());
+
+        for (int i = 0; i < 1000; i++) {
+            predictor.predictAnnualCStocks(compartments, currentSite.getInputs());
+        }
+
+        // prepare the carbon stock array
+        inputAnnualStocksGCm2 = new CarbonStock[nbYears];
+        outputAnnualStocksMgHa = new CarbonStock[nbYears];
+
+        for (int i = 0; i < nbYears; i++) {
+            inputAnnualStocksGCm2[i] = new CarbonStock(0.0, 0.0);
+            outputAnnualStocksMgHa[i] = new CarbonStock(0.0, 0.0);
+        }
+
+        outputAnnualStocksMgHa[0].SetCarbon(compartments);
     }
 
     public void AddCarbonInput(int index, double value, boolean addToHumus) {
@@ -109,6 +124,8 @@ public class MEMSWrapper {
     public void Simulate() {
         // todo: use what input params ?  and what input npps ?
 
+        MEMSSite currentSite = sites.get(currentSiteName);
+
         for (int i = 1; i < inputAnnualStocksGCm2.length; i++) {
             int yearZero = timeTable.getDateYrAtThisIndex(i - 1);
             int yearCurrent = timeTable.getDateYrAtThisIndex(i);
@@ -119,17 +136,9 @@ public class MEMSWrapper {
             else {
                 double annualFactor = 1.0d / deltaYear;
                 CarbonStock inputStock = inputAnnualStocksGCm2[i];
-                SoilCarbonPredictorInput inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.MontmorencyForest
-                        , inputStock.humus * annualFactor
-                        , inputStock.soil * annualFactor
-                        ,15,
-                        4.22,
-                        0.7918,
-                        66.97,
-                        3.80);
 
                 for (int y = 0; y < deltaYear; y++) {
-                    predictor.predictAnnualCStocks(compartments, inputs);
+                    predictor.predictAnnualCStocks(compartments, currentSite.getInputs());
                 }
 
                 CarbonStock outputStock = outputAnnualStocksMgHa[i];

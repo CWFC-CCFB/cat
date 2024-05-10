@@ -29,6 +29,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 
 import lerfob.carbonbalancetool.CATCompartment.CompartmentInfo;
+import lerfob.carbonbalancetool.memsconnectors.MEMSSite;
 import lerfob.carbonbalancetool.memsconnectors.MEMSWrapper;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
@@ -338,7 +339,8 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		clearTreeCollections();
 		resetCompartments();
 
-		memsWrapper.PrepareSimulation(this.timeTable);
+		//todo: Allow user-selected site name here through UI
+		memsWrapper.PrepareSimulation(this.timeTable, MEMSSite.SiteName.Montmorency2);
 
 		if (getCarbonToolSettings().formerImplementation) {
 			ProductionLineManager productionLines = carbonAccountingToolSettings.getProductionLines();
