@@ -1,7 +1,6 @@
 package lerfob.carbonbalancetool.memsconnectors;
 
 import lerfob.mems.SoilCarbonPredictor;
-import lerfob.mems.SoilCarbonPredictorCompartments;
 import lerfob.mems.SoilCarbonPredictorInput;
 import repicea.serial.UnmarshallingException;
 import repicea.serial.xml.XmlDeserializer;
@@ -12,6 +11,7 @@ import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
 
 public class MEMSSite {
+	
     public static enum SiteName implements TextableEnum {
         Montmorency1("Montmorency1", "Montmorency1"),
         Montmorency2("Montmorency2", "Montmorency2");

@@ -20,8 +20,8 @@ package lerfob.carbonbalancetool;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Vector;
 
 import lerfob.carbonbalancetool.CATUtility.BiomassParametersName;
@@ -29,6 +29,8 @@ import lerfob.carbonbalancetool.CATUtility.BiomassParametersWrapper;
 import lerfob.carbonbalancetool.CATUtility.ProductionManagerName;
 import lerfob.carbonbalancetool.CATUtility.ProductionProcessorManagerWrapper;
 import lerfob.carbonbalancetool.biomassparameters.BiomassParameters;
+import lerfob.carbonbalancetool.memsconnectors.MEMSSite.SiteName;
+import lerfob.carbonbalancetool.memsconnectors.MEMSSiteParametersWrapper;
 import lerfob.carbonbalancetool.productionlines.ProductionLineManager;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManagerException;
@@ -210,12 +212,13 @@ public final class CATSettings {
 	@Deprecated
 	private Vector<TreeLoggerDescription> treeLoggerDescriptions;
 
-	protected final Map<ProductionManagerName, ProductionProcessorManagerWrapper> productionManagerMap = new TreeMap<ProductionManagerName, ProductionProcessorManagerWrapper>();
-	protected final Map<BiomassParametersName, BiomassParametersWrapper> biomassParametersMap = new TreeMap<BiomassParametersName, BiomassParametersWrapper>();
-
+	protected final Map<ProductionManagerName, ProductionProcessorManagerWrapper> productionManagerMap = new LinkedHashMap<ProductionManagerName, ProductionProcessorManagerWrapper>();
+	protected final Map<BiomassParametersName, BiomassParametersWrapper> biomassParametersMap = new LinkedHashMap<BiomassParametersName, BiomassParametersWrapper>();
+	protected final Map<SiteName, MEMSSiteParametersWrapper> memsParametersMap = new LinkedHashMap<SiteName, MEMSSiteParametersWrapper>();
+	
 	private ProductionManagerName currentProcessorManager = ProductionManagerName.values()[0];
 	private BiomassParametersName currentBiomassParameters = BiomassParametersName.values()[0]; 
-
+	private SiteName currentMemsParameters = SiteName.values()[0];
 	
 	/**
 	 * Constructor.
@@ -224,7 +227,9 @@ public final class CATSettings {
 	public CATSettings(SettingMemory settings) {			
 		this.settings = settings;
 		readProcessorManagers();
-		readBiomassParametersVector();
+		readBiomassParameters();
+		readMemsParameters();
+		// TODO read mems parameters
 		productionLines = new ProductionLineManager();
 		treeLoggerWrapper = new TreeLoggerWrapper();
 		woodSupply = new WoodPieceDispatcher(treeLoggerWrapper, productionLines);
@@ -249,7 +254,7 @@ public final class CATSettings {
 		selectedAR = aR;
 	}
 	
-	private void readBiomassParametersVector() {
+	private void readBiomassParameters() {
 		BiomassParameters biomassParameters;
 		String relativePathname = ObjectUtility.getRelativePackagePath(BiomassParameters.class) + "library" + ObjectUtility.PathSeparator;
 		for (BiomassParametersName biomassParameterNames : BiomassParametersName.values()) {
@@ -289,6 +294,10 @@ public final class CATSettings {
 			}
 		}
 	}
+	
+	private void readMemsParameters() {
+		// TODO implement the reading of the parameters here MF20240517
+	}
 
 	/**
 	 * This method returns the customizable production manager.
@@ -311,7 +320,6 @@ public final class CATSettings {
 		return productionManagerMap.get(currentProcessorManager).manager;
 	}
 
-	
 	/**
 	 * This method returns the currently selected BiomassParameters instance.
 	 * @return a BiomassParameters instance
@@ -357,6 +365,17 @@ public final class CATSettings {
 	}
 	
 	protected ProductionManagerName getCurrentProductionProcessorManagerSelection() {return currentProcessorManager;}
+
+	/**
+	 * Set the current MEMS parameters.
+	 * @param site a SiteName enum
+	 */
+	public void setCurrentMEMSParametersSelection(SiteName site) {
+		currentMemsParameters = site;
+	}
+	
+	protected SiteName getCurrentMEMSParametersSelection() {return currentMemsParameters;}
+
 	
 	/**
 	 * This method returns the list of possible tree loggers.

@@ -7,7 +7,7 @@
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * version 3 of the License, or (at your option) any later version.
  *
  * This library is distributed with the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied
@@ -75,16 +75,16 @@ public interface MEMSCompatibleTree extends BasalAreaM2Provider {
 	 */
 	public double getAnnualCrossSectionalAreaGrowthCm2();
 
-	/**
-	 * Provide the annual increment in aboveground biomass.
-	 * @return the increment in (Mg/yr)
-	 */
-	public double getAnnualAboveGroundBiomassIncrementMgYr();
-
-	/**
-	 * Provide the annual increment in below biomass.
-	 * @return the increment in (Mg/yr)
-	 */
-	public double getAnnualBelowGroundBiomassIncrementMgYr();
+//	/**
+//	 * Provide the annual increment in aboveground biomass.
+//	 * @return the increment in (Mg/yr)
+//	 */
+//	public double getAnnualAboveGroundBiomassIncrementMgYr();
+//
+//	/**
+//	 * Provide the annual increment in below biomass.
+//	 * @return the increment in (Mg/yr)
+//	 */
+//	public double getAnnualBelowGroundBiomassIncrementMgYr();
 
 }

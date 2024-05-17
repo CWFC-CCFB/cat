@@ -131,7 +131,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		this.carbonCompartments = new TreeMap<CompartmentInfo, CATCompartment>();	// TreeMap to make sure the merge compartments are not called before the regular compartment
 		isSimulationValid = false;
 
-		memsWrapper = new MEMSWrapper();
+		memsWrapper = new MEMSWrapper(this);
 
 		initializeCompartments();
 	}
@@ -339,8 +339,8 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		clearTreeCollections();
 		resetCompartments();
 
-		//todo: Allow user-selected site name here through UI
-		memsWrapper.PrepareSimulation(this.timeTable, MEMSSite.SiteName.Montmorency2);
+		// TODO Allow user-selected site name here through UI
+		memsWrapper.prepareSimulation(MEMSSite.SiteName.Montmorency2);
 
 		if (getCarbonToolSettings().formerImplementation) {
 			ProductionLineManager productionLines = carbonAccountingToolSettings.getProductionLines();
@@ -350,26 +350,6 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		}
 	}
 
-//	/**
-//	 * This method provides the duration of the time step
-//	 * @param steps a Vector of Step instances
-//	 * @return an integer 
-//	 */
-//	private int retrieveAverageTimeStep(List<CATCompatibleStand> stands) {
-//		double averageTimeStep = 0;		// default time step
-//		int nbHits = 0;
-//		int date;
-//		int formerDate;
-//		for (int i = 1; i < stands.size(); i++) {
-//			date = stands.get(i).getDateYr();
-//			formerDate = stands.get(i-1).getDateYr();
-//			if (date - formerDate > 0) {
-//				averageTimeStep += date - formerDate;
-//				nbHits++;
-//			}
-//		}
-//		return (int) Math.round(averageTimeStep / nbHits);
-//	}
 	
 	/**
 	 * This method returns the TimeScale instance the simulation has been run with.

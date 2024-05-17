@@ -7,7 +7,7 @@
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * version 3 of the License, or (at your option) any later version.
  *
  * This library is distributed with the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied
@@ -19,22 +19,21 @@
  */
 package lerfob.carbonbalancetool.memsconnectors;
 
-import lerfob.carbonbalancetool.CATTimeTable;
-import lerfob.mems.SoilCarbonPredictor;
-import lerfob.mems.SoilCarbonPredictorCompartments;
-import lerfob.mems.SoilCarbonPredictorInput;
-import repicea.serial.UnmarshallingException;
-import repicea.serial.xml.XmlDeserializer;
-import repicea.stats.estimators.mcmc.MetropolisHastingsAlgorithm;
-import repicea.util.ObjectUtility;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import lerfob.carbonbalancetool.CATCompartmentManager;
+import lerfob.carbonbalancetool.CATTimeTable;
+import lerfob.carbonbalancetool.memsconnectors.MEMSSite.SiteName;
+import lerfob.mems.SoilCarbonPredictor;
+import lerfob.mems.SoilCarbonPredictorCompartments;
+import repicea.serial.UnmarshallingException;
+import repicea.serial.xml.XmlDeserializer;
+import repicea.util.ObjectUtility;
+
+/**
+ * A wrapper of the original MEMS model for easier implementation in CAT.
+ * @author J-F Lavoie - April 2024
+ */
 public class MEMSWrapper {
 	
     public class CarbonStock {
@@ -53,22 +52,54 @@ public class MEMSWrapper {
         public double humus;
         public double soil;
     }
+        
     CarbonStock[] inputAnnualStocksGCm2;
     CarbonStock[] outputAnnualStocksMgHa;
     SoilCarbonPredictor predictor;
     SoilCarbonPredictorCompartments compartments;
-    CATTimeTable timeTable;
+    
     static ConcurrentHashMap<MEMSSite.SiteName, MEMSSite> sites = new ConcurrentHashMap<MEMSSite.SiteName, MEMSSite>();
 
     MEMSSite.SiteName currentSiteName;
+    
+    private final CATCompartmentManager manager;
 
-    public MEMSWrapper() {
+    /**
+     * Constructor.
+     */
+    public MEMSWrapper(CATCompartmentManager manager) {
+    	this.manager = manager;
     }
-    public static List<MEMSSite.SiteName> getSitesList() {
-        return Arrays.asList(MEMSSite.SiteName.values());
-    }
-    public void PrepareSimulation(CATTimeTable timeTable, MEMSSite.SiteName siteName) {
+    
+//    public static List<MEMSSite.SiteName> getSitesList() {
+//        return Arrays.asList(MEMSSite.SiteName.values());
+//    }
+    
+    /**
+     * Initialize MEMS with appropriate parameters.<p>
+     * This method is called as the carbon compartment manager is reset.
+     * @param siteName a MEMSSite.SiteName enum
+     */
+    public void prepareSimulation(SiteName siteName) {
 
+    	CATTimeTable timeTable = manager.getTimeTable();
+        // run a simulation to reach stability into compartment bins
+        // todo: use what input params ?  and what input npps ?
+        int nbYears = timeTable.size();
+
+        // prepare the carbon stock array
+        inputAnnualStocksGCm2 = new CarbonStock[nbYears];
+        outputAnnualStocksMgHa = new CarbonStock[nbYears];
+
+        for (int i = 0; i < nbYears; i++) {
+            inputAnnualStocksGCm2[i] = new CarbonStock(0.0, 0.0);
+            outputAnnualStocksMgHa[i] = new CarbonStock(0.0, 0.0);
+        }
+        
+        setSiteAndEstimateInitialCarbon(siteName);
+    }
+    
+    private void setSiteAndEstimateInitialCarbon(SiteName siteName) {
         currentSiteName = siteName;
 
         if (!sites.containsKey(currentSiteName)) {
@@ -86,46 +117,46 @@ public class MEMSWrapper {
         }
 
         MEMSSite currentSite = sites.get(currentSiteName);
-
-        // run a simulation to reach stability into compartment bins
-        // todo: use what input params ?  and what input npps ?
-        this.timeTable = timeTable;
-        int nbYears = timeTable.size();
-
         compartments = new SoilCarbonPredictorCompartments(1.0, currentSite.getMAT(), currentSite.getTRange());
 
         predictor = new SoilCarbonPredictor(false);
         // read the fit params from mha and set them to the Predictor
         predictor.SetParms(currentSite.getMetropolisHastingsAlgorithm().getFinalParameterEstimates());
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 1000; i++) {		// TODO the initial carbon stocks could be integrated in the MEMSSite instance MF20240516
             predictor.predictAnnualCStocks(compartments, currentSite.getInputs());
         }
-
-        // prepare the carbon stock array
-        inputAnnualStocksGCm2 = new CarbonStock[nbYears];
-        outputAnnualStocksMgHa = new CarbonStock[nbYears];
-
-        for (int i = 0; i < nbYears; i++) {
-            inputAnnualStocksGCm2[i] = new CarbonStock(0.0, 0.0);
-            outputAnnualStocksMgHa[i] = new CarbonStock(0.0, 0.0);
-        }
-
+        
         outputAnnualStocksMgHa[0].SetCarbon(compartments);
     }
 
-    public void AddCarbonInput(int index, double value, boolean addToHumus) {
+    /**
+     * Add carbon to MEMS input.<p>
+     * This carbon is retrieved from the actualization of LeftInForestCarbonUnit instances.
+     * @param index the time index as defined in the CATTimeTable instance
+     * @param carbonStockMgHa the carbon stock (Mg/ha)
+     * @param addToHumus a boolean (true: add to humus; false add to soil)
+     */
+    public void addCarbonToMEMSInput(int index, double carbonStockMgHa, boolean addToHumus) {
         if (addToHumus)
-            inputAnnualStocksGCm2[index].humus += value * CarbonStock.factorMgHaToGCm2;
+            inputAnnualStocksGCm2[index].humus += carbonStockMgHa * CarbonStock.factorMgHaToGCm2;
         else
-            inputAnnualStocksGCm2[index].soil += value * CarbonStock.factorMgHaToGCm2;
+            inputAnnualStocksGCm2[index].soil += carbonStockMgHa * CarbonStock.factorMgHaToGCm2;
     }
 
-    public void Simulate() {
-        // todo: use what input params ?  and what input npps ?
+    /**
+     * Simulate the carbon stock for each year of the simulation.<p>
+     * This method is called immediately after actualizing the carbon unit in all the compartments.
+     */
+    public void simulate() {
+    	// TODO summarize the litterfall and the fine root production before this step.
+    	
+        // TODO: use what input params ?  and what input npps ?
 
         MEMSSite currentSite = sites.get(currentSiteName);
 
+        CATTimeTable timeTable = manager.getTimeTable();
+        
         for (int i = 1; i < inputAnnualStocksGCm2.length; i++) {
             int yearZero = timeTable.getDateYrAtThisIndex(i - 1);
             int yearCurrent = timeTable.getDateYrAtThisIndex(i);
@@ -147,7 +178,12 @@ public class MEMSWrapper {
         }
     }
 
-    public CarbonStock GetCarbonOutput(int year) {
-        return outputAnnualStocksMgHa[year];
+    /**
+     * Provide the carbon stock in the soil for a particular year.
+     * @param yearIndex the index of the year as defined in the CATTimeTable instance
+     * @return a CarbonStock instance which contains the stocks in the soil and the humus.
+     */
+    public CarbonStock getCarbonStockMgHaForThisYear(int yearIndex) {
+        return outputAnnualStocksMgHa[yearIndex];
     }
 }

@@ -72,7 +72,7 @@ public class LeftInForestCarbonUnit extends CarbonUnit {
 			boolean addToHumus = getWoodyDebrisType() == WoodyDebrisProcessor.WoodyDebrisProcessorID.FineWoodyDebris || getWoodyDebrisType() == WoodyDebrisProcessor.WoodyDebrisProcessorID.CommercialWoodyDebris;
 
 			for (int i = getIndexInTimeScale(); i < getTimeTable().size(); i++) {
-				compartmentManager.getMEMS().AddCarbonInput(i, releasedCarbonArray[i], addToHumus);
+				compartmentManager.getMEMS().addCarbonToMEMSInput(i, releasedCarbonArray[i], addToHumus);
 			}
 		}
 
