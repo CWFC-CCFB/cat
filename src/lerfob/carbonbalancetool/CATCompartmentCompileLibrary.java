@@ -50,6 +50,7 @@ class CATCompartmentCompileLibrary {
 		int revolutionPeriod = manager.getRotationLength();
 //		CATExponentialFunction decayFunction;
 		List<CATCompatibleStand> stands = timeTable.getStandsForThisRealization();
+		double areaHa = stands.get(0).getAreaHa();
 		CATIntermediateBiomassCarbonMap oMap;
 		
 		switch (carbonCompartment.getCompartmentID()) {
@@ -268,15 +269,19 @@ class CATCompartmentCompileLibrary {
 			break;
 		case Humus:
 			for (int i = 0; i < timeTable.size(); i++) {
-				carbonCompartment.setCarbonIntoArray(i, manager.getMEMS().getCarbonStockMgHaForThisYear(i).humus);
+				double humusMgHa = manager.getMEMS().getCarbonStockMgHaForThisYear(i).humus;
+//				System.out.println("i = " + i + "; humusMgHa = " + humusMgHa);
+				carbonCompartment.setCarbonIntoArray(i, humusMgHa * areaHa);
 			}
-			carbonCompartment.setIntegratedCarbon(integrateCarbonOverHorizon(carbonCompartment) / revolutionPeriod);
+			carbonCompartment.setIntegratedCarbon(integrateCarbonOverHorizon(carbonCompartment) / revolutionPeriod);  // no need to correct for the area because the integration relies on the carbon array which contains area corrected values
 			break;
 		case MineralSoil:
 			for (int i = 0; i < timeTable.size(); i++) {
-				carbonCompartment.setCarbonIntoArray(i, manager.getMEMS().getCarbonStockMgHaForThisYear(i).soil);
+				double soilMgHa = manager.getMEMS().getCarbonStockMgHaForThisYear(i).soil;
+//				System.out.println("i = " + i + "; soilMgHa = " + soilMgHa);
+				carbonCompartment.setCarbonIntoArray(i, soilMgHa* areaHa);
 			}
-			carbonCompartment.setIntegratedCarbon(integrateCarbonOverHorizon(carbonCompartment) / revolutionPeriod);
+			carbonCompartment.setIntegratedCarbon(integrateCarbonOverHorizon(carbonCompartment) / revolutionPeriod);  // no need to correct for the area because the integration relies on the carbon array which contains area corrected values
 			break;
 		case Soil:
 			carbonCompartment.mergeWithFatherCompartments();
@@ -290,7 +295,7 @@ class CATCompartmentCompileLibrary {
 	
 	/**
 	 * This method computes a numerical approximation of the integral based on the trapezoidal rule.
-	 * @param carbonCompartment = a carbon compartment (CarbonCompartment object)
+	 * @param carbonCompartment a carbon compartment (CarbonCompartment object)
 	 * @return the total carbon (double)
 	 */
 	private double integrateCarbonOverHorizon(CATCompartment carbonCompartment) {

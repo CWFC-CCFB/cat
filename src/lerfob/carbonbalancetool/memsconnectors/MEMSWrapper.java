@@ -132,6 +132,8 @@ public class MEMSWrapper {
         }
 
         MEMSSite currentSite = sites.get(currentSiteName);
+        currentSite.inputs.reset();
+        
         compartments = new SoilCarbonPredictorCompartments(1.0, currentSite.getMAT(), currentSite.getTRange());
 
         predictor = new SoilCarbonPredictor(false);
@@ -178,8 +180,9 @@ public class MEMSWrapper {
         // TODO: use what input params ?  and what input npps ?
 
         MEMSSite currentSite = sites.get(currentSiteName);
-
         CATTimeTable timeTable = manager.getTimeTable();
+        SoilCarbonPredictorInput inputParameters = currentSite.getInputs();
+        inputParameters.reset();
         
         for (int i = 1; i < inputAnnualStocksGCm2.length; i++) {
             int yearZero = timeTable.getDateYrAtThisIndex(i - 1);
@@ -189,7 +192,6 @@ public class MEMSWrapper {
                 outputAnnualStocksMgHa[i] = outputAnnualStocksMgHa[i - 1];
             } else {
                 CarbonStock inputStock = inputAnnualStocksGCm2[i]; // TODO Plug the new input in MEMS
-                SoilCarbonPredictorInput inputParameters = currentSite.getInputs();
                 inputParameters.setDailyInput(inputStock.humus, inputStock.soil);
                 for (int y = 0; y < deltaYear; y++) {
                     predictor.predictAnnualCStocks(compartments, inputParameters);

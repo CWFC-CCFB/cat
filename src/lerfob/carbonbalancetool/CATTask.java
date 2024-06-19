@@ -181,6 +181,7 @@ public class CATTask extends AbstractGenericTask {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private void retrieveSoilInputFromLivingTreesAndSimulate() {
 		CATCompartmentManager manager = caller.getCarbonCompartmentManager();
 

@@ -29,7 +29,6 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 
 import lerfob.carbonbalancetool.CATCompartment.CompartmentInfo;
-import lerfob.carbonbalancetool.CATTask.Task;
 import lerfob.carbonbalancetool.memsconnectors.MEMSCompatibleTree;
 import lerfob.carbonbalancetool.memsconnectors.MEMSSite;
 import lerfob.carbonbalancetool.memsconnectors.MEMSWrapper;

@@ -19,12 +19,14 @@
  */
 package lerfob.mems;
 
+import repicea.serial.xml.PostXmlUnmarshalling;
+
 /**
  * The SoilCarbonPredictorInput class contains the parameters needed for the calculation of the inputs in the 
  * different compartments.
  * @author Jean-Francois Lavoie and Mathieu Fortin - February 2023
  */
-public class SoilCarbonPredictorInput {
+public class SoilCarbonPredictorInput implements PostXmlUnmarshalling {
 
     public enum LandType
     {
@@ -51,12 +53,13 @@ public class SoilCarbonPredictorInput {
     }
 
     final LandType landType;
+    double originalCT_i;			// apport quotidien total de carbone provenant de la source externe i le jour j
     double CT_i;			// apport quotidien total de carbone provenant de la source externe i le jour j
     final double soil_pH;			// pH du sol simule
     final double bulkDensity;		// bulk density (densite volumetrique) du sol simule
     final double sandProportion;	// contenu en sable (%) du sol simule [0-100]
     final double rockProportion;  // fraction de roches (%) du sol simule [0-100]
-    final double depthCm;
+    Double depthCm;
     
     /**
      * Constructor.
@@ -77,6 +80,7 @@ public class SoilCarbonPredictorInput {
     		double rockProportion) {
         this.landType = landType;
         this.CT_i = CT_i;
+        this.originalCT_i = CT_i;
         this.depthCm = depth_cm;
         this.soil_pH = soil_pH;
         this.bulkDensity = bulkDensity;
@@ -126,4 +130,19 @@ public class SoilCarbonPredictorInput {
     	}
     	CT_i = getCT_iFromAnnualNPP(landType, depthCm, annual_NPP_aboveGround_CgM2, annual_NPP_belowGround_CgM2);
     }
+
+	@Override
+	public void postUnmarshallingAction() {
+		if (depthCm == null) {
+			depthCm = 15d;
+		}
+		if (originalCT_i == 0d) {
+			originalCT_i = CT_i;
+		}
+	}
+	
+	public void reset() {
+		CT_i = originalCT_i;
+	}
+	
 }
