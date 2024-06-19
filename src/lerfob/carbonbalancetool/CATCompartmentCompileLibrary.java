@@ -73,7 +73,6 @@ class CATCompartmentCompileLibrary {
 			}	
 			oMap.interpolateIfNeeded();
 			carbonCompartment.setIntegratedCarbon(integrateCarbonOverHorizon(carbonCompartment) / revolutionPeriod);
-
 			break;
 			
 		// STOCK COMPARTMENTS

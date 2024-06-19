@@ -25,11 +25,11 @@ import java.util.List;
 class CATIntermediateBiomassCarbonMap extends LinkedHashMap<CATCompatibleStand, Double> {
 
 	final CATTimeTable timeTable;
-	final CATCompartment carbonCompartment;
+	final CarbonArray carbonArray;
 	
-	CATIntermediateBiomassCarbonMap(CATTimeTable timeTable, CATCompartment carbonCompartment) {
+	CATIntermediateBiomassCarbonMap(CATTimeTable timeTable, CarbonArray carbonArray) {
 		this.timeTable = timeTable;
-		this.carbonCompartment = carbonCompartment;
+		this.carbonArray = carbonArray;
 	}
 	
 	
@@ -48,11 +48,11 @@ class CATIntermediateBiomassCarbonMap extends LinkedHashMap<CATCompatibleStand, 
 					double slope = (currentValue - previousValue) / (currentDateYr - previousDateYr);
 					for (int i = previousIndex + 1; i < currentIndex; i++) {
 						double interpolatedValue = previousValue + (timeTable.getDateYrAtThisIndex(i) - previousDateYr) * slope;
-						carbonCompartment.setCarbonIntoArray(i, interpolatedValue);
+						carbonArray.setCarbonIntoArray(i, interpolatedValue);
 					}
 				}
 				previousStand = s;
-				carbonCompartment.setCarbonIntoArray(currentIndex, currentValue);
+				carbonArray.setCarbonIntoArray(currentIndex, currentValue);
 			}
 		}
 	}

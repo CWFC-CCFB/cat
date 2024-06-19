@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import lerfob.carbonbalancetool.CATCompartmentManager;
 import lerfob.carbonbalancetool.CATTimeTable;
+import lerfob.carbonbalancetool.CarbonArray;
 import lerfob.carbonbalancetool.memsconnectors.MEMSSite.SiteName;
 import lerfob.mems.SoilCarbonPredictor;
 import lerfob.mems.SoilCarbonPredictorCompartments;
@@ -34,7 +35,7 @@ import repicea.util.ObjectUtility;
  * A wrapper of the original MEMS model for easier implementation in CAT.
  * @author J-F Lavoie - April 2024
  */
-public class MEMSWrapper {
+public class MEMSWrapper extends CarbonArray {
 	
     public class CarbonStock {
         public final static double factorGCm2ToMgHa = 0.01d;
@@ -90,6 +91,7 @@ public class MEMSWrapper {
         // prepare the carbon stock array
         inputAnnualStocksGCm2 = new CarbonStock[nbYears];
         outputAnnualStocksMgHa = new CarbonStock[nbYears];
+        calculatedCarbonArray = new double[nbYears];
 
         for (int i = 0; i < nbYears; i++) {
             inputAnnualStocksGCm2[i] = new CarbonStock(0.0, 0.0);

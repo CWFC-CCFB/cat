@@ -23,7 +23,6 @@ import java.awt.Container;
 import java.awt.Window;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.InvalidParameterException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -42,6 +41,7 @@ import lerfob.carbonbalancetool.CATCarbonContentRatioProvider;
 import lerfob.carbonbalancetool.CATCompatibleTree;
 import lerfob.carbonbalancetool.CarbonAccountingTool;
 import lerfob.carbonbalancetool.biomassparameters.BiomassParametersDialog.MessageID;
+import lerfob.carbonbalancetool.memsconnectors.MEMSCompatibleTree;
 import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettings;
 import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettings.VariabilitySource;
 import repicea.gui.REpiceaShowableUIWithParent;
@@ -715,6 +715,24 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 		}
 		return commercialCarbonMg;
 	}
+	
+	/**
+	 * Provide the annual carbon from the litterfall and root turnover.
+	 * @param trees a List of MEMSCompatibleTree instances
+	 * @param subject a MonteCarloSimulationCompliantObject instance
+	 * @return the amount of carbon (Mg)
+	 */
+	public double getLitterFallAndRootAnnualCarbonMg(Collection<MEMSCompatibleTree> trees, MonteCarloSimulationCompliantObject subject) {
+		double totalCarbonMg = 0d;
+		if (trees != null) {
+			for (MEMSCompatibleTree tree : trees) {
+				double treeContribution = tree.getAnnualFoliarBiomassProductionMgYr() + tree.getAnnualBranchBiomassProductionMgYr() + tree.getAnnualFineRootBiomassProductionMgYr();
+				totalCarbonMg += treeContribution * tree.getNumber() * tree.getPlotWeight();
+			}
+		}
+		return totalCarbonMg;
+	}
+	
 
 	@Override
 	public boolean isVisible() {

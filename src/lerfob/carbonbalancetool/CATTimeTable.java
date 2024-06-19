@@ -1,7 +1,8 @@
 /*
  * This file is part of the CAT library.
  *
- * Copyright (C) 2010-2016 Mathieu Fortin AgroParisTech/INRA UMR LERFoB, 
+ * Copyright (C) 2020-2024 His Majesty the King in Right of Canada
+ * Author: Mathieu Fortin, Canadian Forest Service
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,7 +29,8 @@ import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettin
 import repicea.simulation.covariateproviders.plotlevel.StochasticInformationProvider;
 
 /**
- * This class handles the time frame of the simulation and the index related to the time slot.
+ * This class handles the time frame of the simulation and the index related 
+ * to the time slot.
  * @author Mathieu Fortin - November 2020
  */
 public class CATTimeTable {
@@ -107,30 +109,6 @@ public class CATTimeTable {
 	int getIndexOfThisStandOnTheTimeTable(CATCompatibleStand stand) {
 		return realizationStandMap.get(stand);
 	}
-	
-	
-	
-//	/*
-//	 * Former implementation with annual steps.
-//	 */
-//	protected CATTimeTable(int lastStandDate, int initialAgeYr, int nbExtraYears, int averageTimeStep) {
-//		this.lastStandDate = lastStandDate;
-//		this.initialAgeYr = initialAgeYr;
-//		if (nbExtraYear != -1) {
-//			int size = stands.size() + nbExtraYears / averageTimeStep;
-//			for (int i = 0; i < size; i++) {
-//				if (i < stands.size()) {
-//					timeTable.add(stands.get(i).getDateYr());
-//				} else  {
-//					timeTable.add(timeTable.get(i - 1) + averageTimeStep);
-//				}
-//			}
-//			
-//		}
-//		this.isFinal = nbExtraYear != -1;
-//	}
-
-	
 	
 	private int getLastStandDate() {return lastStandDate;}
 	int getInitialAgeYr() {return initialAgeYr;}

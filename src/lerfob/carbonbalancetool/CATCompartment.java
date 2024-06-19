@@ -37,7 +37,7 @@ import repicea.util.REpiceaTranslator.TextableEnum;
  * @author Mathieu Fortin - July 2010
  */
 @SuppressWarnings("rawtypes")
-public class CATCompartment implements Comparable {
+public class CATCompartment extends CarbonArray implements Comparable {
 	
 	static {
 		SerializerChangeMonitor.registerEnumNameChange("lerfob.carbonbalancetool.CATCompartment$CompartmentInfo", 
@@ -204,7 +204,6 @@ public class CATCompartment implements Comparable {
 	private List<CATCompartment> fatherCompartments;
 	private boolean isMerged;
 	private CATCompartmentCompileLibrary carbonMethodLibrary;
-	private double[] calculatedCarbonArray;
 	private double integratedCarbon;
 
 	private Collection<? extends CarbonUnit>[] carbonUnitsCollectionArray;
@@ -272,9 +271,6 @@ public class CATCompartment implements Comparable {
 		return integratedCarbon * areaFactor;
 	}
 	
-	protected void setCarbonIntoArray(int indexDate, double d) {
-		calculatedCarbonArray[indexDate] = d;
-	}
 	
 	/**
 	 * This method merges the carbon values of the father compartments into this compartment.

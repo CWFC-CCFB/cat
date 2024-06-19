@@ -19,13 +19,14 @@
  */
 package lerfob.carbonbalancetool.memsconnectors;
 
+import lerfob.carbonbalancetool.CATCompatibleTree;
 import repicea.simulation.covariateproviders.treelevel.BasalAreaM2Provider;
 
 /**
  * Ensure that the tree instances are compatible with MEMS.
  * @author Mathieu Fortin - April 2024
  */
-public interface MEMSCompatibleTree extends BasalAreaM2Provider {
+public interface MEMSCompatibleTree extends BasalAreaM2Provider, CATCompatibleTree {
 
 	/**
 	 * Provide the annual production in fine root biomass.<p>
@@ -74,17 +75,5 @@ public interface MEMSCompatibleTree extends BasalAreaM2Provider {
 	 * @return the increment (cm2/yr)
 	 */
 	public double getAnnualCrossSectionalAreaGrowthCm2();
-
-//	/**
-//	 * Provide the annual increment in aboveground biomass.
-//	 * @return the increment in (Mg/yr)
-//	 */
-//	public double getAnnualAboveGroundBiomassIncrementMgYr();
-//
-//	/**
-//	 * Provide the annual increment in below biomass.
-//	 * @return the increment in (Mg/yr)
-//	 */
-//	public double getAnnualBelowGroundBiomassIncrementMgYr();
 
 }
