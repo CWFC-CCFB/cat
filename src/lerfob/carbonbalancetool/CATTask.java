@@ -156,7 +156,7 @@ public class CATTask extends AbstractGenericTask {
 			break;
 		case RETRIEVE_SOIL_CARBON_INPUT:
 			firePropertyChange("OngoingTask", null, currentTask);
-			retrieveSoilInputFromLivingTrees();
+			retrieveSoilInputFromLivingTreesAndSimulate();
 			break;
 		case COMPILE_CARBON:
 			firePropertyChange("OngoingTask", null, currentTask);
@@ -181,21 +181,24 @@ public class CATTask extends AbstractGenericTask {
 		}
 	}
 
-	
-	private void retrieveSoilInputFromLivingTrees() {
+	private void retrieveSoilInputFromLivingTreesAndSimulate() {
 		CATCompartmentManager manager = caller.getCarbonCompartmentManager();
 
 		REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.FINEST, null, "Adding soil carbon input from living trees...");
 		
 		BiomassParameters biomassParameters = manager.getCarbonToolSettings().getCurrentBiomassParameters();
-		CATIntermediateBiomassCarbonMap oMap = new CATIntermediateBiomassCarbonMap(manager.getTimeTable(), manager.getMEMS());
+		CATIntermediateBiomassCarbonMap aboveGroundMap = new CATIntermediateBiomassCarbonMap(manager.getTimeTable(), manager.getMEMS().getInputFromLivingTreesAboveGroundMgHaArray());
+		CATIntermediateBiomassCarbonMap belowGroundMap = new CATIntermediateBiomassCarbonMap(manager.getTimeTable(), manager.getMEMS().getInputFromLivingTreesBelowGroundMgHaArray());
 		for (CATCompatibleStand s : manager.getTimeTable().getStandsForThisRealization()) {
-			double soilCarbonMgInputFromLivingTrees = biomassParameters.getLitterFallAndRootAnnualCarbonMg((Collection<MEMSCompatibleTree>) s.getTrees(StatusClass.alive), manager);
-			oMap.put(s, soilCarbonMgInputFromLivingTrees / s.getAreaHa());
+			double soilCarbonMgInputFromLitterFall = biomassParameters.getLitterFallAnnualCarbonMg((Collection<MEMSCompatibleTree>) s.getTrees(StatusClass.alive), manager);
+			aboveGroundMap.put(s, soilCarbonMgInputFromLitterFall / s.getAreaHa());
+			double soilCargonMgInputFromFineRootTurnover = biomassParameters.getFineRootTurnOverAnnualCarbonMg((Collection<MEMSCompatibleTree>) s.getTrees(StatusClass.alive), manager);
+			belowGroundMap.put(s, soilCargonMgInputFromFineRootTurnover / s.getAreaHa());
 		}
-		oMap.interpolateIfNeeded();
+		aboveGroundMap.interpolateIfNeeded();
+		belowGroundMap.interpolateIfNeeded();  // after this line the two carbon arrays are automatically filled in the MEMSWrapper instance
+		manager.getMEMS().simulate();
 	}
-
 
 	@SuppressWarnings("unchecked")
 	private void registerTrees() {
@@ -218,7 +221,6 @@ public class CATTask extends AbstractGenericTask {
 				}
 			}
 		}
-		manager.checkIfMEMSShouldBeEnabled();
 	}
 
 

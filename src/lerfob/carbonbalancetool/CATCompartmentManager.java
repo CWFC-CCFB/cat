@@ -114,6 +114,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	private ManagementType managementType;
 	
 	protected CATSingleSimulationResult summary;
+	protected boolean isMEMSEnabled;
 	private final MEMSWrapper memsWrapper; 
 	
 	
@@ -282,6 +283,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 				
 			timeTable = new CATTimeTable(stands, initialAgeYr, nbExtraYears);
 
+			isMEMSEnabled = true;	// default
 			// scan all the trees to identify the different species and store their codes in the speciesList member
 			speciesList.clear();
 			for (CATCompatibleStand s : stands) {
@@ -291,11 +293,12 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 						if (!speciesList.contains(tree.getSpeciesName())) {
 							speciesList.add(tree.getSpeciesName());
 						}
+						if (!(tree instanceof MEMSCompatibleTree)) {
+							isMEMSEnabled = false;	// false if at least one tree does not implement MEMSCompatibleTree
+						}
 					}
 				}
 			}
-			
-			
 		}
 	}
 	
@@ -585,15 +588,6 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		return memsWrapper;
 	}
 
-	void checkIfMEMSShouldBeEnabled() {
-		for (CATCompatibleTree t : treeRegister.keySet()) {
-			if (!(t instanceof MEMSCompatibleTree)) {
-				return;	// at least one tree is not compatible with MEMS
-			}
-		}
-		// MEMS can be enabled then
-		caller.addTask(new CATTask(Task.RETRIEVE_SOIL_CARBON_INPUT, caller));
-	}
 }
 
 

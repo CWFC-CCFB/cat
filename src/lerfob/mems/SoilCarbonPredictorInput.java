@@ -7,7 +7,7 @@
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * version 3 of the License, or (at your option) any later version.
  *
  * This library is distributed with the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied
@@ -50,17 +50,19 @@ public class SoilCarbonPredictorInput {
         }
     }
 
-    LandType landType;
-    final double CT_i;			// apport quotidien total de carbone provenant de la source externe i le jour j
+    final LandType landType;
+    double CT_i;			// apport quotidien total de carbone provenant de la source externe i le jour j
     final double soil_pH;			// pH du sol simule
     final double bulkDensity;		// bulk density (densite volumetrique) du sol simule
     final double sandProportion;	// contenu en sable (%) du sol simule [0-100]
     final double rockProportion;  // fraction de roches (%) du sol simule [0-100]
-
+    final double depthCm;
+    
     /**
      * Constructor.
      * @param landType the landType.  This auto-selects driving variables for the simulation.
      * @param CT_i the daily input from external source i
+     * @param depth_cm soil depth being considered (cm)
      * @param soil_pH soil pH
      * @param bulkDensity the bulk density
      * @param sandProportion the sand proportion in percent
@@ -68,18 +70,31 @@ public class SoilCarbonPredictorInput {
      */
     public SoilCarbonPredictorInput(LandType landType,
     		double CT_i, 
+    		double depth_cm,
     		double soil_pH,
     		double bulkDensity, 
     		double sandProportion, 
     		double rockProportion) {
         this.landType = landType;
         this.CT_i = CT_i;
+        this.depthCm = depth_cm;
         this.soil_pH = soil_pH;
         this.bulkDensity = bulkDensity;
         this.sandProportion = sandProportion;
         this.rockProportion = rockProportion;
     }
 
+    /**
+     * Constructor.
+     * @param landType the landType.  This auto-selects driving variables for the simulation.
+     * @param Annual_NPP_aboveGround_CgM2 the annual aboveground net primary production
+	 * @param Annual_NPP_belowGround_CgM2 the annual belowground net primary production
+     * @param depth_cm soil depth being considered (cm)
+     * @param soil_pH soil pH
+     * @param bulkDensity the bulk density
+     * @param sandProportion the sand proportion in percent
+     * @param rockProportion the rock proportion in percent
+     */
     public SoilCarbonPredictorInput(LandType landType,
                                     double Annual_NPP_aboveGround_CgM2,
                                     double Annual_NPP_belowGround_CgM2,
@@ -88,14 +103,27 @@ public class SoilCarbonPredictorInput {
                                     double bulkDensity,
                                     double sandProportion,
                                     double rockProportion) {
-        this.landType = landType;
-
-        double correctedDailyBelowGroundCarbon = SoilCarbonPredictorEquation.Eq53_getCorrectedBelowGroundCarbonInput(Annual_NPP_belowGround_CgM2 / 365.0, depth_cm, landType.Rdep50, landType.Rdepmax);
-        this.CT_i = correctedDailyBelowGroundCarbon + Annual_NPP_aboveGround_CgM2 / 365.0;
-
-        this.soil_pH = soil_pH;
-        this.bulkDensity = bulkDensity;
-        this.sandProportion = sandProportion;
-        this.rockProportion = rockProportion;
+    	this(landType, 
+    		getCT_iFromAnnualNPP(landType, depth_cm, Annual_NPP_aboveGround_CgM2, Annual_NPP_belowGround_CgM2),
+    		depth_cm,
+    		soil_pH,
+    		bulkDensity,
+    		sandProportion,
+    		rockProportion);
+    }
+    
+    static double getCT_iFromAnnualNPP(LandType landType, double depth_cm, double Annual_NPP_aboveGround_CgM2, double Annual_NPP_belowGround_CgM2) {
+        double correctedDailyBelowGroundCarbon = SoilCarbonPredictorEquation.Eq53_getCorrectedBelowGroundCarbonInput(Annual_NPP_belowGround_CgM2 / 365.0, 
+        		depth_cm, 
+        		landType.Rdep50, 
+        		landType.Rdepmax);
+        return correctedDailyBelowGroundCarbon + Annual_NPP_aboveGround_CgM2 / 365.0;
+    }
+    
+    public void setDailyInput(double annual_NPP_aboveGround_CgM2, double annual_NPP_belowGround_CgM2) {
+    	if (depthCm == 0d) {
+    		throw new UnsupportedOperationException("The depth has not been set. Presumably the wrong constructor has been used.");
+    	}
+    	CT_i = getCT_iFromAnnualNPP(landType, depthCm, annual_NPP_aboveGround_CgM2, annual_NPP_belowGround_CgM2);
     }
 }

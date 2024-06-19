@@ -1,12 +1,14 @@
 /*
- * This file is part of the lerfob-foresttools library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2010-2017 Mathieu Fortin for LERFOB AgroParisTech/INRA, 
+ * Copyright (C) 2024 His Majesty the King in Right of Canada
+ * Author: Mathieu Fortin, Canadian Forest Service, 
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * version 3 of the License, or (at your option) any later version.
  *
  * This library is distributed with the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied
@@ -18,7 +20,6 @@
  */
 package lerfob.carbonbalancetool.io;
 
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +34,6 @@ import repicea.io.tools.ImportFieldElement.FieldType;
 import repicea.io.tools.LevelProviderEnum;
 import repicea.io.tools.REpiceaRecordReader;
 import repicea.simulation.ApplicationScaleProvider.ApplicationScale;
-import repicea.simulation.covariateproviders.plotlevel.ManagementTypeProvider.ManagementType;
 import repicea.simulation.covariateproviders.treelevel.TreeStatusProvider.StatusClass;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
@@ -294,12 +294,12 @@ public class CATGrowthSimulationRecordReader extends REpiceaRecordReader {
 		plotSample.createPlot(plotID, plotAreaHa, isInterventionResult);
 		CATGrowthSimulationPlot plot = plotSample.getPlot(plotID);
 		
-		CATGrowthSimulationTree tree;
-		if (dbhCm == null) {
-			tree = new CATGrowthSimulationTree(plot, statusClass, treeOverbarkVolumeDm3, numberOfTrees, originalSpeciesName);
-		} else {
-			tree = new CATGrowthSimulationTreeWithDBH(plot, statusClass, treeOverbarkVolumeDm3, numberOfTrees, originalSpeciesName, dbhCm);
-		}
+		CATGrowthSimulationTree tree = createTree(plot, 
+				statusClass, 
+				treeOverbarkVolumeDm3, 
+				numberOfTrees, 
+				originalSpeciesName,
+				dbhCm);
 		
 		plot.addTree(tree);
 		if (!speciesList.contains(originalSpeciesName)) {
@@ -308,6 +308,27 @@ public class CATGrowthSimulationRecordReader extends REpiceaRecordReader {
 
 	}
 
+	/**
+	 * Create a Tree instance. 
+	 * @param plot a CATGrowthSimulationPlot instance
+	 * @param statusClass a StatusClass enum
+	 * @param treeOverbarkVolumeDm3 the overbark volume (dm3)
+	 * @param numberOfTrees the expansion factor 
+	 * @param originalSpeciesName the original species name
+	 * @param dbhCm DBH (cm)
+	 * @return a CATGrowthSimulationTree instance
+	 */
+	protected CATGrowthSimulationTree createTree(CATGrowthSimulationPlot plot, 
+			StatusClass statusClass, 
+			double treeOverbarkVolumeDm3, 
+			double numberOfTrees, 
+			String originalSpeciesName,
+			Double dbhCm) {
+		return dbhCm == null ?
+				new CATGrowthSimulationTree(plot, statusClass, treeOverbarkVolumeDm3, numberOfTrees, originalSpeciesName) :
+					new CATGrowthSimulationTreeWithDBH(plot, statusClass, treeOverbarkVolumeDm3, numberOfTrees, originalSpeciesName, dbhCm);
+	}
+	
 	@Override
 	public void readRecordsForThisGroupId(int groupId) throws Exception {
 		standMap.clear();

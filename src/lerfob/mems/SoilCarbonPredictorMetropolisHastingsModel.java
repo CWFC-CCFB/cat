@@ -61,7 +61,7 @@ public class SoilCarbonPredictorMetropolisHastingsModel implements MetropolisHas
     // MetropolisHastingsCompatibleModel implementation
     @Override
     public double getLogLikelihood(Matrix parms) {
-        predictor.SetParms(parms);
+        predictor.setParms(parms);
 
         SoilCarbonPredictorCompartments localCompartments = compartments.clone();
 

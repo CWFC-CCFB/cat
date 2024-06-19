@@ -377,7 +377,7 @@ public class SoilCarbonPredictor extends REpiceaPredictor  {
 		init();
 	}
 
-	public void SetParms(Matrix parms) {
+	public void setParms(Matrix parms) {
 		// vector parms is expected to contain parameters corresponding to enum MCParam ordinals
 		this.parmB1 = parms.getValueAt(MCParam.parmB1.ordinal(), 0);
 		this.parmB2 = parms.getValueAt(MCParam.parmB2.ordinal(), 0);

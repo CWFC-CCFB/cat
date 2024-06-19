@@ -27,6 +27,7 @@ import lerfob.carbonbalancetool.CarbonArray;
 import lerfob.carbonbalancetool.memsconnectors.MEMSSite.SiteName;
 import lerfob.mems.SoilCarbonPredictor;
 import lerfob.mems.SoilCarbonPredictorCompartments;
+import lerfob.mems.SoilCarbonPredictorInput;
 import repicea.serial.UnmarshallingException;
 import repicea.serial.xml.XmlDeserializer;
 import repicea.util.ObjectUtility;
@@ -35,7 +36,7 @@ import repicea.util.ObjectUtility;
  * A wrapper of the original MEMS model for easier implementation in CAT.
  * @author J-F Lavoie - April 2024
  */
-public class MEMSWrapper extends CarbonArray {
+public class MEMSWrapper {
 	
     public class CarbonStock {
         public final static double factorGCm2ToMgHa = 0.01d;
@@ -45,7 +46,7 @@ public class MEMSWrapper extends CarbonArray {
             this.soil = soil;
         }
 
-        public void SetCarbon(SoilCarbonPredictorCompartments compartments) {
+        public void setCarbon(SoilCarbonPredictorCompartments compartments) {
             humus = compartments.getLitterBinsgCm2() * factorGCm2ToMgHa;
             soil = compartments.getSoilBinsgCm2() * factorGCm2ToMgHa;
         }
@@ -56,6 +57,9 @@ public class MEMSWrapper extends CarbonArray {
         
     CarbonStock[] inputAnnualStocksGCm2;
     CarbonStock[] outputAnnualStocksMgHa;
+    private CarbonArray inputFromLivingTreesAboveGroundMgHa;
+    private CarbonArray inputFromLivingTreesBelowGroundMgHa;
+    
     SoilCarbonPredictor predictor;
     SoilCarbonPredictorCompartments compartments;
     
@@ -76,6 +80,14 @@ public class MEMSWrapper extends CarbonArray {
 //        return Arrays.asList(MEMSSite.SiteName.values());
 //    }
     
+    public CarbonArray getInputFromLivingTreesAboveGroundMgHaArray() {
+    	return inputFromLivingTreesAboveGroundMgHa;
+    }
+
+    public CarbonArray getInputFromLivingTreesBelowGroundMgHaArray() {
+    	return inputFromLivingTreesBelowGroundMgHa;
+    }
+
     /**
      * Initialize MEMS with appropriate parameters.<p>
      * This method is called as the carbon compartment manager is reset.
@@ -91,7 +103,8 @@ public class MEMSWrapper extends CarbonArray {
         // prepare the carbon stock array
         inputAnnualStocksGCm2 = new CarbonStock[nbYears];
         outputAnnualStocksMgHa = new CarbonStock[nbYears];
-        calculatedCarbonArray = new double[nbYears];
+        inputFromLivingTreesAboveGroundMgHa = new CarbonArray(nbYears);
+        inputFromLivingTreesBelowGroundMgHa = new CarbonArray(nbYears);
 
         for (int i = 0; i < nbYears; i++) {
             inputAnnualStocksGCm2[i] = new CarbonStock(0.0, 0.0);
@@ -123,13 +136,13 @@ public class MEMSWrapper extends CarbonArray {
 
         predictor = new SoilCarbonPredictor(false);
         // read the fit params from mha and set them to the Predictor
-        predictor.SetParms(currentSite.getMetropolisHastingsAlgorithm().getFinalParameterEstimates());
+        predictor.setParms(currentSite.getMetropolisHastingsAlgorithm().getFinalParameterEstimates());
 
         for (int i = 0; i < 1000; i++) {		// TODO the initial carbon stocks could be integrated in the MEMSSite instance MF20240516
             predictor.predictAnnualCStocks(compartments, currentSite.getInputs());
         }
         
-        outputAnnualStocksMgHa[0].SetCarbon(compartments);
+        outputAnnualStocksMgHa[0].setCarbon(compartments);
     }
 
     /**
@@ -140,18 +153,27 @@ public class MEMSWrapper extends CarbonArray {
      * @param addToHumus a boolean (true: add to humus; false add to soil)
      */
     public void addCarbonToMEMSInput(int index, double carbonStockMgHa, boolean addToHumus) {
-        if (addToHumus)
+        if (addToHumus) {
             inputAnnualStocksGCm2[index].humus += carbonStockMgHa * CarbonStock.factorMgHaToGCm2;
-        else
+        } else {
             inputAnnualStocksGCm2[index].soil += carbonStockMgHa * CarbonStock.factorMgHaToGCm2;
+        }
     }
-
+    
     /**
      * Simulate the carbon stock for each year of the simulation.<p>
      * This method is called immediately after actualizing the carbon unit in all the compartments.
      */
     public void simulate() {
-    	// TODO summarize the litterfall and the fine root production before this step.
+    	// first we add the input from living biomass to the annual input which contains only dead organic matter at this point
+        for (int i = 0; i < inputAnnualStocksGCm2.length; i++) {
+        	addCarbonToMEMSInput(i, 
+        			inputFromLivingTreesAboveGroundMgHa.getCarbonArray()[i], 
+        			true); // true add to humus
+        	addCarbonToMEMSInput(i, 
+        			inputFromLivingTreesBelowGroundMgHa.getCarbonArray()[i], 
+        			false); // false add to soil
+        }
     	
         // TODO: use what input params ?  and what input npps ?
 
@@ -165,17 +187,16 @@ public class MEMSWrapper extends CarbonArray {
             int deltaYear = yearCurrent - yearZero;
             if (deltaYear == 0) {
                 outputAnnualStocksMgHa[i] = outputAnnualStocksMgHa[i - 1];
-            }
-            else {
-                double annualFactor = 1.0d / deltaYear;
-                CarbonStock inputStock = inputAnnualStocksGCm2[i];
-
+            } else {
+                CarbonStock inputStock = inputAnnualStocksGCm2[i]; // TODO Plug the new input in MEMS
+                SoilCarbonPredictorInput inputParameters = currentSite.getInputs();
+                inputParameters.setDailyInput(inputStock.humus, inputStock.soil);
                 for (int y = 0; y < deltaYear; y++) {
-                    predictor.predictAnnualCStocks(compartments, currentSite.getInputs());
+                    predictor.predictAnnualCStocks(compartments, inputParameters);
                 }
 
                 CarbonStock outputStock = outputAnnualStocksMgHa[i];
-                outputStock.SetCarbon(compartments);
+                outputStock.setCarbon(compartments);
             }
         }
     }

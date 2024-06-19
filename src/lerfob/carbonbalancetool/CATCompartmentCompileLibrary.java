@@ -306,15 +306,15 @@ class CATCompartmentCompileLibrary {
 					isInfiniteSequenceAllowed && 
 					carbonCompartment.getCompartmentManager().getManagementType() == ManagementType.EvenAged) {	// then add the first years from 0 to the initial measurement of the stand
 				int initialAgeYr = timeScale.getInitialAgeYr();
-				currentValue = carbonCompartment.getCalculatedCarbonArray()[i - 1];
+				currentValue = carbonCompartment.getCarbonArray()[i - 1];
 				totalCarbon += calculateCarbonForThisPeriod(0, initialAgeYr, 0, currentValue);
 			}
 			
 			currentDateYr = timeScale.getDateYrAtThisIndex(i);
-			currentValue = carbonCompartment.getCalculatedCarbonArray()[i];
+			currentValue = carbonCompartment.getCarbonArray()[i];
 
 			previousDateYr = timeScale.getDateYrAtThisIndex(i - 1);
-			previousValue = carbonCompartment.getCalculatedCarbonArray()[i - 1];
+			previousValue = carbonCompartment.getCarbonArray()[i - 1];
 		
 			totalCarbon += calculateCarbonForThisPeriod(previousDateYr, 
 					currentDateYr, 

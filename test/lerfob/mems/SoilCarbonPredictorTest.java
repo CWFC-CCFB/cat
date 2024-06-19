@@ -48,7 +48,7 @@ public class SoilCarbonPredictorTest {
 
         SoilCarbonPredictorCompartments compartments = new SoilCarbonPredictorCompartments(1.0, 5d, 20d);
 
-        SoilCarbonPredictorInput inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.Unknown, 0.0, 5.58, 1.21, 47.8, 7.62);
+        SoilCarbonPredictorInput inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.Unknown, 0.0, 15d, 5.58, 1.21, 47.8, 7.62);
         predictor.predictDailyCStockChanges(compartments, inputs);
 
         double sum = compartments.getSumOfDailyChange();
@@ -62,7 +62,7 @@ public class SoilCarbonPredictorTest {
 
         SoilCarbonPredictorCompartments compartments = new SoilCarbonPredictorCompartments(1.0, 5d, 20d);
 
-        SoilCarbonPredictorInput inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.Unknown, 0.0, 5.58, 1.21, 47.8, 7.62);
+        SoilCarbonPredictorInput inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.Unknown, 0.0, 15d, 5.58, 1.21, 47.8, 7.62);
         predictor.predictDailyCStockChanges(compartments, inputs, 1.5);
 
         double sum = compartments.getSumOfDailyChange();
@@ -76,7 +76,7 @@ public class SoilCarbonPredictorTest {
 
         SoilCarbonPredictorCompartments compartments = new SoilCarbonPredictorCompartments(1.0, 5d, 20d);
 
-        SoilCarbonPredictorInput inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.Unknown, 1.0, 5.58, 1.21, 47.8, 7.62);
+        SoilCarbonPredictorInput inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.Unknown, 1.0, 15d, 5.58, 1.21, 47.8, 7.62);
         predictor.predictDailyCStockChanges(compartments, inputs, 0.0);
 
         double sum = compartments.getSumOfDailyChange();
@@ -128,7 +128,7 @@ public class SoilCarbonPredictorTest {
 
         SoilCarbonPredictorCompartments compartments = new SoilCarbonPredictorCompartments(1.0, 5d, 20d);
 
-        SoilCarbonPredictorInput inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.Unknown, 10.0, 5.58, 1.21, 47.8, 7.62);
+        SoilCarbonPredictorInput inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.Unknown, 10.0, 15d, 5.58, 1.21, 47.8, 7.62);
 
         before = Instant.now();
 
@@ -157,7 +157,7 @@ public class SoilCarbonPredictorTest {
 
         SoilCarbonPredictorCompartments compartments = new SoilCarbonPredictorCompartments(1.0, 10.0, 24.0);
 
-        SoilCarbonPredictorInput inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.Unknown, 10.0, 5.58, 1.21, 47.8, 7.62);
+        SoilCarbonPredictorInput inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.Unknown, 10.0, 15d, 5.58, 1.21, 47.8, 7.62);
 
         before = Instant.now();
 
@@ -242,7 +242,7 @@ public class SoilCarbonPredictorTest {
         MetropolisHastingsAlgorithm mha = (MetropolisHastingsAlgorithm)dser.readObject();
 
         // read the fit params from mha and set them to the Predictor
-        predictor.SetParms(mha.getFinalParameterEstimates());
+        predictor.setParms(mha.getFinalParameterEstimates());
 
         SoilCarbonPredictorCompartments compartments = new SoilCarbonPredictorCompartments(1.0, MAT, Trange);
 
@@ -329,7 +329,7 @@ public class SoilCarbonPredictorTest {
         // Perform simulation with 1g input per day
         SoilCarbonPredictorCompartments compartments_1g = new SoilCarbonPredictorCompartments(1.0, 5d, 20d);
 
-        SoilCarbonPredictorInput inputs_1g = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.Unknown, 1.0, 5.58, 1.21, 47.8, 7.62);
+        SoilCarbonPredictorInput inputs_1g = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.Unknown, 1.0, 15d, 5.58, 1.21, 47.8, 7.62);
 
 //        SoilCarbonPredictorCompartments cChange_1g = new SoilCarbonPredictorCompartments(0.0);
 
@@ -342,7 +342,7 @@ public class SoilCarbonPredictorTest {
         // Perform simulation with 2g input per day
         SoilCarbonPredictorCompartments compartments_2g = new SoilCarbonPredictorCompartments(1.0, 5d, 20d);
 
-        SoilCarbonPredictorInput inputs_2g = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.Unknown, 2.0, 5.58, 1.21, 47.8, 7.62);
+        SoilCarbonPredictorInput inputs_2g = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.Unknown, 2.0, 15d, 5.58, 1.21, 47.8, 7.62);
 
  //      SoilCarbonPredictorCompartments cChange_2g = new SoilCarbonPredictorCompartments(0.0);
 
@@ -394,8 +394,8 @@ public class SoilCarbonPredictorTest {
 
         SoilCarbonPredictorCompartments compartments = new SoilCarbonPredictorCompartments(1.0, 5d, 20d);
 
-        SoilCarbonPredictorInput inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.Unknown, 1.0, 5.58, 1.21, 47.8, 7.62);
-        SoilCarbonPredictorInput inputsAfterPerturbation = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.Unknown, 2.0, 5.58, 1.21, 47.8, 7.62);
+        SoilCarbonPredictorInput inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.Unknown, 1.0, 15d, 5.58, 1.21, 47.8, 7.62);
+        SoilCarbonPredictorInput inputsAfterPerturbation = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.Unknown, 2.0, 15d, 5.58, 1.21, 47.8, 7.62);
 
         SoilCarbonPredictorCompartments cChange =new SoilCarbonPredictorCompartments(1.0, 5d, 20d);
 

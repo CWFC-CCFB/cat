@@ -9,7 +9,7 @@ import java.util.Map;
 import lerfob.carbonbalancetool.CATCompatibleStand;
 import repicea.simulation.covariateproviders.treelevel.TreeStatusProvider.StatusClass;
 
-class CATGrowthSimulationPlot implements CATCompatibleStand {
+public class CATGrowthSimulationPlot implements CATCompatibleStand {
 
 	private final Map<StatusClass, List<CATGrowthSimulationTree>> statusMap;
 	private final double areaHa;

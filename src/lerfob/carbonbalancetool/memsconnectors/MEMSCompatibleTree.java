@@ -51,9 +51,11 @@ public interface MEMSCompatibleTree extends BasalAreaM2Provider, CATCompatibleTr
 	 * Douglas fir, jack pine, black spruce, and balsam fir. Canadian Journal of 
 	 * Research 37: 1024-1033</a>
 	 */
-	public default double getAnnualFoliarBiomassProductionMgYr() {
-		return 0.15 * Math.pow(getAnnualCrossSectionalAreaGrowthCm2(), 1.18) * 0.001;
-	}
+	public double getAnnualFoliarBiomassProductionMgYr(); 
+	
+//	{
+//		return 0.15 * Math.pow(getAnnualCrossSectionalAreaGrowthCm2(), 1.18) * 0.001;
+//	}
 
 	/**
 	 * Provide the annual production in branch biomass.<p>
@@ -70,10 +72,10 @@ public interface MEMSCompatibleTree extends BasalAreaM2Provider, CATCompatibleTr
 		return getAnnualFoliarBiomassProductionMgYr() * .5;
 	}
 
-	/**
-	 * Provide the annual increment of the cross-sectional area.
-	 * @return the increment (cm2/yr)
-	 */
-	public double getAnnualCrossSectionalAreaGrowthCm2();
+//	/**
+//	 * Provide the annual increment of the cross-sectional area.
+//	 * @return the increment (cm2/yr)
+//	 */
+//	public double getAnnualCrossSectionalAreaGrowthCm2();
 
 }

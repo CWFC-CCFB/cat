@@ -717,22 +717,40 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 	}
 	
 	/**
-	 * Provide the annual carbon from the litterfall and root turnover.
+	 * Provide the annual carbon from the litterfall.
 	 * @param trees a List of MEMSCompatibleTree instances
 	 * @param subject a MonteCarloSimulationCompliantObject instance
 	 * @return the amount of carbon (Mg)
 	 */
-	public double getLitterFallAndRootAnnualCarbonMg(Collection<MEMSCompatibleTree> trees, MonteCarloSimulationCompliantObject subject) {
+	public double getLitterFallAnnualCarbonMg(Collection<MEMSCompatibleTree> trees, MonteCarloSimulationCompliantObject subject) {
 		double totalCarbonMg = 0d;
 		if (trees != null) {
 			for (MEMSCompatibleTree tree : trees) {
-				double treeContribution = tree.getAnnualFoliarBiomassProductionMgYr() + tree.getAnnualBranchBiomassProductionMgYr() + tree.getAnnualFineRootBiomassProductionMgYr();
+				double treeContribution = tree.getAnnualFoliarBiomassProductionMgYr() + tree.getAnnualBranchBiomassProductionMgYr();
 				totalCarbonMg += treeContribution * tree.getNumber() * tree.getPlotWeight();
 			}
 		}
 		return totalCarbonMg;
 	}
+
 	
+	/**
+	 * Provide the annual carbon from fine root turn over.
+	 * @param trees a List of MEMSCompatibleTree instances
+	 * @param subject a MonteCarloSimulationCompliantObject instance
+	 * @return the amount of carbon (Mg)
+	 */
+	public double getFineRootTurnOverAnnualCarbonMg(Collection<MEMSCompatibleTree> trees, MonteCarloSimulationCompliantObject subject) {
+		double totalCarbonMg = 0d;
+		if (trees != null) {
+			for (MEMSCompatibleTree tree : trees) {
+				double treeContribution = tree.getAnnualFineRootBiomassProductionMgYr();
+				totalCarbonMg += treeContribution * tree.getNumber() * tree.getPlotWeight();
+			}
+		}
+		return totalCarbonMg;
+	}
+
 
 	@Override
 	public boolean isVisible() {

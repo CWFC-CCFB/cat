@@ -228,7 +228,6 @@ public class CATCompartment extends CarbonArray implements Comparable {
 	public CATCompartmentManager getCompartmentManager() {return compartmentManager;}
 	protected void addFatherCompartment(CATCompartment carbonCompartment) {fatherCompartments.add(carbonCompartment);}
 	
-	protected double[] getCalculatedCarbonArray() {return calculatedCarbonArray;}
 	protected double getIntegratedCarbon() {return integratedCarbon;}
 	protected void setIntegratedCarbon(double integratedCarbon) {this.integratedCarbon = integratedCarbon;}
 	protected void setCarbonUnitsArray(Collection<? extends CarbonUnit>[] carbonUnitsCollectionArray) {this.carbonUnitsCollectionArray = carbonUnitsCollectionArray;}
@@ -238,7 +237,7 @@ public class CATCompartment extends CarbonArray implements Comparable {
 	 * This method initializes the carbon map array.
 	 */
 	protected void resetCarbon() {
-		calculatedCarbonArray = new double[getCompartmentManager().getTimeTable().size()];
+		initializeCarbonArray(getCompartmentManager().getTimeTable().size());
 		integratedCarbon = 0d;
 		isMerged = false;
 	}
@@ -254,7 +253,7 @@ public class CATCompartment extends CarbonArray implements Comparable {
 		Matrix value = new Matrix(getCompartmentManager().getTimeTable().size(),1);
 		
 		for (int i = 0; i < value.m_iRows; i++) {
-			value.setValueAt(i, 0, calculatedCarbonArray[i] * areaFactor);
+			value.setValueAt(i, 0, getCarbonArray()[i] * areaFactor);
 		}
 		
 		return value;
@@ -282,7 +281,7 @@ public class CATCompartment extends CarbonArray implements Comparable {
 				
 				// for the calculated carbon
 				for (int i = 0; i < getCompartmentManager().getTimeTable().size(); i++) {
-					calculatedCarbonArray[i] += comp.getCalculatedCarbonArray()[i];
+					getCarbonArray()[i] += comp.getCarbonArray()[i];
 				}
 				
 				// for the integrated carbon
