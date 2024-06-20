@@ -29,9 +29,11 @@ import lerfob.carbonbalancetool.CATSimulationResult;
 import lerfob.carbonbalancetool.CarbonAccountingTool;
 import lerfob.carbonbalancetool.CarbonAccountingTool.CATMode;
 import lerfob.carbonbalancetool.CarbonAccountingToolTest;
+import lerfob.carbonbalancetool.io.CATGrowthSimulationCompositeStand;
 import lerfob.carbonbalancetool.io.CATGrowthSimulationPlot;
 import lerfob.carbonbalancetool.io.CATGrowthSimulationRecordReader;
 import lerfob.carbonbalancetool.io.CATGrowthSimulationTreeWithDBH;
+import lerfob.carbonbalancetool.memsconnectors.MEMSSite.SiteType;
 import repicea.io.tools.ImportFieldManager;
 import repicea.math.Matrix;
 import repicea.math.SymmetricMatrix;
@@ -52,6 +54,11 @@ public class MEMSConnectorsTest {
 				String originalSpeciesName,
 				Double dbhCm) {
 			return new CATGrowthSimulationTreeHacked(plot, statusClass, treeOverbarkVolumeDm3, numberOfTrees, originalSpeciesName, dbhCm);
+		}
+
+		@Override
+		protected CATGrowthSimulationCompositeStand createCompositeStand(String standIdentification, int dateYr, boolean scaleDependentInterventionResult) {
+			return new CATGrowthSimulationCompositeStandHacked(dateYr, standIdentification, this, scaleDependentInterventionResult);
 		}
 	}
 	
@@ -76,9 +83,20 @@ public class MEMSConnectorsTest {
 			return 0.15 * Math.pow(10, 1.18) * 0.001; // 10 cm2 of cross section growth is assumed for the test
 		}
 	}
-	
+
+	static class CATGrowthSimulationCompositeStandHacked extends CATGrowthSimulationCompositeStand implements MEMSCompatibleStand {
+
+		CATGrowthSimulationCompositeStandHacked(int dateYr, String standIdentification, CATGrowthSimulationRecordReader reader, boolean isInterventionResult) {
+			super(dateYr, standIdentification, reader, isInterventionResult);
+		}
+
+		@Override
+		public SiteType getSiteType() {return SiteType.Montmorency2;}
+	}
+
 	@Test
 	public void testMEMSIntegration01() throws Exception {
+		CATGrowthSimulationRecordReader.TestUnevenAgedInfiniteSequence = true;	// this way we get the application scale set to stand
 		String filename = ObjectUtility.getPackagePath(CarbonAccountingToolTest.class) + "io" + File.separator + "MathildeTreeExport.csv";
 		String ifeFilename = ObjectUtility.getPackagePath(getClass()) + "MathildeTreeExportWithDBH.ife";
 //		String refFilename = ObjectUtility.getPackagePath(getClass()) + "io" + File.separator + "ExampleYieldTableReference.xml";
@@ -95,35 +113,35 @@ public class MEMSConnectorsTest {
 		Matrix evolSoil = estimate.getMean();
 		Assert.assertEquals("Testing nb of entries", 36, evolSoil.m_iRows);
 		Assert.assertEquals("Testing second entry", 81.63271051514383, evolSoil.getValueAt(1, 0), 1E-8);
-		Assert.assertEquals("Testing first last", 125.30530543551049, evolSoil.getValueAt(35, 0), 1E-8);
+		Assert.assertEquals("Testing first last", 121.54493372864661, evolSoil.getValueAt(35, 0), 1E-8);
 
 		estimate = simResults.getEvolutionMap().get(CompartmentInfo.Humus);
 		evolSoil = estimate.getMean();
 		Assert.assertEquals("Testing nb of entries", 36, evolSoil.m_iRows);
 		Assert.assertEquals("Testing second entry", 27.202404594823964, evolSoil.getValueAt(1, 0), 1E-8);
-		Assert.assertEquals("Testing first last", 54.53071761069785, evolSoil.getValueAt(35, 0), 1E-8);
+		Assert.assertEquals("Testing first last", 52.481212174299145, evolSoil.getValueAt(35, 0), 1E-8);
 
 		estimate = simResults.getEvolutionMap().get(CompartmentInfo.MineralSoil);
 		evolSoil = estimate.getMean();
 		Assert.assertEquals("Testing nb of entries", 36, evolSoil.m_iRows);
 		Assert.assertEquals("Testing second entry", 54.430305920319874, evolSoil.getValueAt(1, 0), 1E-8);
-		Assert.assertEquals("Testing first last", 70.77458782481267, evolSoil.getValueAt(35, 0), 1E-8);
+		Assert.assertEquals("Testing first last", 69.06372155434751, evolSoil.getValueAt(35, 0), 1E-8);
 		
 		estimate = simResults.getBudgetMap().get(CompartmentInfo.Soil);
 		evolSoil = estimate.getMean();
 		Assert.assertEquals("Testing nb of entries", 1, evolSoil.m_iRows);
-		Assert.assertEquals("Testing entry", 100.87408913646546, evolSoil.getValueAt(0, 0), 1E-8);
+		Assert.assertEquals("Testing entry", 97.9033534714863, evolSoil.getValueAt(0, 0), 1E-8);
 
 		estimate = simResults.getBudgetMap().get(CompartmentInfo.Humus);
 		evolSoil = estimate.getMean();
 		Assert.assertEquals("Testing nb of entries", 1, evolSoil.m_iRows);
-		Assert.assertEquals("Testing entry", 40.217945821160825, evolSoil.getValueAt(0, 0), 1E-8);
+		Assert.assertEquals("Testing entry", 38.33797503396882, evolSoil.getValueAt(0, 0), 1E-8);
 
 		estimate = simResults.getBudgetMap().get(CompartmentInfo.MineralSoil);
 		evolSoil = estimate.getMean();
 		Assert.assertEquals("Testing nb of entries", 1, evolSoil.m_iRows);
-		Assert.assertEquals("Testing entry", 60.65614331530463, evolSoil.getValueAt(0, 0), 1E-8);
-		
+		Assert.assertEquals("Testing entry", 59.56537843751747, evolSoil.getValueAt(0, 0), 1E-8);
+		CATGrowthSimulationRecordReader.TestUnevenAgedInfiniteSequence = false;	// set the static variable to its original value
 	}
 	
 }

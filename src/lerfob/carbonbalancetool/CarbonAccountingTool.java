@@ -426,7 +426,7 @@ public class CarbonAccountingTool extends AbstractGenericEngine implements REpic
 				addTask(new CATTask(Task.LOG_AND_BUCK_TREES, this));
 				addTask(new CATTask(Task.GENERATE_WOODPRODUCTS, this));
 				addTask(new CATTask(Task.ACTUALIZE_CARBON, this));
-				if (carbonCompartmentManager.isMEMSEnabled) {
+				if (carbonCompartmentManager.isMEMSEnabled()) {
 					addTask(new CATTask(Task.RETRIEVE_SOIL_CARBON_INPUT, this));
 				}
 				addTask(new CATTask(Task.COMPILE_CARBON, this));

@@ -65,39 +65,17 @@ public class LeftInForestCarbonUnit extends CarbonUnit {
 	@Override
 	protected void actualizeCarbon(CATCompartmentManager compartmentManager) {
 		super.actualizeCarbon(compartmentManager);
+		if (compartmentManager.isMEMSEnabled()) {
+			double[] releasedCarbonArray = getReleasedCarbonArray();
 
-		double[] releasedCarbonArray = getReleasedCarbonArray();
+			if (getWoodyDebrisType() != null) {
+				boolean addToHumus = getWoodyDebrisType() == WoodyDebrisProcessor.WoodyDebrisProcessorID.FineWoodyDebris || getWoodyDebrisType() == WoodyDebrisProcessor.WoodyDebrisProcessorID.CommercialWoodyDebris;
 
-		if (getWoodyDebrisType() != null) {
-			boolean addToHumus = getWoodyDebrisType() == WoodyDebrisProcessor.WoodyDebrisProcessorID.FineWoodyDebris || getWoodyDebrisType() == WoodyDebrisProcessor.WoodyDebrisProcessorID.CommercialWoodyDebris;
-
-			for (int i = getIndexInTimeScale(); i < getTimeTable().size(); i++) {
-				compartmentManager.getMEMS().addCarbonToMEMSInput(i, releasedCarbonArray[i], addToHumus);
+				for (int i = getIndexInTimeScale(); i < getTimeTable().size(); i++) {
+					compartmentManager.getMEMS().addCarbonToMEMSInput(i, releasedCarbonArray[i], addToHumus);
+				}
 			}
 		}
-
-//		double proportion;
-//		for (int i = getIndexInTimeScale(); i < getTimeTable().size(); i++) {
-//			proportion = releasedCarbonArray[i] / getInitialCarbon();
-//			AmountMap<Element> updatedMap = getAmountMap().multiplyByAScalar(proportion * getCarbonUnitFeature().getDisposableProportion());
-//			AbstractProductionLineProcessor disposedToProcessor = (AbstractProductionLineProcessor) ((ProductionLineProcessor) getCarbonUnitFeature().getProcessor()).disposedToProcessor;
-//			if (updatedMap.get(Element.Volume) > 0) {
-//				if (disposedToProcessor != null) { // new implementation
-//					CarbonUnit newUnit = new CarbonUnit(i, null, updatedMap, this);
-//					newUnit.getAmountMap().put(Element.EmissionsCO2Eq, 0d);		// reset the emissions to 0 after useful lifetime - otherwise there is a double count
-//					List<ProcessUnit> disposedUnits = disposedToProcessor.createProcessUnitsFromThisProcessor(newUnit, 100);
-//					Collection<CarbonUnit> processedUnits = (Collection) disposedToProcessor.doProcess(disposedUnits);
-//					for (CarbonUnit carbonUnit : processedUnits) {
-//						if (carbonUnit.getLastStatus().equals(CarbonUnitStatus.EndUseWoodProduct)) {
-//							carbonUnit.addStatus(CarbonUnitStatus.Recycled);
-//						}
-//					}
-//					compartmentManager.getCarbonToolSettings().getCurrentProductionProcessorManager().getCarbonUnitMap().add(processedUnits);
-//				} else {	// former implementation
-//					((ProductionLineProcessor) getCarbonUnitFeature().getProcessor()).getProductionLine().getManager().sendToTheLandfill(i, getSpeciesName(), getSpeciesType(), getStatusClass(), updatedMap);
-//				}
-//			}
-//		}
 	}
 	
 	@Override

@@ -29,7 +29,7 @@ import lerfob.carbonbalancetool.CATUtility.BiomassParametersWrapper;
 import lerfob.carbonbalancetool.CATUtility.ProductionManagerName;
 import lerfob.carbonbalancetool.CATUtility.ProductionProcessorManagerWrapper;
 import lerfob.carbonbalancetool.biomassparameters.BiomassParameters;
-import lerfob.carbonbalancetool.memsconnectors.MEMSSite.SiteName;
+import lerfob.carbonbalancetool.memsconnectors.MEMSSite.SiteType;
 import lerfob.carbonbalancetool.memsconnectors.MEMSSiteParametersWrapper;
 import lerfob.carbonbalancetool.productionlines.ProductionLineManager;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager;
@@ -214,11 +214,11 @@ public final class CATSettings {
 
 	protected final Map<ProductionManagerName, ProductionProcessorManagerWrapper> productionManagerMap = new LinkedHashMap<ProductionManagerName, ProductionProcessorManagerWrapper>();
 	protected final Map<BiomassParametersName, BiomassParametersWrapper> biomassParametersMap = new LinkedHashMap<BiomassParametersName, BiomassParametersWrapper>();
-	protected final Map<SiteName, MEMSSiteParametersWrapper> memsParametersMap = new LinkedHashMap<SiteName, MEMSSiteParametersWrapper>();
+	protected final Map<SiteType, MEMSSiteParametersWrapper> memsParametersMap = new LinkedHashMap<SiteType, MEMSSiteParametersWrapper>();
 	
 	private ProductionManagerName currentProcessorManager = ProductionManagerName.values()[0];
 	private BiomassParametersName currentBiomassParameters = BiomassParametersName.values()[0]; 
-	private SiteName currentMemsParameters = SiteName.values()[0];
+	private SiteType currentMemsParameters = SiteType.values()[0];
 	
 	/**
 	 * Constructor.
@@ -370,11 +370,11 @@ public final class CATSettings {
 	 * Set the current MEMS parameters.
 	 * @param site a SiteName enum
 	 */
-	public void setCurrentMEMSParametersSelection(SiteName site) {
+	public void setCurrentMEMSParametersSelection(SiteType site) {
 		currentMemsParameters = site;
 	}
 	
-	protected SiteName getCurrentMEMSParametersSelection() {return currentMemsParameters;}
+	protected SiteType getCurrentMEMSParametersSelection() {return currentMemsParameters;}
 
 	
 	/**

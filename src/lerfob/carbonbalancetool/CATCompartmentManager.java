@@ -29,8 +29,8 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 
 import lerfob.carbonbalancetool.CATCompartment.CompartmentInfo;
+import lerfob.carbonbalancetool.memsconnectors.MEMSCompatibleStand;
 import lerfob.carbonbalancetool.memsconnectors.MEMSCompatibleTree;
-import lerfob.carbonbalancetool.memsconnectors.MEMSSite;
 import lerfob.carbonbalancetool.memsconnectors.MEMSWrapper;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
@@ -113,7 +113,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	private ManagementType managementType;
 	
 	protected CATSingleSimulationResult summary;
-	protected boolean isMEMSEnabled;
+	private boolean isMEMSEnabled;
 	private final MEMSWrapper memsWrapper; 
 	
 	
@@ -137,6 +137,12 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		initializeCompartments();
 	}
 		
+	/**
+	 * Indicate whether MEMS soil module is enabled. 
+	 * @return a boolean
+	 */
+	public boolean isMEMSEnabled() {return isMEMSEnabled;}
+	
 	/**
 	 * Trees are registered in the treeCollections map and the treeRegister map immediately after the manager has been reset following
 	 * the triggering of the calculateCarbon action.
@@ -282,7 +288,6 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 				
 			timeTable = new CATTimeTable(stands, initialAgeYr, nbExtraYears);
 
-			isMEMSEnabled = true;	// default
 			// scan all the trees to identify the different species and store their codes in the speciesList member
 			speciesList.clear();
 			for (CATCompatibleStand s : stands) {
@@ -292,12 +297,36 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 						if (!speciesList.contains(tree.getSpeciesName())) {
 							speciesList.add(tree.getSpeciesName());
 						}
-						if (!(tree instanceof MEMSCompatibleTree)) {
-							isMEMSEnabled = false;	// false if at least one tree does not implement MEMSCompatibleTree
-						}
 					}
 				}
 			}
+
+			// check if mems must be enabled
+			CATCompatibleStand firstStand = stands.get(0);
+			if (firstStand.getApplicationScale() == ApplicationScale.Stand &&
+					firstStand instanceof MEMSCompatibleStand && 
+					((MEMSCompatibleStand) firstStand).getSiteType() != null) {
+				isMEMSEnabled = true;	// default
+				outer:
+				for (CATCompatibleStand s : stands) {
+					for (StatusClass sc : StatusClass.values()) {
+						Collection<CATCompatibleTree> trees = s.getTrees(sc);
+						for (CATCompatibleTree tree : trees) {
+							if (!speciesList.contains(tree.getSpeciesName())) {
+								speciesList.add(tree.getSpeciesName());
+							}
+							if (!(tree instanceof MEMSCompatibleTree)) {
+								isMEMSEnabled = false;	// false if at least one tree does not implement MEMSCompatibleTree
+								break outer;
+							}
+						}
+					}
+				}
+			} else { // if application scale is not stand then mems is disabled
+				isMEMSEnabled = false;
+			}
+			
+			
 		}
 	}
 	
@@ -345,8 +374,9 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		clearTreeCollections();
 		resetCompartments();
 
-		// TODO Allow user-selected site name here through UI
-		memsWrapper.prepareSimulation(MEMSSite.SiteName.Montmorency2);
+		if (isMEMSEnabled()) {
+			memsWrapper.prepareSimulation(((MEMSCompatibleStand) stands.get(0)).getSiteType());
+		}
 
 		if (getCarbonToolSettings().formerImplementation) {
 			ProductionLineManager productionLines = carbonAccountingToolSettings.getProductionLines();

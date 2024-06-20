@@ -90,11 +90,12 @@ class CATSingleSimulationResult implements CATSimulationResult {
 	private final ParameterSetup setup;
 	private final String resultId;
 	private boolean isValid;
+	private final boolean isMEMSEnabled;
 		
 	CATSingleSimulationResult(String resultId, CATCompartmentManager manager) {
 
 		isValid = true;
-		
+		isMEMSEnabled = manager.isMEMSEnabled();
 		isEvenAged = manager.isInfiniteSequenceAllowed();
 		setup = new ParameterSetup(manager.getCarbonToolSettings());
 		
@@ -239,8 +240,9 @@ class CATSingleSimulationResult implements CATSimulationResult {
 	public MonteCarloEstimate getHeatProductionEvolutionKWhPerHa() {return heatProductionEvolutionKWhHa;}
 
 	@Override
-	public boolean isValid() {
-		return isValid;
-	}
+	public boolean isValid() {return isValid;}
 
+	@Override
+	public boolean isSoilModuleEnabled() {return isMEMSEnabled;}
+	
 }

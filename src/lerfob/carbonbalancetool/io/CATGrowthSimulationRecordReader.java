@@ -275,6 +275,10 @@ public class CATGrowthSimulationRecordReader extends REpiceaRecordReader {
 				isInterventionResult, statusClass, treeOverbarkVolumeDm3, numberOfTrees, originalSpeciesName, dbhCm);
 	}
 	
+	protected CATGrowthSimulationCompositeStand createCompositeStand(String standIdentification, int dateYr, boolean scaleDependentInterventionResult) {
+		return new CATGrowthSimulationCompositeStand(dateYr, standIdentification, this, scaleDependentInterventionResult);
+	}
+	
 	protected void instantiatePlotAndTree(String standIdentification, int dateYr, int realization, String plotID, double plotAreaHa,
 			boolean isInterventionResult, StatusClass statusClass, double treeOverbarkVolumeDm3, double numberOfTrees, 
 			String originalSpeciesName, Double dbhCm) {
@@ -285,7 +289,8 @@ public class CATGrowthSimulationRecordReader extends REpiceaRecordReader {
 		Map<Boolean, CATGrowthSimulationCompositeStand> innerMap = standMap.get(dateYr);
 		boolean scaleDependentInterventionResult = scale == ApplicationScale.FMU ? false : isInterventionResult;
 		if (!innerMap.containsKey(scaleDependentInterventionResult)) {
-			innerMap.put(scaleDependentInterventionResult, new CATGrowthSimulationCompositeStand(dateYr, standIdentification, this, scaleDependentInterventionResult));
+//			innerMap.put(scaleDependentInterventionResult, new CATGrowthSimulationCompositeStand(dateYr, standIdentification, this, scaleDependentInterventionResult));
+			innerMap.put(scaleDependentInterventionResult, createCompositeStand(standIdentification, dateYr, scaleDependentInterventionResult));
 		}
 		CATGrowthSimulationCompositeStand compositeStand = innerMap.get(scaleDependentInterventionResult);
 		

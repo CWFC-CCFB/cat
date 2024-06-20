@@ -70,7 +70,6 @@ import lerfob.carbonbalancetool.CATUtility.ProductionProcessorManagerWrapper;
 import lerfob.carbonbalancetool.io.CATGrowthSimulationRecordReader;
 import lerfob.carbonbalancetool.io.CATSpeciesSelectionDialog;
 import lerfob.carbonbalancetool.io.CATYieldTableRecordReader;
-import lerfob.carbonbalancetool.memsconnectors.MEMSSiteParametersWrapper;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManagerException;
 import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettings;
 import repicea.app.UseModeProvider.UseMode;
@@ -218,7 +217,7 @@ public class CATFrame extends REpiceaFrame implements PropertyChangeListener,
 
 	protected final REpiceaComboBoxOpenButton<ProductionProcessorManagerWrapper> hwpComboBox;
 	protected final REpiceaComboBoxOpenButton<BiomassParametersWrapper> biomassComboBox;
-	protected final REpiceaComboBoxOpenButton<MEMSSiteParametersWrapper> memsSiteComboBox;
+//	protected final REpiceaComboBoxOpenButton<MEMSSiteParametersWrapper> memsSiteComboBox;
 	
 	private final JMenu file;
 	private final JMenu view;
@@ -386,10 +385,10 @@ public class CATFrame extends REpiceaFrame implements PropertyChangeListener,
 		BiomassParametersWrapper currentBiomassParametersWrapper = caller.getCarbonToolSettings().biomassParametersMap.get(caller.getCarbonToolSettings().getCurrentBiomassParametersSelection());
 		biomassComboBox.getComboBox().setSelectedItem(currentBiomassParametersWrapper);
 		
-		memsSiteComboBox = new REpiceaComboBoxOpenButton<MEMSSiteParametersWrapper>(MessageID.MEMSParameters);
-		memsSiteComboBox.getComboBox().setModel(new DefaultComboBoxModel<MEMSSiteParametersWrapper>(caller.getCarbonToolSettings().memsParametersMap.values().toArray(new MEMSSiteParametersWrapper[]{})));
-		MEMSSiteParametersWrapper currentMEMSParametersWrapper = caller.getCarbonToolSettings().memsParametersMap.get(caller.getCarbonToolSettings().getCurrentMEMSParametersSelection());
-		memsSiteComboBox.getComboBox().setSelectedItem(currentMEMSParametersWrapper);
+//		memsSiteComboBox = new REpiceaComboBoxOpenButton<MEMSSiteParametersWrapper>(MessageID.MEMSParameters);
+//		memsSiteComboBox.getComboBox().setModel(new DefaultComboBoxModel<MEMSSiteParametersWrapper>(caller.getCarbonToolSettings().memsParametersMap.values().toArray(new MEMSSiteParametersWrapper[]{})));
+//		MEMSSiteParametersWrapper currentMEMSParametersWrapper = caller.getCarbonToolSettings().memsParametersMap.get(caller.getCarbonToolSettings().getCurrentMEMSParametersSelection());
+//		memsSiteComboBox.getComboBox().setSelectedItem(currentMEMSParametersWrapper);
 
 		refreshInterface();
 		setSimulationRunning(false);
@@ -686,7 +685,7 @@ public class CATFrame extends REpiceaFrame implements PropertyChangeListener,
 		calculateCarbonButton.addActionListener(this);
 		biomassComboBox.getComboBox().addItemListener(this);
 		hwpComboBox.getComboBox().addItemListener(this);
-		memsSiteComboBox.getComboBox().addItemListener(this);
+//		memsSiteComboBox.getComboBox().addItemListener(this);
 		calculateInCO2.addChangeListener(graphicPanel);
 		calculateInCarbon.addChangeListener(graphicPanel);
 		confidenceIntervalSlider.addPropertyChangeListener(graphicPanel);
@@ -709,7 +708,7 @@ public class CATFrame extends REpiceaFrame implements PropertyChangeListener,
 		calculateCarbonButton.removeActionListener(this);
 		biomassComboBox.getComboBox().removeItemListener(this);
 		hwpComboBox.getComboBox().removeItemListener(this);
-		memsSiteComboBox.getComboBox().removeItemListener(this);
+//		memsSiteComboBox.getComboBox().removeItemListener(this);
 		calculateInCO2.removeChangeListener(graphicPanel);
 		calculateInCarbon.removeChangeListener(graphicPanel);
 		confidenceIntervalSlider.removePropertyChangeListener(graphicPanel);
@@ -777,8 +776,8 @@ public class CATFrame extends REpiceaFrame implements PropertyChangeListener,
 			caller.getCarbonToolSettings().setCurrentBiomassParametersSelection(((BiomassParametersWrapper) biomassComboBox.getComboBox().getSelectedItem()).name);
 		} else if (arg0.getSource().equals(hwpComboBox.getComboBox())) {
 			caller.getCarbonToolSettings().setCurrentProductionProcessorManagerSelection(((ProductionProcessorManagerWrapper) hwpComboBox.getComboBox().getSelectedItem()).name);
-		} else if (arg0.getSource().equals(memsSiteComboBox.getComboBox())) {
-			caller.getCarbonToolSettings().setCurrentMEMSParametersSelection(((MEMSSiteParametersWrapper) memsSiteComboBox.getComboBox().getSelectedItem()).getName());
+//		} else if (arg0.getSource().equals(memsSiteComboBox.getComboBox())) {
+//			caller.getCarbonToolSettings().setCurrentMEMSParametersSelection(((MEMSSiteParametersWrapper) memsSiteComboBox.getComboBox().getSelectedItem()).getName());
 		}
 	}
 

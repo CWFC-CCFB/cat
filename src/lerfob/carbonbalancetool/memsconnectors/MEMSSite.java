@@ -12,11 +12,11 @@ import repicea.util.REpiceaTranslator.TextableEnum;
 
 public class MEMSSite {
 	
-    public static enum SiteName implements TextableEnum {
+    public static enum SiteType implements TextableEnum {
         Montmorency1("Montmorency1", "Montmorency1"),
         Montmorency2("Montmorency2", "Montmorency2");
 
-        SiteName(String englishText, String frenchText) {
+        SiteType(String englishText, String frenchText) {
             setText(englishText, frenchText);
         }
         @Override
@@ -46,6 +46,7 @@ public class MEMSSite {
     public MetropolisHastingsAlgorithm getMetropolisHastingsAlgorithm() {
         return mha;
     }
+    
     public static void main(String argv[])  throws Exception {
         {
             MEMSSite siteMMF = new MEMSSite();
@@ -71,7 +72,7 @@ public class MEMSSite {
             try {
                 siteMMF.mha = (MetropolisHastingsAlgorithm) dser.readObject();
 
-                XmlSerializer ser = new XmlSerializer(path + "sites" + ObjectUtility.PathSeparator + SiteName.Montmorency1.name() + ".site.zml");
+                XmlSerializer ser = new XmlSerializer(path + "sites" + ObjectUtility.PathSeparator + SiteType.Montmorency1.name() + ".site.zml");
                 ser.writeObject(siteMMF);
 
             } catch (UnmarshallingException e) {
@@ -103,7 +104,7 @@ public class MEMSSite {
             try {
                 siteMMF.mha = (MetropolisHastingsAlgorithm) dser.readObject();
 
-                XmlSerializer ser = new XmlSerializer(path + "sites" + ObjectUtility.PathSeparator + SiteName.Montmorency2.name() + ".site.zml");
+                XmlSerializer ser = new XmlSerializer(path + "sites" + ObjectUtility.PathSeparator + SiteType.Montmorency2.name() + ".site.zml");
                 ser.writeObject(siteMMF);
 
             } catch (UnmarshallingException e) {

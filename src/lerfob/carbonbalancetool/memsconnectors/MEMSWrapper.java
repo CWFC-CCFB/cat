@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import lerfob.carbonbalancetool.CATCompartmentManager;
 import lerfob.carbonbalancetool.CATTimeTable;
 import lerfob.carbonbalancetool.CarbonArray;
-import lerfob.carbonbalancetool.memsconnectors.MEMSSite.SiteName;
+import lerfob.carbonbalancetool.memsconnectors.MEMSSite.SiteType;
 import lerfob.mems.SoilCarbonPredictor;
 import lerfob.mems.SoilCarbonPredictorCompartments;
 import lerfob.mems.SoilCarbonPredictorInput;
@@ -63,9 +63,9 @@ public class MEMSWrapper {
     SoilCarbonPredictor predictor;
     SoilCarbonPredictorCompartments compartments;
     
-    static ConcurrentHashMap<MEMSSite.SiteName, MEMSSite> sites = new ConcurrentHashMap<MEMSSite.SiteName, MEMSSite>();
+    static ConcurrentHashMap<MEMSSite.SiteType, MEMSSite> sites = new ConcurrentHashMap<MEMSSite.SiteType, MEMSSite>();
 
-    MEMSSite.SiteName currentSiteName;
+    MEMSSite.SiteType currentSiteName;
     
     private final CATCompartmentManager manager;
 
@@ -93,7 +93,7 @@ public class MEMSWrapper {
      * This method is called as the carbon compartment manager is reset.
      * @param siteName a MEMSSite.SiteName enum
      */
-    public void prepareSimulation(SiteName siteName) {
+    public void prepareSimulation(SiteType siteName) {
 
     	CATTimeTable timeTable = manager.getTimeTable();
         // run a simulation to reach stability into compartment bins
@@ -114,7 +114,7 @@ public class MEMSWrapper {
         setSiteAndEstimateInitialCarbon(siteName);
     }
     
-    private void setSiteAndEstimateInitialCarbon(SiteName siteName) {
+    private void setSiteAndEstimateInitialCarbon(SiteType siteName) {
         currentSiteName = siteName;
 
         if (!sites.containsKey(currentSiteName)) {

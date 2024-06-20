@@ -2,7 +2,7 @@
  * This file is part of the CAT library.
  *
  * Copyright (C) 2024 His Majesty the King in Right of Canada
- * Authors: Jean-Francois Lavoie and Mathieu Fortin, Canadian Wood Fibre Centre
+ * Authors: Mathieu Fortin, Canadian Wood Fibre Centre
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

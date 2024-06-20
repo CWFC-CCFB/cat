@@ -268,20 +268,24 @@ class CATCompartmentCompileLibrary {
 			carbonCompartment.mergeWithFatherCompartments();
 			break;
 		case Humus:
-			for (int i = 0; i < timeTable.size(); i++) {
-				double humusMgHa = manager.getMEMS().getCarbonStockMgHaForThisYear(i).humus;
-//				System.out.println("i = " + i + "; humusMgHa = " + humusMgHa);
-				carbonCompartment.setCarbonIntoArray(i, humusMgHa * areaHa);
+			if (manager.isMEMSEnabled()) {
+				for (int i = 0; i < timeTable.size(); i++) {
+					double humusMgHa = manager.getMEMS().getCarbonStockMgHaForThisYear(i).humus;
+//					System.out.println("i = " + i + "; humusMgHa = " + humusMgHa);
+					carbonCompartment.setCarbonIntoArray(i, humusMgHa * areaHa);
+				}
+				carbonCompartment.setIntegratedCarbon(integrateCarbonOverHorizon(carbonCompartment) / revolutionPeriod);  // no need to correct for the area because the integration relies on the carbon array which contains area corrected values
 			}
-			carbonCompartment.setIntegratedCarbon(integrateCarbonOverHorizon(carbonCompartment) / revolutionPeriod);  // no need to correct for the area because the integration relies on the carbon array which contains area corrected values
 			break;
 		case MineralSoil:
-			for (int i = 0; i < timeTable.size(); i++) {
-				double soilMgHa = manager.getMEMS().getCarbonStockMgHaForThisYear(i).soil;
-//				System.out.println("i = " + i + "; soilMgHa = " + soilMgHa);
-				carbonCompartment.setCarbonIntoArray(i, soilMgHa* areaHa);
+			if (manager.isMEMSEnabled()) {
+				for (int i = 0; i < timeTable.size(); i++) {
+					double soilMgHa = manager.getMEMS().getCarbonStockMgHaForThisYear(i).soil;
+//					System.out.println("i = " + i + "; soilMgHa = " + soilMgHa);
+					carbonCompartment.setCarbonIntoArray(i, soilMgHa* areaHa);
+				}
+				carbonCompartment.setIntegratedCarbon(integrateCarbonOverHorizon(carbonCompartment) / revolutionPeriod);  // no need to correct for the area because the integration relies on the carbon array which contains area corrected values
 			}
-			carbonCompartment.setIntegratedCarbon(integrateCarbonOverHorizon(carbonCompartment) / revolutionPeriod);  // no need to correct for the area because the integration relies on the carbon array which contains area corrected values
 			break;
 		case Soil:
 			carbonCompartment.mergeWithFatherCompartments();

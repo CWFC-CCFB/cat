@@ -60,6 +60,13 @@ public class CATExportTool extends REpiceaExportTool {
 
 	private static final String AllSpecies = "All species";
 	
+	private static final List<CompartmentInfo> SOIL_COMPARTMENTS = new ArrayList<CompartmentInfo>();
+	static {
+		SOIL_COMPARTMENTS.add(CompartmentInfo.Soil);
+		SOIL_COMPARTMENTS.add(CompartmentInfo.MineralSoil);
+		SOIL_COMPARTMENTS.add(CompartmentInfo.Humus);
+	}
+	
 	private static enum MessageID implements TextableEnum {
 		Year("Year", "Annee"),
 		Compartment("Compart", "Compart"),
@@ -219,6 +226,10 @@ public class CATExportTool extends REpiceaExportTool {
 			}
 		}
 
+		private boolean shouldCompartmentBeIncludedInExport(CompartmentInfo compartmentInfo) {
+			return caller.summary.isSoilModuleEnabled() || !SOIL_COMPARTMENTS.contains(compartmentInfo);
+		}
+		
 		private void createCarbonStockAndFluxEvolutionRecordSet() throws Exception {
 			GExportRecord r;
 			
@@ -231,32 +242,34 @@ public class CATExportTool extends REpiceaExportTool {
 			
 			GExportFieldDetails standIDField = new GExportFieldDetails("StandID", standID);
 			for (CompartmentInfo compartmentInfo : CompartmentInfo.values()) {
-				MonteCarloEstimate estimate = caller.summary.getEvolutionMap().get(compartmentInfo);
-				int nbRealizations = estimate.getNumberOfRealizations();
-				for (int i = 0; i < timeScale.size(); i++) {
-					for (int j = 0; j < nbRealizations; j++) {
-						double value = estimate.getRealizations().get(j).getValueAt(i, 0);
-						if (caller.summary.isEvenAged() && i == 0) {
+				if (shouldCompartmentBeIncludedInExport(compartmentInfo)) {
+					MonteCarloEstimate estimate = caller.summary.getEvolutionMap().get(compartmentInfo);
+					int nbRealizations = estimate.getNumberOfRealizations();
+					for (int i = 0; i < timeScale.size(); i++) {
+						for (int j = 0; j < nbRealizations; j++) {
+							double value = estimate.getRealizations().get(j).getValueAt(i, 0);
+							if (caller.summary.isEvenAged() && i == 0) {
+								r = new GExportRecord();
+								r.addField(standIDField);
+								r.addField(new GExportFieldDetails(MessageID.Year.toString(), (Integer) 0));
+								r.addField(new GExportFieldDetails(MessageID.Compartment.toString(), compartmentInfo.toString()));
+								r.addField(new GExportFieldDetails(MessageID.CarbonHaMean.toString(), (Double) 0d));
+								if (nbRealizations > 0) {
+									r.addField(new GExportFieldDetails("RealizationID", (Integer) j+1));
+								}
+								addRecord(r);
+							}
 							r = new GExportRecord();
 							r.addField(standIDField);
-							r.addField(new GExportFieldDetails(MessageID.Year.toString(), (Integer) 0));
+							r.addField(new GExportFieldDetails(MessageID.Year.toString(), timeScale.getDateYrAtThisIndex(i)));
 							r.addField(new GExportFieldDetails(MessageID.Compartment.toString(), compartmentInfo.toString()));
-							r.addField(new GExportFieldDetails(MessageID.CarbonHaMean.toString(), (Double) 0d));
+							r.addField(new GExportFieldDetails(MessageID.CarbonHaMean.toString(), value));
 							if (nbRealizations > 0) {
 								r.addField(new GExportFieldDetails("RealizationID", (Integer) j+1));
 							}
+					
 							addRecord(r);
 						}
-						r = new GExportRecord();
-						r.addField(standIDField);
-						r.addField(new GExportFieldDetails(MessageID.Year.toString(), timeScale.getDateYrAtThisIndex(i)));
-						r.addField(new GExportFieldDetails(MessageID.Compartment.toString(), compartmentInfo.toString()));
-						r.addField(new GExportFieldDetails(MessageID.CarbonHaMean.toString(), value));
-						if (nbRealizations > 0) {
-							r.addField(new GExportFieldDetails("RealizationID", (Integer) j+1));
-						}
-				
-						addRecord(r);
 					}
 				}
 			}
@@ -273,26 +286,28 @@ public class CATExportTool extends REpiceaExportTool {
 			GExportFieldDetails standIDField = new GExportFieldDetails("StandID", standID);
 
 			for (CompartmentInfo compartmentInfo : CompartmentInfo.values()) {
-				Estimate<Matrix, SymmetricMatrix, ?> estimate = caller.summary.getBudgetMap().get(compartmentInfo);
-				if (estimate instanceof MonteCarloEstimate) {
-					int nbRealizations = ((MonteCarloEstimate) estimate).getNumberOfRealizations();
-					for (int j = 0; j < nbRealizations; j++) {
-						double value = ((MonteCarloEstimate) estimate).getRealizations().get(j).getValueAt(0, 0);
+				if (shouldCompartmentBeIncludedInExport(compartmentInfo)) {
+					Estimate<Matrix, SymmetricMatrix, ?> estimate = caller.summary.getBudgetMap().get(compartmentInfo);
+					if (estimate instanceof MonteCarloEstimate) {
+						int nbRealizations = ((MonteCarloEstimate) estimate).getNumberOfRealizations();
+						for (int j = 0; j < nbRealizations; j++) {
+							double value = ((MonteCarloEstimate) estimate).getRealizations().get(j).getValueAt(0, 0);
+							r = new GExportRecord();
+							r.addField(standIDField);
+							r.addField(new GExportFieldDetails(MessageID.Compartment.toString(), compartmentInfo.toString()));
+							r.addField(new GExportFieldDetails(MessageID.CarbonHaMean.toString(), value));
+							if (nbRealizations > 0) {
+								r.addField(new GExportFieldDetails("RealizationID", (Integer) j+1));
+							}
+							addRecord(r);
+						}
+					} else {
 						r = new GExportRecord();
 						r.addField(standIDField);
 						r.addField(new GExportFieldDetails(MessageID.Compartment.toString(), compartmentInfo.toString()));
-						r.addField(new GExportFieldDetails(MessageID.CarbonHaMean.toString(), value));
-						if (nbRealizations > 0) {
-							r.addField(new GExportFieldDetails("RealizationID", (Integer) j+1));
-						}
-						addRecord(r);
+						r.addField(new GExportFieldDetails(MessageID.CarbonHaMean.toString(), estimate.getMean().getValueAt(0, 0)));
+						r.addField(new GExportFieldDetails(MessageID.Variance.toString(), estimate.getVariance().getValueAt(0, 0)));
 					}
-				} else {
-					r = new GExportRecord();
-					r.addField(standIDField);
-					r.addField(new GExportFieldDetails(MessageID.Compartment.toString(), compartmentInfo.toString()));
-					r.addField(new GExportFieldDetails(MessageID.CarbonHaMean.toString(), estimate.getMean().getValueAt(0, 0)));
-					r.addField(new GExportFieldDetails(MessageID.Variance.toString(), estimate.getVariance().getValueAt(0, 0)));
 				}
 			}
 		}

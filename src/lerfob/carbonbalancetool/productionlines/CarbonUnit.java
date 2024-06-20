@@ -267,8 +267,6 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 		setTimeTable(timeScale);
 		currentCarbonArray = new double[timeScale.size()];
 
-//		double averageLifetimeYr = getCarbonUnitFeature().getAverageLifetime(compartmentManager);
-//		decayFunction.setAverageLifetimeYr(averageLifetimeYr);
 		double currentCarbon = getInitialCarbon();
 
 		double formerCarbon;
