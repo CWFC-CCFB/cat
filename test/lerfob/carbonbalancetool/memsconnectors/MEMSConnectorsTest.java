@@ -78,9 +78,26 @@ public class MEMSConnectorsTest {
 			return Math.PI * getDbhCm() * getDbhCm() * 0.000025;
 		}
 
+		
 		@Override
-		public double getAnnualFoliarBiomassProductionMgYr() {
+		public double getAnnualFoliarDetritusCarbonProductionMgYr() {
 			return 0.15 * Math.pow(10, 1.18) * 0.001; // 10 cm2 of cross section growth is assumed for the test
+		}
+
+		/**
+		 * This implementation is based on Finer et al. (2011).
+		 * @see <a href=https://doi.org/10.1016/j.foreco.2011.08.042> Finer, L., M. Ohashi, K. Noguchi, and 
+		 * Y. Hirano. 2011. Fine root production and turnover in forest ecosystems in relation to stand and 
+		 * environmental characteristics. Forest Ecology and Management 262(11): 2008-2023</a>
+		 */
+		@Override
+		public double getAnnualFineRootDetritusCarbonProductionMgYr() {
+			return (1.55 * Math.log(getStemBasalAreaM2()) + 9.408) * .001;
+		}
+
+		@Override
+		public double getAnnualBranchDetritusCarbonProductionMgYr() {
+			return getAnnualFoliarDetritusCarbonProductionMgYr() * .5;
 		}
 	}
 

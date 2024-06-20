@@ -726,7 +726,7 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 		double totalCarbonMg = 0d;
 		if (trees != null) {
 			for (MEMSCompatibleTree tree : trees) {
-				double treeContribution = tree.getAnnualFoliarBiomassProductionMgYr() + tree.getAnnualBranchBiomassProductionMgYr();
+				double treeContribution = tree.getAnnualFoliarDetritusCarbonProductionMgYr() + tree.getAnnualBranchDetritusCarbonProductionMgYr();
 				totalCarbonMg += treeContribution * tree.getNumber() * tree.getPlotWeight();
 			}
 		}
@@ -744,7 +744,7 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 		double totalCarbonMg = 0d;
 		if (trees != null) {
 			for (MEMSCompatibleTree tree : trees) {
-				double treeContribution = tree.getAnnualFineRootBiomassProductionMgYr();
+				double treeContribution = tree.getAnnualFineRootDetritusCarbonProductionMgYr();
 				totalCarbonMg += treeContribution * tree.getNumber() * tree.getPlotWeight();
 			}
 		}

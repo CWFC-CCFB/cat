@@ -29,53 +29,34 @@ import repicea.simulation.covariateproviders.treelevel.BasalAreaM2Provider;
 public interface MEMSCompatibleTree extends BasalAreaM2Provider, CATCompatibleTree {
 
 	/**
-	 * Provide the annual production in fine root biomass.<p>
+	 * Ratio to convert foliage biomass to carbon.<p>
 	 * 
-	 * The default implementation is based on Finer et al. (2011).
-	 * @return the annual production in dry biomass (Mg/yr)
-	 * @see <a href=https://doi.org/10.1016/j.foreco.2011.08.042> Finer, L., M. Ohashi, K. Noguchi, and 
-	 * Y. Hirano. 2011. Fine root production and turnover in forest ecosystems in relation to stand and 
-	 * environmental characteristics. Forest Ecology and Management 262(11): 2008-2023</a>
+	 * This ratio comes from Table 2 under "Europe All" in Neumann et al. 2018.
+	 * 
+	 * @see <a href=https://doi.org/10.1029/2017GB005825> Neumann, M., L. Ukonmaanaho, J. Johnson, 
+	 * S. Benham, L. Vesterdal, R. Novotny, A. Verstraeten, L. Lundin, A. Thimonier,
+	 * P. Michopoulos, and H. Hasenauer. 2018. Quantifying Carbon and Nutrient Input From 
+	 * Litterfall in European Forests Using Field Observations. Global Biogeochemical Cycles 32:
+	 * 784-798.</a> 
 	 */
-	public default double getAnnualFineRootBiomassProductionMgYr() {
-		return (1.55 * Math.log(getStemBasalAreaM2()) + 9.408) * .001;
-	}
+	public static double CARBON_TO_FOLIAGE_BIOMASS_RATIO = 0.517;  
 	
 	/**
-	 * Provide the annual production in foliage biomass.<p>
-	 * 
-	 * The default implementation comes from Lavigne et al. (2005).
-	 * @return the annual production in dry biomass (Mg/yr)
-	 * @see <a href=https://doi.org/10.1139/X06-284> Lavigne, M.B., R.J. Foster,
-	 * G. Goodine, P.Y. Bernier, and C.-H. Ung. 2005. Estimating branch production in trembling aspen,
-	 * Douglas fir, jack pine, black spruce, and balsam fir. Canadian Journal of 
-	 * Research 37: 1024-1033</a>
+	 * Provide the annual fine root detritus.<p>
+	 * @param the detritus production (Mg of C)
 	 */
-	public double getAnnualFoliarBiomassProductionMgYr(); 
+	public double getAnnualFineRootDetritusCarbonProductionMgYr();
 	
-//	{
-//		return 0.15 * Math.pow(getAnnualCrossSectionalAreaGrowthCm2(), 1.18) * 0.001;
-//	}
-
 	/**
-	 * Provide the annual production in branch biomass.<p>
-	 * 
-	 * The default implementation assumes the production is equal to half 
-	 * that of foliar production as per Lavigne et al. (2005).
-	 * @return the annual production in dry biomass (Mg/yr)
-	 * @see <a href=https://doi.org/10.1139/X06-284> Lavigne, M.B., R.J. Foster,
-	 * G. Goodine, P.Y. Bernier, and C.-H. Ung. 2005. Estimating branch production in trembling aspen,
-	 * Douglas fir, jack pine, black spruce, and balsam fir. Canadian Journal of 
-	 * Research 37: 1024-1033</a>
+	 * Provide the annual foliage detritus.<p>
+	 * @param the detritus production (Mg of C)
 	 */
-	public default double getAnnualBranchBiomassProductionMgYr() {
-		return getAnnualFoliarBiomassProductionMgYr() * .5;
-	}
-
-//	/**
-//	 * Provide the annual increment of the cross-sectional area.
-//	 * @return the increment (cm2/yr)
-//	 */
-//	public double getAnnualCrossSectionalAreaGrowthCm2();
+	public double getAnnualFoliarDetritusCarbonProductionMgYr(); 
+	
+	/**
+	 * Provide the annual branch detritus.<p>
+	 * @return the detritus production (Mg of C)
+d	 */
+	public double getAnnualBranchDetritusCarbonProductionMgYr();
 
 }

@@ -24,7 +24,6 @@ import java.security.InvalidParameterException;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 
-import repicea.serial.xml.XmlDeserializer;
 import repicea.serial.xml.XmlSerializer;
 import repicea.stats.estimators.mcmc.MetropolisHastingsAlgorithm;
 import repicea.util.ObjectUtility;
@@ -40,8 +39,9 @@ public class SoilCarbonPredictorMetropolisHastingsModelTest {
 		MetropolisHastingsAlgorithm mha;
 		
 		// Read current file;
-//		String refPath = ObjectUtility.getPackagePath(CATMEMSWrapper.class) + "data" + File.separator;
-//		XmlDeserializer deser = new XmlDeserializer(refPath + "mcmcMems_Montmorency.zml");
+//		String refPath = ObjectUtility.getPackagePath(SoilCarbonPredictorMetropolisHastingsModelTest.class) + "data" + File.separator;
+//		XmlDeserializer deser = new XmlDeserializer(refPath + "mcmcMems_Montmorency_NEW.zml");
+//		Object o = deser.readObject();
 //		mha = (MetropolisHastingsAlgorithm) deser.readObject();
 //		System.out.println(mha.getReport());
 		
