@@ -99,6 +99,8 @@ public class AffiliereJSONImportReader {
 	/**
 	 * Constructor.
 	 * @param file the File instance to be read.
+	 * @param study an AFFiliereStudy enum
+	 * @param unit an AFFiliereUnit enum
 	 * @throws FileNotFoundException if the file cannot be found.
 	 */
 	public AffiliereJSONImportReader(File file, AFFiliereStudy study, AFFiliereUnit unit) throws FileNotFoundException {

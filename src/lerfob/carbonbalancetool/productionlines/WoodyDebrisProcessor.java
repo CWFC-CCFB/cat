@@ -1,3 +1,22 @@
+/*
+ * This file is part of the CAT library.
+ *
+ * Copyright (C) 2024 His Majesty the King in Right of Canada
+ * Author: Mathieu Fortin, Canadian Forest Service
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This library is distributed with the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * Please see the license at http://www.gnu.org/copyleft/lesser.html.
+ */
 package lerfob.carbonbalancetool.productionlines;
 
 import java.awt.Container;
@@ -7,11 +26,27 @@ import repicea.simulation.processsystem.SystemPanel;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
 
-
+/**
+ * A special class of Processor for woody debris.<p>
+ * 
+ * It inherits from the LeftHandSideProcessor class as these
+ * processors are entry points into the flux configuration.
+ * 
+ * @author Mathieu Fortin - 2015
+ */
 @SuppressWarnings("serial")
 public class WoodyDebrisProcessor extends LeftHandSideProcessor {
 
-	
+	/**
+	 * An enum that distinguish three types of woody debris.<p>
+	 * 
+	 * The values of the enum are:
+	 * <ul>
+	 * <li> <b>CoarseWoodyDebris</b>: stumps and roots
+	 * <li> <b>CommercialWoodyDebris</b>: commercial-sized part of the trees
+	 * <li> <b>FineWoodyDebris</b>: branches below the commercial threshold
+	 * </ul>
+	 */
 	public static enum WoodyDebrisProcessorID implements TextableEnum {
 		CoarseWoodyDebris("Coarse Woody Debris", "Gros d\u00E9bris ligneux"),
 		CommercialWoodyDebris("Commercial-sized Woody Debris", "D\u00E9bris ligneux commerciaux"),

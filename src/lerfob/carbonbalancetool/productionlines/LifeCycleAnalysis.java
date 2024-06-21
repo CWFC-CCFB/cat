@@ -113,6 +113,7 @@ public class LifeCycleAnalysis implements Serializable {
 	/**
 	 * This constructor builds independent life cycle analysis from the ReferenceLCA enum. So, two independent
 	 * life cycles analysis could originate from the same reference life cycle.
+	 * @param referenceLCA a ReferenceLCA enum
 	 */
 	public LifeCycleAnalysis(ReferenceLCA referenceLCA) {
 		this(	referenceLCA.lca.strActivity,

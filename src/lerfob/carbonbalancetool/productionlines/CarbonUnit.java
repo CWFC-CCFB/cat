@@ -24,6 +24,7 @@ import java.util.List;
 import lerfob.carbonbalancetool.CATCompartmentManager;
 import lerfob.carbonbalancetool.CATTimeTable;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
+import lerfob.carbonbalancetool.productionlines.WoodyDebrisProcessor.WoodyDebrisProcessorID;
 import repicea.simulation.MonteCarloSimulationCompliantObject;
 import repicea.simulation.covariateproviders.treelevel.SpeciesNameProvider;
 import repicea.simulation.covariateproviders.treelevel.SpeciesTypeProvider;
@@ -57,11 +58,29 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 		RecycledLosses;
 	};
 
+	/**
+	 * An enum to distinguish bark from wood.<p>
+	 * The two values are <b>Wood</b> and <b>Bark</b>.
+	 */
 	public static enum BiomassType {
 		Wood,
 		Bark;
 	}
 	
+	/**
+	 * An enum for the different elements that can be stored in an AmountMap instance.<p>
+	 * The current constants are:
+	 * <ul>
+	 * <li> Volume
+	 * <li> Biomass
+	 * <li> C
+	 * <li> N
+	 * <li> S
+	 * <li> P
+	 * <li> K
+	 * <li> EmissionsCO2Eq
+	 * </ul>
+	 */
 	public static enum Element {
 		Volume,
 		Biomass,
@@ -101,10 +120,12 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 	protected final String samplingUnitID;
 	private final List<CarbonUnitStatus> status; 
 	private final CarbonUnitFeature carbonUnitFeature;
+
 	private final String speciesName;
 	private final SpeciesType speciesType;
 	private final BiomassType biomassType;
 	private final StatusClass statusClass;
+	private final WoodyDebrisProcessorID woodyDebrisType; // can be null
 	
 	/**
 	 * Initial carbon in this product (Mg)
@@ -123,6 +144,7 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 	 * @param speciesType the type of species (Broadleaved or Coniferous)
 	 * @param statusClass the status class of the tree (dead, cut, windfall)
 	 * @param biomassType the type of biomass (wood or bark)
+	 * @param woodyDebrisType a WoodyDebrisProcessorID enum
 	 */
 	protected CarbonUnit(int dateIndex, 
 			String samplingUnitID, 
@@ -131,7 +153,8 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 			String speciesName,
 			SpeciesType speciesType,
 			StatusClass statusClass,
-			BiomassType biomassType) {
+			BiomassType biomassType,
+			WoodyDebrisProcessorID woodyDebrisType) {
 		super(initialAmounts);
 		this.dateIndex = dateIndex;
 		this.carbonUnitFeature = carbonUnitFeature;
@@ -139,6 +162,7 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 		this.speciesName = speciesName;
 		this.speciesType = speciesType;
 		this.statusClass = statusClass;
+		this.woodyDebrisType = woodyDebrisType;
 		status = new ArrayList<CarbonUnitStatus>();
 		actualized = false;
 		this.biomassType = biomassType; 
@@ -162,6 +186,7 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 		this.speciesName = originalCarbonUnit.getSpeciesName();
 		this.speciesType = originalCarbonUnit.getSpeciesType();
 		this.statusClass = originalCarbonUnit.getStatusClass();
+		this.woodyDebrisType = originalCarbonUnit.woodyDebrisType;
 		status = new ArrayList<CarbonUnitStatus>();
 		actualized = false;
 		this.biomassType = originalCarbonUnit.getBiomassType(); 
@@ -187,9 +212,7 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 	protected boolean isActualized() {return actualized;}
 	
 	@Override
-	public String getSpeciesName() {
-		return speciesName;
-	}
+	public String getSpeciesName() {return speciesName;}
 
 	/**
 	 * This method returns the creation date of the product
@@ -237,16 +260,13 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 	/**
 	 * This method actualizes the carbon content of this carbon unit.
 	 * @param compartmentManager a CATCompartmentManager instance
-	 * @throws Exception
 	 */
-	protected void actualizeCarbon(CATCompartmentManager compartmentManager) throws Exception {
+	protected void actualizeCarbon(CATCompartmentManager compartmentManager) {
 		DecayFunction decayFunction = getCarbonUnitFeature().getDecayFunction();
 		CATTimeTable timeScale = compartmentManager.getTimeTable();
 		setTimeTable(timeScale);
 		currentCarbonArray = new double[timeScale.size()];
 
-//		double averageLifetimeYr = getCarbonUnitFeature().getAverageLifetime(compartmentManager);
-//		decayFunction.setAverageLifetimeYr(averageLifetimeYr);
 		double currentCarbon = getInitialCarbon();
 
 		double formerCarbon;
@@ -302,16 +322,19 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 	public boolean equals(Object obj) {
 		if (obj != null && obj instanceof CarbonUnit) {
 			CarbonUnit otherUnit = (CarbonUnit) obj;
-			if ((otherUnit.carbonUnitFeature == null && carbonUnitFeature == null) || (carbonUnitFeature.equals(otherUnit.carbonUnitFeature)))  {
+			if ((carbonUnitFeature == null && otherUnit.carbonUnitFeature == null) || 
+					(carbonUnitFeature.equals(otherUnit.carbonUnitFeature)))  {
 				if (dateIndex == otherUnit.dateIndex) {
 					if (status.equals(otherUnit.status)) {
 						if (samplingUnitID.equals(otherUnit.samplingUnitID)) {
 							if (speciesName.equals(otherUnit.speciesName)) {
 								if (speciesType == otherUnit.speciesType) {
 									if (statusClass == otherUnit.statusClass) {
-										if (getBiomassType() == otherUnit.getBiomassType()) {
-											if (!actualized && !otherUnit.actualized) { // if both units have not been actualized yet
-												return true;
+										if (woodyDebrisType == otherUnit.woodyDebrisType) {
+											if (getBiomassType() == otherUnit.getBiomassType()) {
+												if (!actualized && !otherUnit.actualized) { // if both units have not been actualized yet
+													return true;
+												}
 											}
 										}
 									}
@@ -325,7 +348,12 @@ public class CarbonUnit extends ProcessUnit<Element> implements BiomassTypeProvi
 		return false;
 	}
 
-	
+	/**
+	 * Provide the woody debris type if any.
+	 * @return a WoodyDebrisProcessorID enum (is null if the carbon unit comes from harvested wood)
+	 * @see WoodyDebrisProcessorID
+	 */
+	public WoodyDebrisProcessorID getWoodyDebrisType() {return woodyDebrisType;}
 	
 	@Override
 	public String toString() {

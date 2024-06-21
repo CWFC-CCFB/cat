@@ -110,6 +110,8 @@ public final class WoodPieceDispatcher extends AbstractDesigner<LogCategoryDispa
 	
 	/**
 	 * General constructor.
+	 * @param treeLoggerWrapper a TreeLoggerWrapper instance
+	 * @param plm a ProductionLineManager instance
 	 */
 	public WoodPieceDispatcher(TreeLoggerWrapper treeLoggerWrapper, ProductionLineManager plm) {
 		this();

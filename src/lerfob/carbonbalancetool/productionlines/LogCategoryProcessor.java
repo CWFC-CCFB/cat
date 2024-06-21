@@ -77,7 +77,7 @@ public class LogCategoryProcessor extends LeftHandSideProcessor {
 	
 	/**
 	 * Constructor.
-	 * @param logCategory
+	 * @param logCategory a LogCategory instance
 	 */
 	protected LogCategoryProcessor(LogCategory logCategory) {
 		super();

@@ -111,6 +111,12 @@ public interface CATSimulationResult {
 	 * @return a boolean
 	 */
 	public boolean isEvenAged();
+	
+	/**
+	 * Indicate whether the soil module (MEMS) is enabled
+	 * @return a boolean
+	 */
+	public boolean isSoilModuleEnabled();
 
 	/**
 	 * This method returns the heat production (KWh) for one ha.

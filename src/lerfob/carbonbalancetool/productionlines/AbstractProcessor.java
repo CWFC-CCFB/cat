@@ -33,7 +33,8 @@ import repicea.simulation.processsystem.Processor;
 
 /**
  * An abstract class derived from the original {@link repicea.simulation.processsystem.Processor} class to ensure
- * common methods for all the processors in CAT.<p>
+ * common methods for all the processors in CAT.
+ * @author Mathieu Fortin - 2015
  */
 @SuppressWarnings("serial")
 public abstract class AbstractProcessor extends Processor {
@@ -104,7 +105,7 @@ public abstract class AbstractProcessor extends Processor {
 	/**
 	 * Create a Processor instance from a LinkedHashMap instance.<p>
 	 * 
-	 * @param oMap a LinkedHashMap<String, Object> instance
+	 * @param oMap a LinkedHashMap instance
 	 * @return a ProductionLineProcessor instance
 	 */
 	public static Processor createProcessor(LinkedHashMap<String, Object> oMap) {

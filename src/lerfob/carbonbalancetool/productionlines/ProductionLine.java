@@ -56,7 +56,8 @@ public class ProductionLine implements 	Serializable {
 	
 	
 	/**
-	 * General constructor
+	 * General constructor.
+	 * @param manager a ProductionLineManager instance
 	 */
 	protected ProductionLine(ProductionLineManager manager) {
 		this.manager = manager;
@@ -84,16 +85,8 @@ public class ProductionLine implements 	Serializable {
 		this.marketName = marketName;
 	}
 	
-//	@Override
-//	public ProductionLinePanel getGuiInterface() {
-//		if (guiInterface == null) {
-//			guiInterface = new ProductionLinePanel(this);
-//		}
-//		return guiInterface;
-//	}
-
 	@Deprecated
-	protected CarbonUnitMap<CarbonUnitStatus> createCarbonUnitFromAWoodPiece(int dateIndex, String speciesName, SpeciesType speciesType, StatusClass statusClass, AmountMap<Element> amountMap) throws Exception {
+	protected CarbonUnitMap<CarbonUnitStatus> createCarbonUnitFromAWoodPiece(int dateIndex, String speciesName, SpeciesType speciesType, StatusClass statusClass, AmountMap<Element> amountMap) {
 		return primaryProcessor.processWoodPiece(dateIndex, speciesName, speciesType, statusClass, amountMap);
 	}
 	

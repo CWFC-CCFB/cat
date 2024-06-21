@@ -42,7 +42,7 @@ public class CATGrowthSimulationCompositeStand implements CATCompatibleStand, St
 	private ApplicationScale applicationScale;
 	private final boolean isInterventionResult;
 	
-	CATGrowthSimulationCompositeStand(int dateYr, String standIdentification, CATGrowthSimulationRecordReader reader, boolean isInterventionResult) {
+	protected CATGrowthSimulationCompositeStand(int dateYr, String standIdentification, CATGrowthSimulationRecordReader reader, boolean isInterventionResult) {
 		this.dateYr = dateYr;
 		this.standIdentification = standIdentification;
 		this.reader = reader;

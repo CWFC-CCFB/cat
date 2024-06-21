@@ -14,7 +14,7 @@ Copyright (C) 2019-2023 His Majesty the King in Right of Canada
 
 **Email**: mathieu.fortin.re@gmail.com
 
-**License**: Lesser GPL-2.1 (http://www.gnu.org/copyleft/lesser.html)
+**License**: Lesser GPL-3.0 (https://www.gnu.org/licenses/lgpl-3.0.html)
 
 # Dependencies
 CAT requires the following libraries:

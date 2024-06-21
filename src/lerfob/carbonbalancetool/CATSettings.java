@@ -1,5 +1,5 @@
 /*
- * This file is part of the lerfob-forestools library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2010-2013 Mathieu Fortin AgroParisTech/INRA UMR LERFoB, 
  *
@@ -20,8 +20,8 @@ package lerfob.carbonbalancetool;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Vector;
 
 import lerfob.carbonbalancetool.CATUtility.BiomassParametersName;
@@ -29,6 +29,8 @@ import lerfob.carbonbalancetool.CATUtility.BiomassParametersWrapper;
 import lerfob.carbonbalancetool.CATUtility.ProductionManagerName;
 import lerfob.carbonbalancetool.CATUtility.ProductionProcessorManagerWrapper;
 import lerfob.carbonbalancetool.biomassparameters.BiomassParameters;
+import lerfob.carbonbalancetool.memsconnectors.MEMSSite.SiteType;
+import lerfob.carbonbalancetool.memsconnectors.MEMSSiteParametersWrapper;
 import lerfob.carbonbalancetool.productionlines.ProductionLineManager;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManagerException;
@@ -210,25 +212,24 @@ public final class CATSettings {
 	@Deprecated
 	private Vector<TreeLoggerDescription> treeLoggerDescriptions;
 
-	protected final Map<ProductionManagerName, ProductionProcessorManagerWrapper> productionManagerMap = new TreeMap<ProductionManagerName, ProductionProcessorManagerWrapper>();
-	protected final Map<BiomassParametersName, BiomassParametersWrapper> biomassParametersMap = new TreeMap<BiomassParametersName, BiomassParametersWrapper>();
-
-//	protected int currentProcessorManagerIndex = 0;
-//	protected int currentBiomassParametersIndex = 0; 
-
+	protected final Map<ProductionManagerName, ProductionProcessorManagerWrapper> productionManagerMap = new LinkedHashMap<ProductionManagerName, ProductionProcessorManagerWrapper>();
+	protected final Map<BiomassParametersName, BiomassParametersWrapper> biomassParametersMap = new LinkedHashMap<BiomassParametersName, BiomassParametersWrapper>();
+	protected final Map<SiteType, MEMSSiteParametersWrapper> memsParametersMap = new LinkedHashMap<SiteType, MEMSSiteParametersWrapper>();
+	
 	private ProductionManagerName currentProcessorManager = ProductionManagerName.values()[0];
 	private BiomassParametersName currentBiomassParameters = BiomassParametersName.values()[0]; 
-
-	private boolean verbose;
+	private SiteType currentMemsParameters = SiteType.values()[0];
 	
 	/**
 	 * Constructor.
+	 * @param settings a SettingMemory instance
 	 */
 	public CATSettings(SettingMemory settings) {			
 		this.settings = settings;
-		verbose = false;
 		readProcessorManagers();
-		readBiomassParametersVector();
+		readBiomassParameters();
+		readMemsParameters();
+		// TODO read mems parameters
 		productionLines = new ProductionLineManager();
 		treeLoggerWrapper = new TreeLoggerWrapper();
 		woodSupply = new WoodPieceDispatcher(treeLoggerWrapper, productionLines);
@@ -253,7 +254,7 @@ public final class CATSettings {
 		selectedAR = aR;
 	}
 	
-	private void readBiomassParametersVector() {
+	private void readBiomassParameters() {
 		BiomassParameters biomassParameters;
 		String relativePathname = ObjectUtility.getRelativePackagePath(BiomassParameters.class) + "library" + ObjectUtility.PathSeparator;
 		for (BiomassParametersName biomassParameterNames : BiomassParametersName.values()) {
@@ -279,7 +280,6 @@ public final class CATSettings {
 			if (processorManagerName == ProductionManagerName.customized) {
 				productionProcessorManager = new ProductionProcessorManager();
 				productionManagerMap.put(processorManagerName, new ProductionProcessorManagerWrapper(processorManagerName, productionProcessorManager));
-//				customizedManager = processorManagers.get(processorManagers.size() - 1).manager;
 			} else {
 				try {
 					productionProcessorManager = new ProductionProcessorManager(new DefaultREpiceaGUIPermission(false));
@@ -293,6 +293,10 @@ public final class CATSettings {
 				}
 			}
 		}
+	}
+	
+	private void readMemsParameters() {
+		// TODO implement the reading of the parameters here MF20240517
 	}
 
 	/**
@@ -316,7 +320,6 @@ public final class CATSettings {
 		return productionManagerMap.get(currentProcessorManager).manager;
 	}
 
-	
 	/**
 	 * This method returns the currently selected BiomassParameters instance.
 	 * @return a BiomassParameters instance
@@ -362,6 +365,17 @@ public final class CATSettings {
 	}
 	
 	protected ProductionManagerName getCurrentProductionProcessorManagerSelection() {return currentProcessorManager;}
+
+	/**
+	 * Set the current MEMS parameters.
+	 * @param site a SiteName enum
+	 */
+	public void setCurrentMEMSParametersSelection(SiteType site) {
+		currentMemsParameters = site;
+	}
+	
+	protected SiteType getCurrentMEMSParametersSelection() {return currentMemsParameters;}
+
 	
 	/**
 	 * This method returns the list of possible tree loggers.
@@ -374,8 +388,9 @@ public final class CATSettings {
 
 
 	/**
-	 * This method returns true if the settings are valid.
-	 * @return a boolean
+	 * Check the validity of the settings.
+	 * @return a boolean true if valid or false otherwise
+	 * @throws ProductionProcessorManagerException if the ProductionProcessorManager instance cannot be validated
 	 */
 	public boolean isValid() throws ProductionProcessorManagerException {
 		if (formerImplementation) { 			// former implementation
@@ -458,11 +473,11 @@ public final class CATSettings {
 	}
 
 	/**
-	 * This method should be called in script mode.	
-	 * @param treeLogger
+	 * Initialize the settings in in script mode.	
+	 * @param treeLogger a TreeLogger instance
 	 * @param productionLinesFilename the path to the production lines file
 	 * @param woodDispatcherFilename the path to the wood dispatcher file 
-	 * @throws IOException
+	 * @throws IOException if some file cannot be read
 	 */
 	@SuppressWarnings("rawtypes")
 	@Deprecated
@@ -499,13 +514,4 @@ public final class CATSettings {
 	@Deprecated
 	protected WoodPieceDispatcher getWoodSupplySetup() {return woodSupply;}
 
-
-	protected void setVerboseEnabled(boolean bool) {
-		this.verbose = bool;
-	}
-
-	public boolean isVerboseEnabled() {return verbose;}
-
-	
-	
 }

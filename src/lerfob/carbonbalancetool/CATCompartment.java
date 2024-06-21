@@ -37,7 +37,7 @@ import repicea.util.REpiceaTranslator.TextableEnum;
  * @author Mathieu Fortin - July 2010
  */
 @SuppressWarnings("rawtypes")
-public class CATCompartment implements Comparable {
+public class CATCompartment extends CarbonArray implements Comparable {
 	
 	static {
 		SerializerChangeMonitor.registerEnumNameChange("lerfob.carbonbalancetool.CATCompartment$CompartmentInfo", 
@@ -108,24 +108,29 @@ public class CATCompartment implements Comparable {
 		/**
 		 * The net substitution, i.e. the energy substitution less the carbon emissions.
 		 */
-		NetSubs("Cumulative net flux", "Flux net cumulatif", true, new Color(200,0,0));
+		NetSubs("Cumulative net flux", "Flux net cumulatif", true, new Color(200,0,0)),
+		/**
+		 * The humus layer
+		 */
+		Humus("Humus", "Humus", false, new Color(128,64,64)),
+		/**
+		 * The soil layer (0-15cm)
+		 */
+		MineralSoil("Mineral Soil", "Sol Min/u00E9ral", false, new Color(96,48,48)),
+		Soil("Soil", "Sol", true, new Color(96,48,48));
 
 		private static List<CompartmentInfo> naturalOrder;
 		private static Map<CompartmentInfo, PoolCategory> poolCategoryMap;
 		
-//		private boolean isFlux;
 		private boolean resultFromGrouping;
 		private Color color;
 
 		CompartmentInfo(String englishText, String frenchText, boolean resultFromGrouping, Color color) {
-//			this.isFlux = isFlux;
 			this.resultFromGrouping = resultFromGrouping;
 			this.color = color;
 			setText(englishText, frenchText);
 		}
-		
-//		boolean isFlux() {return isFlux;}
-		
+				
 		
 		PoolCategory getPoolCategory() {
 			if (poolCategoryMap == null) {
@@ -135,6 +140,7 @@ public class CATCompartment implements Comparable {
 				poolCategoryMap.put(AbGround, PoolCategory.Forest);
 				poolCategoryMap.put(Roots, PoolCategory.Forest);
 				poolCategoryMap.put(DeadBiom, PoolCategory.Forest);
+				poolCategoryMap.put(Soil, PoolCategory.Forest);
 				
 				poolCategoryMap.put(TotalProducts, PoolCategory.HarvestedWoodProducts);
 				poolCategoryMap.put(Products, PoolCategory.HarvestedWoodProducts);
@@ -172,6 +178,7 @@ public class CATCompartment implements Comparable {
 				naturalOrder.add(AbGround);
 				naturalOrder.add(Roots);
 				naturalOrder.add(DeadBiom);
+				naturalOrder.add(Soil);
 				naturalOrder.add(TotalProducts);
 				naturalOrder.add(Products);
 				naturalOrder.add(LfillDeg);
@@ -197,7 +204,6 @@ public class CATCompartment implements Comparable {
 	private List<CATCompartment> fatherCompartments;
 	private boolean isMerged;
 	private CATCompartmentCompileLibrary carbonMethodLibrary;
-	private double[] calculatedCarbonArray;
 	private double integratedCarbon;
 
 	private Collection<? extends CarbonUnit>[] carbonUnitsCollectionArray;
@@ -222,7 +228,6 @@ public class CATCompartment implements Comparable {
 	public CATCompartmentManager getCompartmentManager() {return compartmentManager;}
 	protected void addFatherCompartment(CATCompartment carbonCompartment) {fatherCompartments.add(carbonCompartment);}
 	
-	protected double[] getCalculatedCarbonArray() {return calculatedCarbonArray;}
 	protected double getIntegratedCarbon() {return integratedCarbon;}
 	protected void setIntegratedCarbon(double integratedCarbon) {this.integratedCarbon = integratedCarbon;}
 	protected void setCarbonUnitsArray(Collection<? extends CarbonUnit>[] carbonUnitsCollectionArray) {this.carbonUnitsCollectionArray = carbonUnitsCollectionArray;}
@@ -232,7 +237,7 @@ public class CATCompartment implements Comparable {
 	 * This method initializes the carbon map array.
 	 */
 	protected void resetCarbon() {
-		calculatedCarbonArray = new double[getCompartmentManager().getTimeTable().size()];
+		initializeCarbonArray(getCompartmentManager().getTimeTable().size());
 		integratedCarbon = 0d;
 		isMerged = false;
 	}
@@ -248,7 +253,7 @@ public class CATCompartment implements Comparable {
 		Matrix value = new Matrix(getCompartmentManager().getTimeTable().size(),1);
 		
 		for (int i = 0; i < value.m_iRows; i++) {
-			value.setValueAt(i, 0, calculatedCarbonArray[i] * areaFactor);
+			value.setValueAt(i, 0, getCarbonArray()[i] * areaFactor);
 		}
 		
 		return value;
@@ -265,9 +270,6 @@ public class CATCompartment implements Comparable {
 		return integratedCarbon * areaFactor;
 	}
 	
-	protected void setCarbonIntoArray(int indexDate, double d) {
-		calculatedCarbonArray[indexDate] = d;
-	}
 	
 	/**
 	 * This method merges the carbon values of the father compartments into this compartment.
@@ -279,7 +281,7 @@ public class CATCompartment implements Comparable {
 				
 				// for the calculated carbon
 				for (int i = 0; i < getCompartmentManager().getTimeTable().size(); i++) {
-					calculatedCarbonArray[i] += comp.getCalculatedCarbonArray()[i];
+					getCarbonArray()[i] += comp.getCarbonArray()[i];
 				}
 				
 				// for the integrated carbon
@@ -293,10 +295,11 @@ public class CATCompartment implements Comparable {
 	
 	
 	/**
-	 * This method calculates and integrates the carbon for this compartment by calling the 
-	 * method library and using the appropriate method.
+	 * Calculate and integrate the carbon of this compartment.<p>
+	 * The method refers to the CATCompartmentCompileLibrary instance for the proper 
+	 * calculation and integration methods.
 	 */
-	public void calculateAndIntegrateCarbon() throws Exception {
+	public void calculateAndIntegrateCarbon() {
 		carbonMethodLibrary.selectCalculatorFunction(this);
 	}
 	

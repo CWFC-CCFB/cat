@@ -1,9 +1,9 @@
 /*
- * This file is part of the lerfob-foresttools library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2010-2014 Mathieu Fortin for LERFOB AgroParisTech/INRA, 
- * Copyright (C) 2022 Her Majesty the Queen in right of Canada
- * Author: Mathieu Fortin, Canadian Wood Fibre Centre
+ * Copyright (C) 2022-2024 His Majesty the King in right of Canada
+ * Author: Mathieu Fortin, Canadian Forest Service
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -102,9 +102,10 @@ import repicea.util.REpiceaTranslator.TextableEnum;
  * @author M. Fortin - June 2010
  */
 @SuppressWarnings({"serial"})
-public class CATFrame extends REpiceaFrame implements PropertyChangeListener, ItemListener,
-																		Refreshable, 
-																		AcceptableDropComponent<ArrayList<CATCompatibleStand>> {
+public class CATFrame extends REpiceaFrame implements PropertyChangeListener, 
+														ItemListener,
+														Refreshable, 
+														AcceptableDropComponent<ArrayList<CATCompatibleStand>> {
 
 	static {
 		UIControlManager.setTitle(CATFrame.class, CarbonAccountingTool.englishTitle, CarbonAccountingTool.frenchTitle);
@@ -189,7 +190,8 @@ public class CATFrame extends REpiceaFrame implements PropertyChangeListener, It
 		ImportYieldTable("Yield table", "Table de production"),
 		ImportGrowthSimulation("Growth simulation", "Simulation de croissance"),
 		ErrorWhileLoadingData("An error occured while loading the data:", "Une erreur est survenue lors de lecture des donn\u00E9es :"),
-		LookAndFeel("Skin", "Pr\u00E9sentation");
+		LookAndFeel("Skin", "Pr\u00E9sentation"),
+		MEMSParameters("Soil Carbon Parameters", "Param\u00E8tres du carbone du sol");
 		
 		MessageID(String englishText, String frenchText) {
 			setText(englishText, frenchText);
@@ -215,6 +217,7 @@ public class CATFrame extends REpiceaFrame implements PropertyChangeListener, It
 
 	protected final REpiceaComboBoxOpenButton<ProductionProcessorManagerWrapper> hwpComboBox;
 	protected final REpiceaComboBoxOpenButton<BiomassParametersWrapper> biomassComboBox;
+//	protected final REpiceaComboBoxOpenButton<MEMSSiteParametersWrapper> memsSiteComboBox;
 	
 	private final JMenu file;
 	private final JMenu view;
@@ -250,8 +253,8 @@ public class CATFrame extends REpiceaFrame implements PropertyChangeListener, It
 	
 	/**
 	 * General constructor of this class.
-	 * @param caller = a CarbonStorageCalculator object
-	 * @throws Exception
+	 * @param caller the CarbonAccountingTool instance
+	 * @param owner the parent window if any
 	 */
 	protected CATFrame(final CarbonAccountingTool caller, Window owner) {
 		super(owner);
@@ -382,6 +385,11 @@ public class CATFrame extends REpiceaFrame implements PropertyChangeListener, It
 		BiomassParametersWrapper currentBiomassParametersWrapper = caller.getCarbonToolSettings().biomassParametersMap.get(caller.getCarbonToolSettings().getCurrentBiomassParametersSelection());
 		biomassComboBox.getComboBox().setSelectedItem(currentBiomassParametersWrapper);
 		
+//		memsSiteComboBox = new REpiceaComboBoxOpenButton<MEMSSiteParametersWrapper>(MessageID.MEMSParameters);
+//		memsSiteComboBox.getComboBox().setModel(new DefaultComboBoxModel<MEMSSiteParametersWrapper>(caller.getCarbonToolSettings().memsParametersMap.values().toArray(new MEMSSiteParametersWrapper[]{})));
+//		MEMSSiteParametersWrapper currentMEMSParametersWrapper = caller.getCarbonToolSettings().memsParametersMap.get(caller.getCarbonToolSettings().getCurrentMEMSParametersSelection());
+//		memsSiteComboBox.getComboBox().setSelectedItem(currentMEMSParametersWrapper);
+
 		refreshInterface();
 		setSimulationRunning(false);
 		createUI();
@@ -677,6 +685,7 @@ public class CATFrame extends REpiceaFrame implements PropertyChangeListener, It
 		calculateCarbonButton.addActionListener(this);
 		biomassComboBox.getComboBox().addItemListener(this);
 		hwpComboBox.getComboBox().addItemListener(this);
+//		memsSiteComboBox.getComboBox().addItemListener(this);
 		calculateInCO2.addChangeListener(graphicPanel);
 		calculateInCarbon.addChangeListener(graphicPanel);
 		confidenceIntervalSlider.addPropertyChangeListener(graphicPanel);
@@ -699,6 +708,7 @@ public class CATFrame extends REpiceaFrame implements PropertyChangeListener, It
 		calculateCarbonButton.removeActionListener(this);
 		biomassComboBox.getComboBox().removeItemListener(this);
 		hwpComboBox.getComboBox().removeItemListener(this);
+//		memsSiteComboBox.getComboBox().removeItemListener(this);
 		calculateInCO2.removeChangeListener(graphicPanel);
 		calculateInCarbon.removeChangeListener(graphicPanel);
 		confidenceIntervalSlider.removePropertyChangeListener(graphicPanel);
@@ -766,6 +776,8 @@ public class CATFrame extends REpiceaFrame implements PropertyChangeListener, It
 			caller.getCarbonToolSettings().setCurrentBiomassParametersSelection(((BiomassParametersWrapper) biomassComboBox.getComboBox().getSelectedItem()).name);
 		} else if (arg0.getSource().equals(hwpComboBox.getComboBox())) {
 			caller.getCarbonToolSettings().setCurrentProductionProcessorManagerSelection(((ProductionProcessorManagerWrapper) hwpComboBox.getComboBox().getSelectedItem()).name);
+//		} else if (arg0.getSource().equals(memsSiteComboBox.getComboBox())) {
+//			caller.getCarbonToolSettings().setCurrentMEMSParametersSelection(((MEMSSiteParametersWrapper) memsSiteComboBox.getComboBox().getSelectedItem()).getName());
 		}
 	}
 

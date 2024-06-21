@@ -48,7 +48,11 @@ public class EndUseWoodProductCarbonUnit extends CarbonUnit {
 	 * @param initialVolumeBeforeFirstTransformation the volume before the processing (double) (m3)
 	 * @param dateIndex the creation date index of the time scale
 	 * @param carbonUnitFeature a EndProductFeature instance that defines the end product
-	 * @deprecated Use the {@link #EndUseWoodProductCarbonUnit(int, EndUseWoodProductCarbonUnitFeature, AmountMap, CarbonUnit)} constructor instead.
+	 * @param amountMap an AmountMap instance
+	 * @param speciesName the species name 
+	 * @param speciesType a SpeciesType enum
+	 * @param statusClass a StatusClass enum
+	 * @deprecated Use the EndUseWoodProductCarbonUnit(int, EndUseWoodProductCarbonUnitFeature, AmountMap, CarbonUnit) constructor instead.
 	 */
 	protected EndUseWoodProductCarbonUnit(double initialVolumeBeforeFirstTransformation,
 			int dateIndex,
@@ -57,7 +61,7 @@ public class EndUseWoodProductCarbonUnit extends CarbonUnit {
 			String speciesName,
 			SpeciesType speciesType,
 			StatusClass statusClass) {
-		super(dateIndex, "", carbonUnitFeature, amountMap, speciesName, speciesType, statusClass, BiomassType.Wood);
+		super(dateIndex, "", carbonUnitFeature, amountMap, speciesName, speciesType, statusClass, BiomassType.Wood, null); // woodyDebrisType set to null
 		this.rawRoundWoodVolume = initialVolumeBeforeFirstTransformation;
 	}
 	
@@ -109,7 +113,7 @@ public class EndUseWoodProductCarbonUnit extends CarbonUnit {
 	 */
 	@SuppressWarnings({ "deprecation", "rawtypes", "unchecked" })
 	@Override
-	protected void actualizeCarbon(CATCompartmentManager compartmentManager) throws Exception {
+	protected void actualizeCarbon(CATCompartmentManager compartmentManager) {
 		super.actualizeCarbon(compartmentManager);
 
 		if (getCarbonUnitFeature().isDisposed()) {

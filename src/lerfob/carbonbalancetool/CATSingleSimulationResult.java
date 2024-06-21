@@ -21,6 +21,7 @@ package lerfob.carbonbalancetool;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
 
 import lerfob.carbonbalancetool.CATCompartment.CompartmentInfo;
 import lerfob.carbonbalancetool.CATUtilityMaps.CATSpeciesAmountMap;
@@ -32,6 +33,7 @@ import repicea.math.Matrix;
 import repicea.math.SymmetricMatrix;
 import repicea.stats.estimates.Estimate;
 import repicea.stats.estimates.MonteCarloEstimate;
+import repicea.util.REpiceaLogManager;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
 
@@ -88,11 +90,12 @@ class CATSingleSimulationResult implements CATSimulationResult {
 	private final ParameterSetup setup;
 	private final String resultId;
 	private boolean isValid;
+	private final boolean isMEMSEnabled;
 		
 	CATSingleSimulationResult(String resultId, CATCompartmentManager manager) {
 
 		isValid = true;
-		
+		isMEMSEnabled = manager.isMEMSEnabled();
 		isEvenAged = manager.isInfiniteSequenceAllowed();
 		setup = new ParameterSetup(manager.getCarbonToolSettings());
 		
@@ -120,9 +123,7 @@ class CATSingleSimulationResult implements CATSimulationResult {
 			Matrix value;
 			double plotAreaHa = manager.getTimeTable().getLastStandForThisRealization().getAreaHa();
 
-			if (manager.getCarbonToolSettings().isVerboseEnabled()) {
-				System.out.println("Updating results... Plot area (ha) is " + plotAreaHa);
-			}
+			REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.FINEST, null, "Updating results... Plot area (ha) is " + plotAreaHa);
 
 			for (CompartmentInfo compartmentID : CompartmentInfo.values()) {
 				compartment = manager.getCompartments().get(compartmentID);
@@ -239,8 +240,9 @@ class CATSingleSimulationResult implements CATSimulationResult {
 	public MonteCarloEstimate getHeatProductionEvolutionKWhPerHa() {return heatProductionEvolutionKWhHa;}
 
 	@Override
-	public boolean isValid() {
-		return isValid;
-	}
+	public boolean isValid() {return isValid;}
 
+	@Override
+	public boolean isSoilModuleEnabled() {return isMEMSEnabled;}
+	
 }

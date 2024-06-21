@@ -240,15 +240,17 @@ public final class ProductionLineManager extends AbstractDesigner<ProductionLine
 	 * through the getCarbonUnits(CarbonUnitType) method.
 	 * @param marketName the production line the wood log is sent to
 	 * @param creationDate the date at which the wood log is processed
-	 * @param amountMap a Map which contains the amounts of the different elements
-	 * @throws Exception
+	 * @param speciesName the name of the species
+	 * @param speciesType a SpeciesType enum
+	 * @param statusClass a StatusClass enum
+	 * @param amountMap an AmountMap instance
 	 */
 	public void processWoodPiece(String marketName,	
 			int creationDate, 
 			String speciesName, 
 			SpeciesType speciesType, 
 			StatusClass statusClass,
-			AmountMap<Element> amountMap) throws Exception {
+			AmountMap<Element> amountMap) {
 		CarbonUnitMap<CarbonUnitStatus> carbonUnits = processWoodPieceIntoThisProductionLine(marketName, creationDate, speciesName, speciesType, statusClass, amountMap);
 		getCarbonUnitMap().add(carbonUnits);
 	}
@@ -256,56 +258,56 @@ public final class ProductionLineManager extends AbstractDesigner<ProductionLine
 	
 	/**
 	 * This method sends a log into a specific production line.
-	 * @param productionLineName
-	 * @param dateIndex
-	 * @param amountMap
+	 * @param productionLineName the name of the production line
+	 * @param dateIndex the date at which the wood log is processed
+	 * @param speciesName the name of the species
+	 * @param speciesType a SpeciesType enum
+	 * @param statusClass a StatusClass enum
+	 * @param amountMap an AmountMap instance
 	 * @return a CarbonUnitMap instance
-	 * @throws Exception
 	 */
 	protected CarbonUnitMap<CarbonUnitStatus> processWoodPieceIntoThisProductionLine(String productionLineName, 
 			int dateIndex, 
 			String speciesName, 
 			SpeciesType speciesType, 
 			StatusClass statusClass,
-			AmountMap<Element> amountMap) throws Exception {
+			AmountMap<Element> amountMap) {
 		CarbonUnitMap<CarbonUnitStatus> carbonUnits = new CarbonUnitMap<CarbonUnitStatus>(CarbonUnitStatus.EndUseWoodProduct);
-		try {
-			int index = getProductionLineNames().indexOf(productionLineName);
-			if (index == -1) {
-				throw new Exception("This production line does not exist : " + productionLineName);
+		int index = getProductionLineNames().indexOf(productionLineName);
+		if (index == -1) {
+			throw new UnsupportedOperationException("This production line does not exist : " + productionLineName);
+		} else {
+			ProductionLine model = getContent().get(index);
+			if (model.isLandfillSite()) {
+				sendToTheLandfill(dateIndex, speciesName, speciesType, statusClass, amountMap);
+			} else if (model.isLeftInForestModel()) {
+				leftThisPieceInTheForest(dateIndex, speciesName, speciesType, statusClass, amountMap);
 			} else {
-				ProductionLine model = getContent().get(index);
-				if (model.isLandfillSite()) {
-					sendToTheLandfill(dateIndex, speciesName, speciesType, statusClass, amountMap);
-				} else if (model.isLeftInForestModel()) {
-					leftThisPieceInTheForest(dateIndex, speciesName, speciesType, statusClass, amountMap);
-				} else {
-					carbonUnits.add(model.createCarbonUnitFromAWoodPiece(dateIndex, speciesName, speciesType, statusClass, amountMap));
-				}
-				return carbonUnits;
+				carbonUnits.add(model.createCarbonUnitFromAWoodPiece(dateIndex, speciesName, speciesType, statusClass, amountMap));
 			}
-		} catch (Exception e) {
-			throw e;
+			return carbonUnits;
 		}
 	}
 	
 	/**
 	 * This method sends a piece of wood to the landfill site. 
-	 * @param dateIndex the date at which the product was sent to the landfill
-	 * @param amountMap a Map which contains the amounts of the different elements
-	 * @throws Exception
+	 * @param dateIndex the date at which the wood log is processed
+	 * @param speciesName the name of the species
+	 * @param speciesType a SpeciesType enum
+	 * @param statusClass a StatusClass enum
+	 * @param amountMap an AmountMap instance
 	 */
 	protected void sendToTheLandfill(int dateIndex, 
 			String speciesName, 
 			SpeciesType speciesType, 
 			StatusClass statusClass,
-			AmountMap<Element> amountMap) throws Exception {
+			AmountMap<Element> amountMap) {
 		CarbonUnitMap<CarbonUnitStatus> carbonUnits = landfillModel.createCarbonUnitFromAWoodPiece(dateIndex, speciesName, speciesType, statusClass, amountMap);
 
 		for (CarbonUnitStatus type : carbonUnits.keySet()) {
 			if (type != CarbonUnitStatus.EndUseWoodProduct && type != CarbonUnitStatus.IndustrialLosses) {
 				if (!carbonUnits.get(type).isEmpty()) {
-					throw new Exception();
+					throw new UnsupportedOperationException();
 				}
 			}
 		}
@@ -315,15 +317,17 @@ public final class ProductionLineManager extends AbstractDesigner<ProductionLine
 
 	/**
 	 * This method leaves a wood piece in the forest (for instance the roots). 
-	 * @param dateIndex the index of the date at which the piece was left in the forest
-	 * @param amountMap a Map which contains the amounts of the different elements
-	 * @throws Exception
+	 * @param dateIndex the date at which the wood log is processed
+	 * @param speciesName the name of the species
+	 * @param speciesType a SpeciesType enum
+	 * @param statusClass a StatusClass enum
+	 * @param amountMap an AmountMap instance
 	 */
 	public void leftThisPieceInTheForest(int dateIndex, 
 			String speciesName, 
 			SpeciesType speciesType, 
 			StatusClass statusClass,
-			AmountMap<Element> amountMap) throws Exception {
+			AmountMap<Element> amountMap) {
 		leftInTheForestModel.createCarbonUnitFromAWoodPiece(dateIndex, speciesName, speciesType, statusClass, amountMap);
 	}
 	
@@ -387,29 +391,25 @@ public final class ProductionLineManager extends AbstractDesigner<ProductionLine
 
 	
 	/**
-	 * This method actualizes the different carbon units. It proceeds in the following order : </br>
-	 * &nbsp	1- the carbon units left in the forest</br>
-	 * &nbsp	2- the carbon units in the wood products</br>
-	 * &nbsp	3- the carbon units at the landfill site</br>
-	 * &nbsp	4- the carbon units recycled from the disposed wood products</br>
-	 * @param compartmentManager
-	 * @throws Exception
+	 * This method actualizes the different carbon units. It proceeds in the following order :
+	 * <ol>
+	 * <li> the carbon units left in the forest
+	 * <li> the carbon units in the wood products
+	 * <li> the carbon units at the landfill site
+	 * <li> the carbon units recycled from the disposed wood products
+	 * </ol>
+	 * @param compartmentManager a CATCompartmentManager instance
 	 */
-	public void actualizeCarbonUnits(CATCompartmentManager compartmentManager) throws Exception {
+	public void actualizeCarbonUnits(CATCompartmentManager compartmentManager) {
 		actualizeCarbonUnitsOfThisType(CarbonUnitStatus.DeadWood, compartmentManager);
 		actualizeCarbonUnitsOfThisType(CarbonUnitStatus.EndUseWoodProduct, compartmentManager);
 		actualizeCarbonUnitsOfThisType(CarbonUnitStatus.LandFillDegradable, compartmentManager);
 		actualizeCarbonUnitsOfThisType(CarbonUnitStatus.Recycled, compartmentManager);
 	}
 	
-	private void actualizeCarbonUnitsOfThisType(CarbonUnitStatus type, CATCompartmentManager compartmentManager) throws Exception {
-		try {
-			for (CarbonUnit carbonUnit : getCarbonUnits(type)) {
-				carbonUnit.actualizeCarbon(compartmentManager);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new Exception("An exception occurred while actualizing carbon units of type " + type.name() + " : " + e.getMessage());
+	private void actualizeCarbonUnitsOfThisType(CarbonUnitStatus type, CATCompartmentManager compartmentManager) {
+		for (CarbonUnit carbonUnit : getCarbonUnits(type)) {
+			carbonUnit.actualizeCarbon(compartmentManager);
 		}
 	}
 

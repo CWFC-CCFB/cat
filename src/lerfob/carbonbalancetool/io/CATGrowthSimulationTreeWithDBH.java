@@ -20,11 +20,11 @@ package lerfob.carbonbalancetool.io;
 
 import repicea.simulation.covariateproviders.treelevel.DbhCmProvider;
 
-class CATGrowthSimulationTreeWithDBH extends CATGrowthSimulationTree implements DbhCmProvider {
+public class CATGrowthSimulationTreeWithDBH extends CATGrowthSimulationTree implements DbhCmProvider {
 
 	private final double dbhCm;
 	
-	CATGrowthSimulationTreeWithDBH(CATGrowthSimulationPlot plot, 
+	protected CATGrowthSimulationTreeWithDBH(CATGrowthSimulationPlot plot, 
 			StatusClass statusClass, 
 			double treeVolumeDm3,
 			double numberOfTrees, 

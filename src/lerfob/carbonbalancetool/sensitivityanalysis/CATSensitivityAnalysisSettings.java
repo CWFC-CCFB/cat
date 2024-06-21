@@ -39,6 +39,18 @@ public class CATSensitivityAnalysisSettings implements REpiceaShowableUIWithPare
 	
 	private transient CATSensitivityAnalysisSettingsDlg guiInterface;
 	
+	/**
+	 * An enum that represents the different sources of 
+	 * variability in the sensitivity analysis.<p>
+	 * The different levels are:
+	 * <ul>
+	 * <li> BiomassExpansionFactor
+	 * <li> BasicDensity
+	 * <li> CarbonContent
+	 * <li> Lifetime
+	 * <li> SubstitutionFactors
+	 * </ul>
+	 */
 	public static enum VariabilitySource implements TextableEnum {
 		BiomassExpansionFactor("Biomass expansion factors", "Facteur d'expansion de biomasse", 0, 15, 30),
 		BasicDensity("Wood basic densities", "Infradensit\u00E9s", 0, 20, 40),
@@ -114,13 +126,14 @@ public class CATSensitivityAnalysisSettings implements REpiceaShowableUIWithPare
 	}
 
 	/**
-	 * This method returns the multiplicative modifier for sensitivity analysis.
+	 * Provide a multiplicative modifier for sensitivity analysis.
 	 * @param source the source of variability (a VariabilitySource enum)
 	 * @param subject a MonteCarloSimulationCompliantObject instance
-	 * @return a double
+	 * @param groupID a group id (usually the species name or the species type)
+	 * @return the modifier
 	 */
-	public double getModifier(VariabilitySource source, MonteCarloSimulationCompliantObject subject, String subjectID) {
-		return sensitivityParameterMap.get(source).getValue(subject, subjectID);
+	public double getModifier(VariabilitySource source, MonteCarloSimulationCompliantObject subject, String groupID) {
+		return sensitivityParameterMap.get(source).getValue(subject, groupID);
 	}
 	
 	@Override

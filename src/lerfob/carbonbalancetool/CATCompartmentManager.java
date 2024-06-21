@@ -1,8 +1,9 @@
 /*
- * This file is part of the lerfob-forestools library.
+ * This file is part of the CAT library.
  *
  * Copyright (C) 2010-2013 Mathieu Fortin AgroParisTech/INRA UMR LERFoB, 
- *				2019-2020 Mathieu Fortin Canadian Forest Service
+ * Copyright (C) 2019-2024 His Majesty the King in right of Canada
+ * Author, Mathieu Fortin, Canadian Forest Service
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,6 +29,9 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 
 import lerfob.carbonbalancetool.CATCompartment.CompartmentInfo;
+import lerfob.carbonbalancetool.memsconnectors.MEMSCompatibleStand;
+import lerfob.carbonbalancetool.memsconnectors.MEMSCompatibleTree;
+import lerfob.carbonbalancetool.memsconnectors.MEMSWrapper;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
 import lerfob.carbonbalancetool.productionlines.CarbonUnitList;
@@ -109,10 +113,13 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	private ManagementType managementType;
 	
 	protected CATSingleSimulationResult summary;
+	private boolean isMEMSEnabled;
+	private final MEMSWrapper memsWrapper; 
 	
 	
 	/**
-	 * Constructor for this class
+	 * Constructor.
+	 * @param caller the CarbonAccountingTool instance
 	 * @param settings a CATSettings instance
 	 */
 	protected CATCompartmentManager(CarbonAccountingTool caller, CATSettings settings) {
@@ -124,9 +131,18 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		this.carbonAccountingToolSettings = settings;
 		this.carbonCompartments = new TreeMap<CompartmentInfo, CATCompartment>();	// TreeMap to make sure the merge compartments are not called before the regular compartment
 		isSimulationValid = false;
+
+		memsWrapper = new MEMSWrapper(this);
+
 		initializeCompartments();
 	}
 		
+	/**
+	 * Indicate whether MEMS soil module is enabled. 
+	 * @return a boolean
+	 */
+	public boolean isMEMSEnabled() {return isMEMSEnabled;}
+	
 	/**
 	 * Trees are registered in the treeCollections map and the treeRegister map immediately after the manager has been reset following
 	 * the triggering of the calculateCarbon action.
@@ -138,6 +154,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		if (!treeCollections.containsKey(statusClass)) {
 			treeCollections.put(statusClass, new HashMap<CATCompatibleStand, Map<String, Map<String, Collection<CATCompatibleTree>>>>());
 		}
+		
 		Map<CATCompatibleStand, Map<String, Map<String, Collection<CATCompatibleTree>>>> innerMap = treeCollections.get(statusClass);
 		if (!innerMap.containsKey(stand)) {
 			innerMap.put(stand, new HashMap<String, Map<String, Collection<CATCompatibleTree>>>());
@@ -145,12 +162,8 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		
 		Map<String, Map<String, Collection<CATCompatibleTree>>> innerInnerMap = innerMap.get(stand);
 		
-		String samplingUnitID;
-		if (tree instanceof SamplingUnitIDProvider) {
-			samplingUnitID = ((SamplingUnitIDProvider) tree).getSamplingUnitID(); 
-		} else {
-			samplingUnitID = "";
-		}
+		String samplingUnitID = getSamplingUnitID(tree); 
+		
 		if (!innerInnerMap.containsKey(samplingUnitID)) {
 			innerInnerMap.put(samplingUnitID, new HashMap<String, Collection<CATCompatibleTree>>());
 		}
@@ -166,7 +179,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	}
 
 	
-	int getDateIndexForThisHarvestedTree(CATCompatibleTree tree) {
+	int getDateIndexForThisTree(CATCompatibleTree tree) {
 		if (treeRegister.containsKey(tree)) {
 			CATCompatibleStand stand = treeRegister.get(tree);
 			return getTimeTable().getIndexOfThisStandOnTheTimeTable(stand);
@@ -175,7 +188,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		}
 	}
 	
-	int getDateIndexOfPreviousStandForThisHarvestedTree(CATCompatibleTree tree) {
+	int getDateIndexOfPreviousStandForThisTree(CATCompatibleTree tree) {
 		if (treeRegister.containsKey(tree)) {
 			CATCompatibleStand stand = treeRegister.get(tree);
 			int currentIndexOfThisStandAmongStands = getTimeTable().getStandsForThisRealization().lastIndexOf(stand);
@@ -236,7 +249,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	
 	/**
 	 * Initialize the carbon balance simulation. <p>
-	 * This method determines <p>
+	 * This method determines 
 	 * <ul>
 	 * <li> the management type (even aged or uneven aged)
 	 * <li> the rotation length (or cutting cycle in case of uneven-aged management)
@@ -287,6 +300,31 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 					}
 				}
 			}
+
+			// check if mems must be enabled
+			CATCompatibleStand firstStand = stands.get(0);
+			if (firstStand.getApplicationScale() == ApplicationScale.Stand &&
+					firstStand instanceof MEMSCompatibleStand && 
+					((MEMSCompatibleStand) firstStand).getSiteType() != null) {
+				isMEMSEnabled = true;	// default
+				outer:
+				for (CATCompatibleStand s : stands) {
+					for (StatusClass sc : StatusClass.values()) {
+						Collection<CATCompatibleTree> trees = s.getTrees(sc);
+						for (CATCompatibleTree tree : trees) {
+							if (!speciesList.contains(tree.getSpeciesName())) {
+								speciesList.add(tree.getSpeciesName());
+							}
+							if (!(tree instanceof MEMSCompatibleTree)) {
+								isMEMSEnabled = false;	// false if at least one tree does not implement MEMSCompatibleTree
+								break outer;
+							}
+						}
+					}
+				}
+			} else { // if application scale is not stand then mems is disabled
+				isMEMSEnabled = false;
+			}
 			
 			
 		}
@@ -321,6 +359,12 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		return false;
 	}
 
+
+	static String getSamplingUnitID(CATCompatibleTree tree) {
+		return tree instanceof SamplingUnitIDProvider ? 
+				((SamplingUnitIDProvider) tree).getSamplingUnitID() : 
+					"";
+	}
 	
 	/**
 	 * The first task to be carried out when the calculateCarbon action is triggered is to reset the
@@ -329,6 +373,11 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	protected void resetManager() {
 		clearTreeCollections();
 		resetCompartments();
+
+		if (isMEMSEnabled()) {
+			memsWrapper.prepareSimulation(((MEMSCompatibleStand) stands.get(0)).getSiteType());
+		}
+
 		if (getCarbonToolSettings().formerImplementation) {
 			ProductionLineManager productionLines = carbonAccountingToolSettings.getProductionLines();
 			productionLines.resetCarbonUnitMap();
@@ -337,26 +386,6 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		}
 	}
 
-//	/**
-//	 * This method provides the duration of the time step
-//	 * @param steps a Vector of Step instances
-//	 * @return an integer 
-//	 */
-//	private int retrieveAverageTimeStep(List<CATCompatibleStand> stands) {
-//		double averageTimeStep = 0;		// default time step
-//		int nbHits = 0;
-//		int date;
-//		int formerDate;
-//		for (int i = 1; i < stands.size(); i++) {
-//			date = stands.get(i).getDateYr();
-//			formerDate = stands.get(i-1).getDateYr();
-//			if (date - formerDate > 0) {
-//				averageTimeStep += date - formerDate;
-//				nbHits++;
-//			}
-//		}
-//		return (int) Math.round(averageTimeStep / nbHits);
-//	}
 	
 	/**
 	 * This method returns the TimeScale instance the simulation has been run with.
@@ -368,9 +397,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 
 	@SuppressWarnings({ "unchecked"})
 	protected void resetCompartmentsAndSetCarbonUnitCollections() {
-		if (getCarbonToolSettings().isVerboseEnabled()) {
-			System.out.println("Resetting compartment...");
-		}
+		REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.FINEST, null, "Resetting compartment...");
 		CarbonUnitList joinEndUseProductRecyclageList = new CarbonUnitList();
 		CarbonUnitList leftInForestList;
 		CarbonUnitList degradableLandfillList;
@@ -464,6 +491,18 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 				substitutionNet.addFatherCompartment(carbonCompartments.get(CompartmentInfo.LfillEm));
 				substitutionNet.addFatherCompartment(carbonCompartments.get(CompartmentInfo.LfillND));
 				this.carbonCompartments.put(compartmentInfo, substitutionNet);
+				break;
+			case Humus:
+				carbonCompartments.put(compartmentInfo,	new CATCompartment(this, compartmentInfo));
+				break;
+			case MineralSoil:
+				carbonCompartments.put(compartmentInfo,	new CATCompartment(this, compartmentInfo));
+				break;
+			case Soil:
+				CATCompartment soil = new CATCompartment(this, compartmentInfo);
+				soil.addFatherCompartment(carbonCompartments.get(CompartmentInfo.Humus));
+				soil.addFatherCompartment(carbonCompartments.get(CompartmentInfo.MineralSoil));
+				carbonCompartments.put(compartmentInfo,	soil);
 				break;
 			}
 		}
@@ -570,8 +609,14 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	@Override
 	public HierarchicalLevel getHierarchicalLevel() {return null;}
 
+	/**
+	 * Provide the MEMSWrapper instance.
+	 * @return a MEMSWrapper instance
+	 */
+	public MEMSWrapper getMEMS() { 
+		return memsWrapper;
+	}
 
-	
 }
 
 

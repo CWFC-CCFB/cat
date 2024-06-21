@@ -180,4 +180,10 @@ public class CATSimulationDifference implements CATSimulationResult {
 		return true;
 	}
 
+
+	@Override
+	public boolean isSoilModuleEnabled() {
+		return baseline.isSoilModuleEnabled() && scenToCompare.isSoilModuleEnabled();
+	}
+
 }

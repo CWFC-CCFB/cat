@@ -40,7 +40,7 @@ class CATCompartmentCompileLibrary {
 	 * @param carbonCompartment = a carbon compartment (CarbonCompartment object)
 	 */
 	@SuppressWarnings("unchecked")
-	void selectCalculatorFunction(CATCompartment carbonCompartment) throws Exception {
+	void selectCalculatorFunction(CATCompartment carbonCompartment) {
 		CATCompartmentManager manager = carbonCompartment.getCompartmentManager();
 		
 		Collection<? extends CarbonUnit> carbonUnits;
@@ -50,6 +50,7 @@ class CATCompartmentCompileLibrary {
 		int revolutionPeriod = manager.getRotationLength();
 //		CATExponentialFunction decayFunction;
 		List<CATCompatibleStand> stands = timeTable.getStandsForThisRealization();
+		double areaHa = stands.get(0).getAreaHa();
 		CATIntermediateBiomassCarbonMap oMap;
 		
 		switch (carbonCompartment.getCompartmentID()) {
@@ -73,7 +74,6 @@ class CATCompartmentCompileLibrary {
 			}	
 			oMap.interpolateIfNeeded();
 			carbonCompartment.setIntegratedCarbon(integrateCarbonOverHorizon(carbonCompartment) / revolutionPeriod);
-
 			break;
 			
 		// STOCK COMPARTMENTS
@@ -267,9 +267,30 @@ class CATCompartmentCompileLibrary {
 		case NetSubs:
 			carbonCompartment.mergeWithFatherCompartments();
 			break;
+		case Humus:
+			if (manager.isMEMSEnabled()) {
+				for (int i = 0; i < timeTable.size(); i++) {
+					double humusMgHa = manager.getMEMS().getCarbonStockMgHaForThisYear(i).humus;
+//					System.out.println("i = " + i + "; humusMgHa = " + humusMgHa);
+					carbonCompartment.setCarbonIntoArray(i, humusMgHa * areaHa);
+				}
+				carbonCompartment.setIntegratedCarbon(integrateCarbonOverHorizon(carbonCompartment) / revolutionPeriod);  // no need to correct for the area because the integration relies on the carbon array which contains area corrected values
+			}
+			break;
+		case MineralSoil:
+			if (manager.isMEMSEnabled()) {
+				for (int i = 0; i < timeTable.size(); i++) {
+					double soilMgHa = manager.getMEMS().getCarbonStockMgHaForThisYear(i).soil;
+//					System.out.println("i = " + i + "; soilMgHa = " + soilMgHa);
+					carbonCompartment.setCarbonIntoArray(i, soilMgHa* areaHa);
+				}
+				carbonCompartment.setIntegratedCarbon(integrateCarbonOverHorizon(carbonCompartment) / revolutionPeriod);  // no need to correct for the area because the integration relies on the carbon array which contains area corrected values
+			}
+			break;
+		case Soil:
+			carbonCompartment.mergeWithFatherCompartments();
+			break;
 		}
-		
-	
 	}
 	
 	private boolean isInfiniteSequenceAllowed(CATCompartment carbonCompartment) {
@@ -278,7 +299,7 @@ class CATCompartmentCompileLibrary {
 	
 	/**
 	 * This method computes a numerical approximation of the integral based on the trapezoidal rule.
-	 * @param carbonCompartment = a carbon compartment (CarbonCompartment object)
+	 * @param carbonCompartment a carbon compartment (CarbonCompartment object)
 	 * @return the total carbon (double)
 	 */
 	private double integrateCarbonOverHorizon(CATCompartment carbonCompartment) {
@@ -294,15 +315,15 @@ class CATCompartmentCompileLibrary {
 					isInfiniteSequenceAllowed && 
 					carbonCompartment.getCompartmentManager().getManagementType() == ManagementType.EvenAged) {	// then add the first years from 0 to the initial measurement of the stand
 				int initialAgeYr = timeScale.getInitialAgeYr();
-				currentValue = carbonCompartment.getCalculatedCarbonArray()[i - 1];
+				currentValue = carbonCompartment.getCarbonArray()[i - 1];
 				totalCarbon += calculateCarbonForThisPeriod(0, initialAgeYr, 0, currentValue);
 			}
 			
 			currentDateYr = timeScale.getDateYrAtThisIndex(i);
-			currentValue = carbonCompartment.getCalculatedCarbonArray()[i];
+			currentValue = carbonCompartment.getCarbonArray()[i];
 
 			previousDateYr = timeScale.getDateYrAtThisIndex(i - 1);
-			previousValue = carbonCompartment.getCalculatedCarbonArray()[i - 1];
+			previousValue = carbonCompartment.getCarbonArray()[i - 1];
 		
 			totalCarbon += calculateCarbonForThisPeriod(previousDateYr, 
 					currentDateYr, 

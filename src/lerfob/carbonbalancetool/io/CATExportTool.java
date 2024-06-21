@@ -18,12 +18,14 @@
  */
 package lerfob.carbonbalancetool.io;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.logging.Level;
 
 import lerfob.carbonbalancetool.CATCompartment.CompartmentInfo;
 import lerfob.carbonbalancetool.CATSimulationDifference;
@@ -32,6 +34,7 @@ import lerfob.carbonbalancetool.CATTimeTable;
 import lerfob.carbonbalancetool.CATUtilityMaps.MonteCarloEstimateMap;
 import lerfob.carbonbalancetool.CATUtilityMaps.SpeciesMonteCarloEstimateMap;
 import lerfob.carbonbalancetool.CATUtilityMaps.UseClassSpeciesMonteCarloEstimateMap;
+import lerfob.carbonbalancetool.CarbonAccountingTool;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
 import lerfob.carbonbalancetool.productionlines.EndUseWoodProductCarbonUnitFeature.UseClass;
@@ -48,6 +51,7 @@ import repicea.math.SymmetricMatrix;
 import repicea.stats.estimates.Estimate;
 import repicea.stats.estimates.MonteCarloEstimate;
 import repicea.util.BrowserCaller;
+import repicea.util.REpiceaLogManager;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
 
@@ -55,6 +59,13 @@ import repicea.util.REpiceaTranslator.TextableEnum;
 public class CATExportTool extends REpiceaExportTool {
 
 	private static final String AllSpecies = "All species";
+	
+	private static final List<CompartmentInfo> SOIL_COMPARTMENTS = new ArrayList<CompartmentInfo>();
+	static {
+		SOIL_COMPARTMENTS.add(CompartmentInfo.Soil);
+		SOIL_COMPARTMENTS.add(CompartmentInfo.MineralSoil);
+		SOIL_COMPARTMENTS.add(CompartmentInfo.Humus);
+	}
 	
 	private static enum MessageID implements TextableEnum {
 		Year("Year", "Annee"),
@@ -215,6 +226,10 @@ public class CATExportTool extends REpiceaExportTool {
 			}
 		}
 
+		private boolean shouldCompartmentBeIncludedInExport(CompartmentInfo compartmentInfo) {
+			return caller.summary.isSoilModuleEnabled() || !SOIL_COMPARTMENTS.contains(compartmentInfo);
+		}
+		
 		private void createCarbonStockAndFluxEvolutionRecordSet() throws Exception {
 			GExportRecord r;
 			
@@ -227,32 +242,34 @@ public class CATExportTool extends REpiceaExportTool {
 			
 			GExportFieldDetails standIDField = new GExportFieldDetails("StandID", standID);
 			for (CompartmentInfo compartmentInfo : CompartmentInfo.values()) {
-				MonteCarloEstimate estimate = caller.summary.getEvolutionMap().get(compartmentInfo);
-				int nbRealizations = estimate.getNumberOfRealizations();
-				for (int i = 0; i < timeScale.size(); i++) {
-					for (int j = 0; j < nbRealizations; j++) {
-						double value = estimate.getRealizations().get(j).getValueAt(i, 0);
-						if (caller.summary.isEvenAged() && i == 0) {
+				if (shouldCompartmentBeIncludedInExport(compartmentInfo)) {
+					MonteCarloEstimate estimate = caller.summary.getEvolutionMap().get(compartmentInfo);
+					int nbRealizations = estimate.getNumberOfRealizations();
+					for (int i = 0; i < timeScale.size(); i++) {
+						for (int j = 0; j < nbRealizations; j++) {
+							double value = estimate.getRealizations().get(j).getValueAt(i, 0);
+							if (caller.summary.isEvenAged() && i == 0) {
+								r = new GExportRecord();
+								r.addField(standIDField);
+								r.addField(new GExportFieldDetails(MessageID.Year.toString(), (Integer) 0));
+								r.addField(new GExportFieldDetails(MessageID.Compartment.toString(), compartmentInfo.toString()));
+								r.addField(new GExportFieldDetails(MessageID.CarbonHaMean.toString(), (Double) 0d));
+								if (nbRealizations > 0) {
+									r.addField(new GExportFieldDetails("RealizationID", (Integer) j+1));
+								}
+								addRecord(r);
+							}
 							r = new GExportRecord();
 							r.addField(standIDField);
-							r.addField(new GExportFieldDetails(MessageID.Year.toString(), (Integer) 0));
+							r.addField(new GExportFieldDetails(MessageID.Year.toString(), timeScale.getDateYrAtThisIndex(i)));
 							r.addField(new GExportFieldDetails(MessageID.Compartment.toString(), compartmentInfo.toString()));
-							r.addField(new GExportFieldDetails(MessageID.CarbonHaMean.toString(), (Double) 0d));
+							r.addField(new GExportFieldDetails(MessageID.CarbonHaMean.toString(), value));
 							if (nbRealizations > 0) {
 								r.addField(new GExportFieldDetails("RealizationID", (Integer) j+1));
 							}
+					
 							addRecord(r);
 						}
-						r = new GExportRecord();
-						r.addField(standIDField);
-						r.addField(new GExportFieldDetails(MessageID.Year.toString(), timeScale.getDateYrAtThisIndex(i)));
-						r.addField(new GExportFieldDetails(MessageID.Compartment.toString(), compartmentInfo.toString()));
-						r.addField(new GExportFieldDetails(MessageID.CarbonHaMean.toString(), value));
-						if (nbRealizations > 0) {
-							r.addField(new GExportFieldDetails("RealizationID", (Integer) j+1));
-						}
-				
-						addRecord(r);
 					}
 				}
 			}
@@ -269,26 +286,28 @@ public class CATExportTool extends REpiceaExportTool {
 			GExportFieldDetails standIDField = new GExportFieldDetails("StandID", standID);
 
 			for (CompartmentInfo compartmentInfo : CompartmentInfo.values()) {
-				Estimate<Matrix, SymmetricMatrix, ?> estimate = caller.summary.getBudgetMap().get(compartmentInfo);
-				if (estimate instanceof MonteCarloEstimate) {
-					int nbRealizations = ((MonteCarloEstimate) estimate).getNumberOfRealizations();
-					for (int j = 0; j < nbRealizations; j++) {
-						double value = ((MonteCarloEstimate) estimate).getRealizations().get(j).getValueAt(0, 0);
+				if (shouldCompartmentBeIncludedInExport(compartmentInfo)) {
+					Estimate<Matrix, SymmetricMatrix, ?> estimate = caller.summary.getBudgetMap().get(compartmentInfo);
+					if (estimate instanceof MonteCarloEstimate) {
+						int nbRealizations = ((MonteCarloEstimate) estimate).getNumberOfRealizations();
+						for (int j = 0; j < nbRealizations; j++) {
+							double value = ((MonteCarloEstimate) estimate).getRealizations().get(j).getValueAt(0, 0);
+							r = new GExportRecord();
+							r.addField(standIDField);
+							r.addField(new GExportFieldDetails(MessageID.Compartment.toString(), compartmentInfo.toString()));
+							r.addField(new GExportFieldDetails(MessageID.CarbonHaMean.toString(), value));
+							if (nbRealizations > 0) {
+								r.addField(new GExportFieldDetails("RealizationID", (Integer) j+1));
+							}
+							addRecord(r);
+						}
+					} else {
 						r = new GExportRecord();
 						r.addField(standIDField);
 						r.addField(new GExportFieldDetails(MessageID.Compartment.toString(), compartmentInfo.toString()));
-						r.addField(new GExportFieldDetails(MessageID.CarbonHaMean.toString(), value));
-						if (nbRealizations > 0) {
-							r.addField(new GExportFieldDetails("RealizationID", (Integer) j+1));
-						}
-						addRecord(r);
+						r.addField(new GExportFieldDetails(MessageID.CarbonHaMean.toString(), estimate.getMean().getValueAt(0, 0)));
+						r.addField(new GExportFieldDetails(MessageID.Variance.toString(), estimate.getVariance().getValueAt(0, 0)));
 					}
-				} else {
-					r = new GExportRecord();
-					r.addField(standIDField);
-					r.addField(new GExportFieldDetails(MessageID.Compartment.toString(), compartmentInfo.toString()));
-					r.addField(new GExportFieldDetails(MessageID.CarbonHaMean.toString(), estimate.getMean().getValueAt(0, 0)));
-					r.addField(new GExportFieldDetails(MessageID.Variance.toString(), estimate.getVariance().getValueAt(0, 0)));
 				}
 			}
 		}
@@ -504,10 +523,10 @@ public class CATExportTool extends REpiceaExportTool {
 	
 	/**
 	 * Constructor. 
+	 * @param memorySettings a SettingMemory instance
 	 * @param summary a CarbonAccountingToolExportSummary instance
-	 * @throws Exception 
 	 */
-	public CATExportTool(SettingMemory memorySettings, CATSimulationResult summary) throws Exception { 
+	public CATExportTool(SettingMemory memorySettings, CATSimulationResult summary) { 
 		super(true);			// enables multiple selection 
 		this.summary = summary;
 		this.settings = memorySettings;
@@ -521,13 +540,17 @@ public class CATExportTool extends REpiceaExportTool {
 		super.setSaveFileEnabled(bool);
 	}
 	
-	private void setHelper() throws NoSuchMethodException, SecurityException {
-		Method callHelp = BrowserCaller.class.getMethod("openUrl", String.class);
-		String url = "http://www.inra.fr/capsis/help_"+ 
-				REpiceaTranslator.getCurrentLanguage().getLocale().getLanguage() +
-				"/capsis/extension/modeltool/carbonaccountingtool/export";
-		AutomatedHelper helper = new AutomatedHelper(callHelp, new Object[]{url});
-		UIControlManager.setHelpMethod(REpiceaExportToolDialog.class, helper);
+	private void setHelper() {
+		try {
+			Method callHelp = BrowserCaller.class.getMethod("openUrl", String.class);
+			String url = "http://www.inra.fr/capsis/help_"+ 
+					REpiceaTranslator.getCurrentLanguage().getLocale().getLanguage() +
+					"/capsis/extension/modeltool/carbonaccountingtool/export";
+			AutomatedHelper helper = new AutomatedHelper(callHelp, new Object[]{url});
+			UIControlManager.setHelpMethod(REpiceaExportToolDialog.class, helper);
+		} catch (Exception e) {
+			REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.SEVERE, "CATExportTool", "Unable to set helper: " + e.getMessage());
+		}
 	}
 	
 
@@ -579,12 +602,13 @@ public class CATExportTool extends REpiceaExportTool {
 	}
 
 	/**
-	 * This method sets the selected options to all the possible options. It is 
-	 * typically called by external applications. 
-	 * @throws Exception
+	 * Set the selected exrpot options to all possible options.<p>
+	 * It is typically called by external applications. 
+	 * @return a list of enum constant
+	 * @throws IOException if one of selected options is not available
 	 */
 	@SuppressWarnings("rawtypes")
-	public List<Enum> setAllAvailableOptions() throws Exception {
+	public List<Enum> setAllAvailableOptions() throws IOException {
 		List<Enum> availableOptions = getAvailableExportOptions();
 		setSelectedOptions(availableOptions);
 		return availableOptions;

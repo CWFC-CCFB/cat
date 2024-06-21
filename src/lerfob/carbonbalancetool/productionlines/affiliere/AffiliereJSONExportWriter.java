@@ -36,9 +36,9 @@ public class AffiliereJSONExportWriter {
 
 	/**
 	 * Write a JSON representation of a ProductionProcessorManager instance to file.
-	 * @param manager a ProductionProcessorManager instance
+	 * @param managerRep a LinkedHashMap representation of the manager
 	 * @param filename the filename
-	 * @throws IOException if an error occurs while writing the file
+	 * @throws IOException if an I/O error occurs while writing the file
 	 */
 	public AffiliereJSONExportWriter(LinkedHashMap<String, Object> managerRep, String filename) throws IOException {
 		JsonWriter writer = null;

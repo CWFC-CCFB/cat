@@ -170,8 +170,8 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 	
 	/**
 	 * Constructor.
-	 * @param parent
-	 * @param systemManager
+	 * @param parent the parent window
+	 * @param systemManager the ProductionProcessorManager instance whose parameters are to be displayed
 	 */
 	protected ProductionProcessorManagerDialog(Window parent, ProductionProcessorManager systemManager) {
 		super(parent, systemManager);

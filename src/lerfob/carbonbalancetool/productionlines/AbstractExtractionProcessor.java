@@ -1,7 +1,8 @@
 /*
  * This file is part of the CAT library.
  *
- * Copyright (C) 2020 Mathieu Fortin for Canadian Forest Service, 
+ * Copyright (C) 2020-24 His Majesty the King in right of Canada
+ * Author: Mathieu Fortin, Canadian Forest Service, 
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -62,7 +63,7 @@ public abstract class AbstractExtractionProcessor extends AbstractProcessor {
 		}
 
 		/**
-		 * Enabling is mainly set in the {@link repicea.simulation.processsystem.SystemComponentMouseAdapter} class.<p>
+		 * Enabling is mainly set through the SystemComponentMouseAdapter class.<p>
 		 * See the ComponentsToBeEnabledDisabled static member of that class for the list of components.
 		 */
 		@Override

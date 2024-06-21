@@ -23,8 +23,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 import lerfob.carbonbalancetool.biomassparameters.BiomassParameters;
+import lerfob.carbonbalancetool.memsconnectors.MEMSCompatibleTree;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.BiomassType;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
 import lerfob.carbonbalancetool.productionlines.ProductionLineManager;
@@ -34,12 +36,12 @@ import repicea.app.AbstractGenericTask;
 import repicea.gui.REpiceaAWTEvent;
 import repicea.lang.MemoryWatchDog;
 import repicea.simulation.ApplicationScaleProvider.ApplicationScale;
-import repicea.simulation.covariateproviders.treelevel.SamplingUnitIDProvider;
 import repicea.simulation.covariateproviders.treelevel.TreeStatusProvider.StatusClass;
 import repicea.simulation.processsystem.AmountMap;
 import repicea.simulation.treelogger.LoggableTree;
 import repicea.simulation.treelogger.TreeLogger;
 import repicea.simulation.treelogger.WoodPiece;
+import repicea.util.REpiceaLogManager;
 
 @SuppressWarnings({ "serial", "deprecation" })
 public class CATTask extends AbstractGenericTask {
@@ -51,7 +53,8 @@ public class CATTask extends AbstractGenericTask {
 	public static enum Task {
 		LOG_AND_BUCK_TREES(true), 
 		GENERATE_WOODPRODUCTS(true), 
-		ACTUALIZE_CARBON(true), 
+		ACTUALIZE_CARBON(true),
+		RETRIEVE_SOIL_CARBON_INPUT(true),
 		COMPILE_CARBON(true),
 		SET_REALIZATION(false),
 		SHUT_DOWN(false),
@@ -151,6 +154,10 @@ public class CATTask extends AbstractGenericTask {
 			firePropertyChange("OngoingTask", null, currentTask);
 			actualizeCarbon();
 			break;
+		case RETRIEVE_SOIL_CARBON_INPUT:
+			firePropertyChange("OngoingTask", null, currentTask);
+			retrieveSoilInputFromLivingTreesAndSimulate();
+			break;
 		case COMPILE_CARBON:
 			firePropertyChange("OngoingTask", null, currentTask);
 			calculateCarbonInCompartments();
@@ -174,13 +181,30 @@ public class CATTask extends AbstractGenericTask {
 		}
 	}
 
-	
+	@SuppressWarnings("unchecked")
+	private void retrieveSoilInputFromLivingTreesAndSimulate() {
+		CATCompartmentManager manager = caller.getCarbonCompartmentManager();
+
+		REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.FINEST, null, "Adding soil carbon input from living trees...");
+		
+		BiomassParameters biomassParameters = manager.getCarbonToolSettings().getCurrentBiomassParameters();
+		CATIntermediateBiomassCarbonMap aboveGroundMap = new CATIntermediateBiomassCarbonMap(manager.getTimeTable(), manager.getMEMS().getInputFromLivingTreesAboveGroundMgHaArray());
+		CATIntermediateBiomassCarbonMap belowGroundMap = new CATIntermediateBiomassCarbonMap(manager.getTimeTable(), manager.getMEMS().getInputFromLivingTreesBelowGroundMgHaArray());
+		for (CATCompatibleStand s : manager.getTimeTable().getStandsForThisRealization()) {
+			double soilCarbonMgInputFromLitterFall = biomassParameters.getLitterFallAnnualCarbonMg((Collection<MEMSCompatibleTree>) s.getTrees(StatusClass.alive), manager);
+			aboveGroundMap.put(s, soilCarbonMgInputFromLitterFall / s.getAreaHa());
+			double soilCargonMgInputFromFineRootTurnover = biomassParameters.getFineRootTurnOverAnnualCarbonMg((Collection<MEMSCompatibleTree>) s.getTrees(StatusClass.alive), manager);
+			belowGroundMap.put(s, soilCargonMgInputFromFineRootTurnover / s.getAreaHa());
+		}
+		aboveGroundMap.interpolateIfNeeded();
+		belowGroundMap.interpolateIfNeeded();  // after this line the two carbon arrays are automatically filled in the MEMSWrapper instance
+		manager.getMEMS().simulate();
+	}
+
 	@SuppressWarnings("unchecked")
 	private void registerTrees() {
 		CATCompartmentManager manager = caller.getCarbonCompartmentManager();
-		if (manager.getCarbonToolSettings().isVerboseEnabled()) {
-			System.out.println("Creating last stand if needs be and registering trees...");
-		}
+		REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.FINEST, null, "Creating last stand if needs be and registering trees...");
 
 		List<CATCompatibleStand> stands = manager.getTimeTable().getStandsForThisRealization();
 
@@ -194,13 +218,10 @@ public class CATTask extends AbstractGenericTask {
 						if (statusClass != StatusClass.alive) {
 							manager.registerTree(statusClass, stand, t);
 						}
-//						manager.registerTreeSpecies(t);	// we register all the possible species regardless of tree status -- NOW HANDLED IN the INIT method of CATCompartmentManager 
 					} 
 				}
 			}
 		}
-
-		
 	}
 
 
@@ -211,12 +232,9 @@ public class CATTask extends AbstractGenericTask {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void logAndBuckTrees() throws Exception {
 		CATCompartmentManager manager = caller.getCarbonCompartmentManager();
-		if (manager.getCarbonToolSettings().isVerboseEnabled()) {
-			System.out.println("Bucking harvested trees into wood pieces...");
-		}
+		REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.FINEST, null,"Bucking harvested trees into wood pieces...");
 
 		manager.setSimulationValid(false);
-		
 
 		TreeLogger logger = caller.getCarbonToolSettings().getTreeLogger();
 		if (!manager.getTrees(StatusClass.cut).isEmpty()) {
@@ -246,9 +264,8 @@ public class CATTask extends AbstractGenericTask {
 		CATCompartmentManager manager = caller.getCarbonCompartmentManager();
 		ApplicationScale applicationScale = manager.getStandList().get(0).getApplicationScale();
 
-		if (manager.getCarbonToolSettings().isVerboseEnabled()) {
-			System.out.println("Creating HWP from wood pieces...");
-		}
+		REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.FINEST, null, "Creating HWP from wood pieces...");
+		
 		BiomassParameters biomassParameters = manager.getCarbonToolSettings().getCurrentBiomassParameters();
 		getProcessorManager().resetCarbonUnitMap();
 		if (!caller.getCarbonToolSettings().getTreeLogger().getWoodPieces().isEmpty()) {
@@ -258,17 +275,12 @@ public class CATTask extends AbstractGenericTask {
 			outerLoop:
 				for (LoggableTree t : (Collection<LoggableTree>) treeLogger.getWoodPieces().keySet()) {
 
-					String samplingUnitID;
-					if (t instanceof SamplingUnitIDProvider) {
-						samplingUnitID = ((SamplingUnitIDProvider) t).getSamplingUnitID();
-					} else {
-						samplingUnitID = "";
-					}
+					String samplingUnitID = CATCompartmentManager.getSamplingUnitID((CATCompatibleTree) t);
 					MemoryWatchDog.checkAvailableMemory();		// memory check before going further on
 
 					CATCompatibleTree tree = (CATCompatibleTree) t;
-					int currentDateIndex = manager.getDateIndexForThisHarvestedTree(tree);
-					int nbYearsToPreviousMeasurement = getNumberOfYearsBetweenStandOfThisHarvestedTreeAndPreviousStand(manager, tree);
+					int currentDateIndex = manager.getDateIndexForThisTree(tree);
+					int nbYearsToPreviousMeasurement = getNumberOfYearsBetweenStandOfThisTreeAndPreviousStand(manager, tree);
 					double annualBreakdownRatio = getAnnualBreakdownRatio(applicationScale, nbYearsToPreviousMeasurement);
 					double carbonContentRatio = biomassParameters.getCarbonContentFromThisTree(tree, manager);
 					double basicWoodDensityMgM3 = biomassParameters.getBasicWoodDensityFromThisTree(tree, manager);
@@ -373,9 +385,9 @@ public class CATTask extends AbstractGenericTask {
 		createWoodyDebris(manager.getTrees(StatusClass.windfall), WoodyDebrisProcessorID.FineWoodyDebris);
 	}
 
-	private int getNumberOfYearsBetweenStandOfThisHarvestedTreeAndPreviousStand(CATCompartmentManager manager, CATCompatibleTree tree) {
-		int currentDateIndex = manager.getDateIndexForThisHarvestedTree(tree);
-		int previousDateIndex = manager.getDateIndexOfPreviousStandForThisHarvestedTree(tree);
+	private int getNumberOfYearsBetweenStandOfThisTreeAndPreviousStand(CATCompartmentManager manager, CATCompatibleTree tree) {
+		int currentDateIndex = manager.getDateIndexForThisTree(tree);
+		int previousDateIndex = manager.getDateIndexOfPreviousStandForThisTree(tree);
 
 		int nbYears;
 		if (previousDateIndex == -1 && currentDateIndex == 0) { // happens if the first stand is a harvested stand
@@ -414,7 +426,7 @@ public class CATTask extends AbstractGenericTask {
 			WoodyDebrisProcessorID WoodDebrisType,
 			ApplicationScale applicationScale) {
 		CATCompartmentManager manager = caller.getCarbonCompartmentManager();
-		int nbYearsToPreviousMeasurement = getNumberOfYearsBetweenStandOfThisHarvestedTreeAndPreviousStand(manager, tree);
+		int nbYearsToPreviousMeasurement = getNumberOfYearsBetweenStandOfThisTreeAndPreviousStand(manager, tree);
 		double annualBreakdownRatio = getAnnualBreakdownRatio(applicationScale, nbYearsToPreviousMeasurement);
 		
 		
@@ -524,9 +536,8 @@ public class CATTask extends AbstractGenericTask {
 	 */
 	private void calculateCarbonInCompartments() throws Exception {
 		CATCompartmentManager manager = caller.getCarbonCompartmentManager();
-		if (manager.getCarbonToolSettings().isVerboseEnabled()) {
-			System.out.println("Calculating carbon in the different compartments...");
-		}
+		REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.FINEST, null, "Calculating carbon in the different compartments...");
+		
 		manager.resetCompartmentsAndSetCarbonUnitCollections();
 		
 		double progressFactor = (double) 100d / manager.getCompartments().size() / Task.values().length;
@@ -538,9 +549,7 @@ public class CATTask extends AbstractGenericTask {
 			carbonCompartment.calculateAndIntegrateCarbon();
 			compIter++;
 			setProgress((int) (compIter * progressFactor + (double) (currentTask.ordinal() * 100 / Task.getNumberOfLongTasks())));
-			if (manager.getCarbonToolSettings().isVerboseEnabled()) {
-				System.out.println("Integrated carbon in compartment " + carbonCompartment.getCompartmentID().name() + " = " + carbonCompartment.getIntegratedCarbon());
-			}
+			REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.FINEST, null, "Integrated carbon in compartment " + carbonCompartment.getCompartmentID().name() + " = " + carbonCompartment.getIntegratedCarbon());
 		}
 		manager.setSimulationValid(true);
 		manager.storeResults();
