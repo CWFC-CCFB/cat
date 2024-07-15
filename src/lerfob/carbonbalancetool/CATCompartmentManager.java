@@ -375,7 +375,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 		resetCompartments();
 
 		if (isMEMSEnabled()) {
-			memsWrapper.prepareSimulation(((MEMSCompatibleStand) stands.get(0)).getSiteType());
+			memsWrapper.prepareSimulation((List) stands);
 		}
 
 		if (getCarbonToolSettings().formerImplementation) {

@@ -1,3 +1,22 @@
+/*
+ * This file is part of the CAT library.
+ *
+ * Copyright (C) 2024 His Majesty the King in Right of Canada
+ * Authors: Jean-Francois Lavoie and Mathieu Fortin, Canadian Wood Fibre Centre
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This library is distributed with the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * Please see the license at http://www.gnu.org/copyleft/lesser.html.
+ */
 package lerfob.carbonbalancetool.memsconnectors;
 
 import lerfob.mems.SoilCarbonPredictor;
@@ -27,19 +46,19 @@ public class MEMSSite {
     MetropolisHastingsAlgorithm mha;
     SoilCarbonPredictorInput inputs;
 
-    double MAT;
-    double MinTemp;
-    double MaxTemp;
+//    double MAT;
+//    double MinTemp;
+//    double MaxTemp;
 
-    public double getMAT() {
-        return MAT;
-    }
+//    public double getMAT() {
+//        return MAT;
+//    }
+//
+//    public double getTRange() {
+//        return MaxTemp - MinTemp;
+//    }
 
-    public double getTRange() {
-        return MaxTemp - MinTemp;
-    }
-
-    public SoilCarbonPredictorInput getInputs() {
+    protected SoilCarbonPredictorInput getInputs() {
         return inputs;
     }
 
@@ -51,9 +70,9 @@ public class MEMSSite {
         {
             MEMSSite siteMMF = new MEMSSite();
 
-            siteMMF.MAT = 3.8; // between Jan 1 2013 to Dec 31st 2016 at MM
-            siteMMF.MinTemp = -9.48;   // between Jan 1 2013 to Dec 31st 2016 at MM
-            siteMMF.MaxTemp = 17.79;   // between Jan 1 2013 to Dec 31st 2016 at MM
+//            siteMMF.MAT = 3.8; // between Jan 1 2013 to Dec 31st 2016 at MM
+//            siteMMF.MinTemp = -9.48;   // between Jan 1 2013 to Dec 31st 2016 at MM
+//            siteMMF.MaxTemp = 17.79;   // between Jan 1 2013 to Dec 31st 2016 at MM
 
             siteMMF.inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.MontmorencyForest,
                     304.0,
@@ -83,9 +102,9 @@ public class MEMSSite {
         {
             MEMSSite siteMMF = new MEMSSite();
 
-            siteMMF.MAT = 3.8; // between Jan 1 2013 to Dec 31st 2016 at MM
-            siteMMF.MinTemp = -9.48;   // between Jan 1 2013 to Dec 31st 2016 at MM
-            siteMMF.MaxTemp = 17.79;   // between Jan 1 2013 to Dec 31st 2016 at MM
+//            siteMMF.MAT = 3.8; // between Jan 1 2013 to Dec 31st 2016 at MM
+//            siteMMF.MinTemp = -9.48;   // between Jan 1 2013 to Dec 31st 2016 at MM
+//            siteMMF.MaxTemp = 17.79;   // between Jan 1 2013 to Dec 31st 2016 at MM
 
             siteMMF.inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.MontmorencyForest,
                     304.0,

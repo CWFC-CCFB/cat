@@ -115,6 +115,19 @@ public class MEMSConnectorsTest {
 
 		@Override
 		public SiteType getSiteType() {return SiteType.Montmorency2;}
+
+		@Override
+		public double getMeanAnnualTemperatureCForThisYear(int year) {
+			return 3.8; // between Jan 1 2013 to Dec 31st 2016 at Foret Montmorency 
+		}
+
+		@Override
+		public double getAnnualTemperatureRangeForThisYear(int year) {
+			double minTemp = -9.48;   // between Jan 1 2013 to Dec 31st 2016 at Foret Montmorency
+			double maxTemp = 17.79;   // between Jan 1 2013 to Dec 31st 2016 at Foret Montmorency
+			return maxTemp - minTemp;
+		}
+
 	}
 
 	@Test

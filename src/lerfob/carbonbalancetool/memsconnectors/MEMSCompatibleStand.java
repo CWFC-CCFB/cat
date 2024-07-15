@@ -19,12 +19,13 @@
  */
 package lerfob.carbonbalancetool.memsconnectors;
 
+import lerfob.carbonbalancetool.CATCompatibleStand;
 import lerfob.carbonbalancetool.memsconnectors.MEMSSite.SiteType;
 
 /**
  * Ensures the stand instance is compatible with MEMS.
  */
-public interface MEMSCompatibleStand {
+public interface MEMSCompatibleStand extends CATCompatibleStand {
 
 	/**
 	 * Provide the site type of this stand.<p>
@@ -32,5 +33,20 @@ public interface MEMSCompatibleStand {
 	 * @return a SiteType enum
 	 */
 	public SiteType getSiteType();
+	
+	/**
+	 * Provide the mean annual temperature for a particular year.
+	 * @param year an integer
+	 * @return the mean annual temperature (C)
+	 */
+	public double getMeanAnnualTemperatureCForThisYear(int year);
+	
+	/**
+	 * Provide the range between the min mean temperature and the 
+	 * max mean temperature.<p>
+	 * @param year an integer
+	 * @return the range of temperature (C)
+	 */
+	public double getAnnualTemperatureRangeForThisYear(int year);
 	
 }

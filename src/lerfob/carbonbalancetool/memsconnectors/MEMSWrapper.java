@@ -19,12 +19,12 @@
  */
 package lerfob.carbonbalancetool.memsconnectors;
 
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import lerfob.carbonbalancetool.CATCompartmentManager;
 import lerfob.carbonbalancetool.CATTimeTable;
 import lerfob.carbonbalancetool.CarbonArray;
-import lerfob.carbonbalancetool.memsconnectors.MEMSSite.SiteType;
 import lerfob.mems.SoilCarbonPredictor;
 import lerfob.mems.SoilCarbonPredictorCompartments;
 import lerfob.mems.SoilCarbonPredictorInput;
@@ -60,6 +60,8 @@ public class MEMSWrapper {
     private CarbonArray inputFromLivingTreesAboveGroundMgHa;
     private CarbonArray inputFromLivingTreesBelowGroundMgHa;
     
+    private double[] meanAnnualTemperatureC;
+    
     SoilCarbonPredictor predictor;
     SoilCarbonPredictorCompartments compartments;
     
@@ -76,9 +78,6 @@ public class MEMSWrapper {
     	this.manager = manager;
     }
     
-//    public static List<MEMSSite.SiteName> getSitesList() {
-//        return Arrays.asList(MEMSSite.SiteName.values());
-//    }
     
     public CarbonArray getInputFromLivingTreesAboveGroundMgHaArray() {
     	return inputFromLivingTreesAboveGroundMgHa;
@@ -91,9 +90,9 @@ public class MEMSWrapper {
     /**
      * Initialize MEMS with appropriate parameters.<p>
      * This method is called as the carbon compartment manager is reset.
-     * @param siteName a MEMSSite.SiteName enum
+     * @param memsStand a MEMSCompatibleStand instance
      */
-    public void prepareSimulation(SiteType siteName) {
+    public void prepareSimulation(List<MEMSCompatibleStand> memsStands) {
 
     	CATTimeTable timeTable = manager.getTimeTable();
         // run a simulation to reach stability into compartment bins
@@ -103,19 +102,39 @@ public class MEMSWrapper {
         // prepare the carbon stock array
         inputAnnualStocksGCm2 = new CarbonStock[nbYears];
         outputAnnualStocksMgHa = new CarbonStock[nbYears];
+        meanAnnualTemperatureC = new double[nbYears];
         inputFromLivingTreesAboveGroundMgHa = new CarbonArray(nbYears);
         inputFromLivingTreesBelowGroundMgHa = new CarbonArray(nbYears);
 
+        int j = 0;
+        MEMSCompatibleStand memsStand = memsStands.get(j);
         for (int i = 0; i < nbYears; i++) {
             inputAnnualStocksGCm2[i] = new CarbonStock(0.0, 0.0);
             outputAnnualStocksMgHa[i] = new CarbonStock(0.0, 0.0);
+            int dateYr = timeTable.getDateYrAtThisIndex(i);
+            while (dateYr > memsStand.getDateYr()) {
+            	j++;
+            	if (j < memsStands.size()) {
+            		memsStand = memsStands.get(j);
+            	} 
+            }
+            meanAnnualTemperatureC[i] = memsStand.getMeanAnnualTemperatureCForThisYear(dateYr);
+        }
+
+        for (MEMSCompatibleStand s : memsStands) {
+        	s.getDateYr();
         }
         
-        setSiteAndEstimateInitialCarbon(siteName);
+        setSiteAndEstimateInitialCarbon(memsStands.get(0));	// the initial stand
     }
-    
-    private void setSiteAndEstimateInitialCarbon(SiteType siteName) {
-        currentSiteName = siteName;
+   
+    /**
+     * Set the initial carbon.<p>
+     * A 1000-year simulation is run using the mean annual temperature and range from the initial stand.
+     * @param stand a MEMSCompatibleStand instance that is the initial stand
+     */
+    private void setSiteAndEstimateInitialCarbon(MEMSCompatibleStand stand) {
+        currentSiteName = stand.getSiteType();
 
         if (!sites.containsKey(currentSiteName)) {
             String sitesPath = ObjectUtility.getRelativePackagePath(SoilCarbonPredictor.class) + "data" + ObjectUtility.PathSeparator + "sites" + ObjectUtility.PathSeparator;
@@ -134,13 +153,15 @@ public class MEMSWrapper {
         MEMSSite currentSite = sites.get(currentSiteName);
         currentSite.inputs.reset();
         
-        compartments = new SoilCarbonPredictorCompartments(1.0, currentSite.getMAT(), currentSite.getTRange());
+        compartments = new SoilCarbonPredictorCompartments(1.0, 
+        		stand.getMeanAnnualTemperatureCForThisYear(stand.getDateYr()), 
+        		stand.getAnnualTemperatureRangeForThisYear(stand.getDateYr()));
 
         predictor = new SoilCarbonPredictor(false);
         // read the fit params from mha and set them to the Predictor
         predictor.setParms(currentSite.getMetropolisHastingsAlgorithm().getFinalParameterEstimates());
 
-        for (int i = 0; i < 1000; i++) {		// TODO the initial carbon stocks could be integrated in the MEMSSite instance MF20240516
+        for (int i = 0; i < 1000; i++) {		
             predictor.predictAnnualCStocks(compartments, currentSite.getInputs());
         }
         
@@ -191,7 +212,7 @@ public class MEMSWrapper {
             if (deltaYear == 0) {
                 outputAnnualStocksMgHa[i] = outputAnnualStocksMgHa[i - 1];
             } else {
-                CarbonStock inputStock = inputAnnualStocksGCm2[i]; // TODO Plug the new input in MEMS
+                CarbonStock inputStock = inputAnnualStocksGCm2[i]; 
                 inputParameters.setDailyInput(inputStock.humus, inputStock.soil);
                 for (int y = 0; y < deltaYear; y++) {
                     predictor.predictAnnualCStocks(compartments, inputParameters);
