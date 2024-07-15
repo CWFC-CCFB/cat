@@ -48,10 +48,24 @@ public interface MEMSCompatibleTree extends BasalAreaM2Provider, CATCompatibleTr
 	public double getAnnualFineRootDetritusCarbonProductionMgYr();
 	
 	/**
+	 * Provide the current foliar biomass.
+	 * @return the current foliar biomass (Mg)
+	 */
+	public double getFoliarBiomassMg();
+	
+	
+	/**
 	 * Provide the annual foliage detritus.<p>
+	 * The default implementation assumes turnovers of 0.95 and 0.10 for
+	 * broadleaved and coniferous species, respectively. The carbon:foliage 
+	 * biomass ratio is then used to convert the results in Mg of C.
 	 * @param the detritus production (Mg of C)
 	 */
-	public double getAnnualFoliarDetritusCarbonProductionMgYr(); 
+	public default double getAnnualFoliarDetritusCarbonProductionMgYr() {
+		return getSpeciesType() == SpeciesType.BroadleavedSpecies ?
+				0.95 * getFoliarBiomassMg() * CARBON_TO_FOLIAGE_BIOMASS_RATIO : // for broadleaved species
+					0.10 * getFoliarBiomassMg() * CARBON_TO_FOLIAGE_BIOMASS_RATIO; // for coniferous species
+	} 
 	
 	/**
 	 * Provide the annual branch detritus.<p>

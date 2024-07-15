@@ -99,6 +99,12 @@ public class MEMSConnectorsTest {
 		public double getAnnualBranchDetritusCarbonProductionMgYr() {
 			return getAnnualFoliarDetritusCarbonProductionMgYr() * .5;
 		}
+
+		@Override
+		public double getFoliarBiomassMg() {
+			// Useless in this context
+			return 0;
+		}
 	}
 
 	static class CATGrowthSimulationCompositeStandHacked extends CATGrowthSimulationCompositeStand implements MEMSCompatibleStand {

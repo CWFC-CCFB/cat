@@ -193,7 +193,7 @@ public class CATTask extends AbstractGenericTask {
 		for (CATCompatibleStand s : manager.getTimeTable().getStandsForThisRealization()) {
 			double soilCarbonMgInputFromLitterFall = biomassParameters.getLitterFallAnnualCarbonMg((Collection<MEMSCompatibleTree>) s.getTrees(StatusClass.alive), manager);
 			aboveGroundMap.put(s, soilCarbonMgInputFromLitterFall / s.getAreaHa());
-			double soilCargonMgInputFromFineRootTurnover = biomassParameters.getFineRootTurnOverAnnualCarbonMg((Collection<MEMSCompatibleTree>) s.getTrees(StatusClass.alive), manager);
+			double soilCargonMgInputFromFineRootTurnover = biomassParameters.getFineRootDetritusAnnualCarbonMg((Collection<MEMSCompatibleTree>) s.getTrees(StatusClass.alive), manager);
 			belowGroundMap.put(s, soilCargonMgInputFromFineRootTurnover / s.getAreaHa());
 		}
 		aboveGroundMap.interpolateIfNeeded();

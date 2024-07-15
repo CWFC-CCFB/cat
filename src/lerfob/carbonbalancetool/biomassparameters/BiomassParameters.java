@@ -735,12 +735,12 @@ public class BiomassParameters implements REpiceaShowableUIWithParent, IOUserInt
 
 	
 	/**
-	 * Provide the annual carbon from fine root turn over.
+	 * Provide the annual carbon from fine root turnover.
 	 * @param trees a List of MEMSCompatibleTree instances
 	 * @param subject a MonteCarloSimulationCompliantObject instance
 	 * @return the amount of carbon (Mg)
 	 */
-	public double getFineRootTurnOverAnnualCarbonMg(Collection<MEMSCompatibleTree> trees, MonteCarloSimulationCompliantObject subject) {
+	public double getFineRootDetritusAnnualCarbonMg(Collection<MEMSCompatibleTree> trees, MonteCarloSimulationCompliantObject subject) {
 		double totalCarbonMg = 0d;
 		if (trees != null) {
 			for (MEMSCompatibleTree tree : trees) {
