@@ -28,6 +28,7 @@ import lerfob.carbonbalancetool.CATUtilityMaps.CATSpeciesAmountMap;
 import lerfob.carbonbalancetool.CATUtilityMaps.CATUseClassSpeciesAmountMap;
 import lerfob.carbonbalancetool.CATUtilityMaps.SpeciesMonteCarloEstimateMap;
 import lerfob.carbonbalancetool.CATUtilityMaps.UseClassSpeciesMonteCarloEstimateMap;
+import lerfob.carbonbalancetool.memsconnectors.MEMSWrapper.SoilCompartmentGroup;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
 import repicea.math.Matrix;
 import repicea.math.SymmetricMatrix;
@@ -80,6 +81,10 @@ class CATSingleSimulationResult implements CATSimulationResult {
 	private final String standID;
 	private final CATTimeTable timeTable;
 	private final boolean isEvenAged;
+	
+	private final MonteCarloEstimate humusInputEstimate;
+	private final MonteCarloEstimate mineralSoilInputEstimate;
+	
 	private final Map<CompartmentInfo, Estimate<Matrix, SymmetricMatrix, ?>> budgetMap;
 	private final Map<String, SpeciesMonteCarloEstimateMap> logGradeMap;
 	private final Map<CompartmentInfo, MonteCarloEstimate> evolutionMap;
@@ -113,6 +118,13 @@ class CATSingleSimulationResult implements CATSimulationResult {
 		
 		heatProductionEvolutionKWhHa = new MonteCarloEstimate();
 		totalHeatProductionKWhHa = new MonteCarloEstimate();
+
+		humusInputEstimate = manager.isMEMSEnabled() ?
+				new MonteCarloEstimate() :
+					null;
+		mineralSoilInputEstimate = manager.isMEMSEnabled() ?
+				new MonteCarloEstimate() :
+					null;
 		
 		this.resultId = resultId;
 	}
@@ -179,6 +191,13 @@ class CATSingleSimulationResult implements CATSimulationResult {
 				CATUseClassSpeciesAmountMap innerTmpMap = tmpMap.get(year);
 				innerTmpMap.recordAsRealization(innerMap);
 			}
+			
+			if (manager.isMEMSEnabled()) {
+				Map<SoilCompartmentGroup, Matrix> soilCompartmentGroups = manager.getMEMS().getSoilInputsMgHa();
+				humusInputEstimate.addRealization(soilCompartmentGroups.get(SoilCompartmentGroup.Humus));
+				mineralSoilInputEstimate.addRealization(soilCompartmentGroups.get(SoilCompartmentGroup.MineralSoil));
+			}
+			
 		} catch (Exception e) {
 			isValid = false;
 			throw e;
@@ -244,5 +263,11 @@ class CATSingleSimulationResult implements CATSimulationResult {
 
 	@Override
 	public boolean isSoilModuleEnabled() {return isMEMSEnabled;}
+
+	@Override
+	public MonteCarloEstimate getMineralSoilCarbonInputMgHa() {return mineralSoilInputEstimate;}
+
+	@Override
+	public MonteCarloEstimate getHumusCarbonInputMgHa() {return humusInputEstimate;}
 	
 }

@@ -19,7 +19,9 @@
  */
 package lerfob.carbonbalancetool.memsconnectors;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import lerfob.carbonbalancetool.CATCompartmentManager;
@@ -28,6 +30,7 @@ import lerfob.carbonbalancetool.CarbonArray;
 import lerfob.mems.SoilCarbonPredictor;
 import lerfob.mems.SoilCarbonPredictorCompartments;
 import lerfob.mems.SoilCarbonPredictorInput;
+import repicea.math.Matrix;
 import repicea.serial.UnmarshallingException;
 import repicea.serial.xml.XmlDeserializer;
 import repicea.util.ObjectUtility;
@@ -38,29 +41,78 @@ import repicea.util.ObjectUtility;
  */
 public class MEMSWrapper {
 	
-    public class CarbonStock {
-        public final static double factorGCm2ToMgHa = 0.01d;
-        public final static double factorMgHaToGCm2 = 1.0d / factorGCm2ToMgHa;
-        public CarbonStock(double humus, double soil) {
-            this.humus = humus;
-            this.soil = soil;
+	public static enum SoilCompartmentGroup {
+		Humus,
+		MineralSoil;
+	}
+	
+	/**
+	 * An inner class that handles the carbon from two groups of compartments:
+	 * in the humus and in the soil. <p>
+	 * All the quantities are assumed to be measured in G/cm2 of C.
+	 */
+    static class InputCarbonStock {
+    	
+        public final static double FactorMgHaToGCm2 = 100d;
+
+        private InputCarbonStock() {
+            this.humus = 0d;
+            this.soil = 0d;
         }
 
-        public void setCarbon(SoilCarbonPredictorCompartments compartments) {
-            humus = compartments.getLitterBinsgCm2() * factorGCm2ToMgHa;
-            soil = compartments.getSoilBinsgCm2() * factorGCm2ToMgHa;
-        }
-
-        public double humus;
-        public double soil;
+        double humus;
+        double soil;
     }
         
-    CarbonStock[] inputAnnualStocksGCm2;
-    CarbonStock[] outputAnnualStocksMgHa;
+	/**
+	 * An inner class that handles the carbon from two groups of compartments:
+	 * in the humus and in the soil.
+	 */
+    public static class CarbonStockForReporting extends InputCarbonStock {
+    	
+        public final static double FactorGCm2ToMgHa = 1d / FactorMgHaToGCm2;
+//        public final static double FactorMgHaToGCm2 = 1.0d / FactorGCm2ToMgHa;
+
+        private CarbonStockForReporting() {
+        	super();
+        }
+
+        /**
+         * Set the carbon stock from a SoilCarbonPredictorCompartments instance.<p>
+         * 
+         * This method is called for reporting. The quantities are automatically 
+         * converted into Mg per hectare of C.
+         * 
+         * @param compartments a SoilCarbonPredictorCompartments instance.
+         */
+        void setCarbon(SoilCarbonPredictorCompartments compartments) {
+            humus = compartments.getLitterBinsgCm2() * FactorGCm2ToMgHa;
+            soil = compartments.getSoilBinsgCm2() * FactorGCm2ToMgHa;
+        }
+
+        /**
+         * Provide the quantity of C in the humus.
+         * @return the value (Mg/ha)
+         */
+        public double getHumusCarbonMgHa() {return humus;}
+
+        /**
+         * Provide the quantity of C in the mineral soil.
+         * @return the value (Mg/ha)
+         */
+        public double getMineralSoilCarbonMgHa() {return soil;}
+        
+    }
+
+    
+    
+    InputCarbonStock[] inputAnnualStocksGCm2;
+    CarbonStockForReporting[] outputAnnualStocksMgHa;
     private CarbonArray inputFromLivingTreesAboveGroundMgHa;
     private CarbonArray inputFromLivingTreesBelowGroundMgHa;
     
     private double[] meanAnnualTemperatureC;
+    private double[] annualTemperatureRangeC;
     
     SoilCarbonPredictor predictor;
     SoilCarbonPredictorCompartments compartments;
@@ -73,6 +125,7 @@ public class MEMSWrapper {
 
     /**
      * Constructor.
+     * @param manager the CATCompartmentManager instance
      */
     public MEMSWrapper(CATCompartmentManager manager) {
     	this.manager = manager;
@@ -90,7 +143,7 @@ public class MEMSWrapper {
     /**
      * Initialize MEMS with appropriate parameters.<p>
      * This method is called as the carbon compartment manager is reset.
-     * @param memsStand a MEMSCompatibleStand instance
+     * @param memsStands a List of MEMSCompatibleStand instances
      */
     public void prepareSimulation(List<MEMSCompatibleStand> memsStands) {
 
@@ -100,17 +153,18 @@ public class MEMSWrapper {
         int nbYears = timeTable.size();
 
         // prepare the carbon stock array
-        inputAnnualStocksGCm2 = new CarbonStock[nbYears];
-        outputAnnualStocksMgHa = new CarbonStock[nbYears];
+        inputAnnualStocksGCm2 = new InputCarbonStock[nbYears];
+        outputAnnualStocksMgHa = new CarbonStockForReporting[nbYears];
         meanAnnualTemperatureC = new double[nbYears];
+        annualTemperatureRangeC = new double[nbYears];
         inputFromLivingTreesAboveGroundMgHa = new CarbonArray(nbYears);
         inputFromLivingTreesBelowGroundMgHa = new CarbonArray(nbYears);
 
         int j = 0;
         MEMSCompatibleStand memsStand = memsStands.get(j);
         for (int i = 0; i < nbYears; i++) {
-            inputAnnualStocksGCm2[i] = new CarbonStock(0.0, 0.0);
-            outputAnnualStocksMgHa[i] = new CarbonStock(0.0, 0.0);
+            inputAnnualStocksGCm2[i] = new InputCarbonStock();
+            outputAnnualStocksMgHa[i] = new CarbonStockForReporting();
             int dateYr = timeTable.getDateYrAtThisIndex(i);
             while (dateYr > memsStand.getDateYr()) {
             	j++;
@@ -119,6 +173,7 @@ public class MEMSWrapper {
             	} 
             }
             meanAnnualTemperatureC[i] = memsStand.getMeanAnnualTemperatureCForThisYear(dateYr);
+            annualTemperatureRangeC[i] = memsStand.getAnnualTemperatureRangeForThisYear(nbYears);
         }
 
         for (MEMSCompatibleStand s : memsStands) {
@@ -177,9 +232,9 @@ public class MEMSWrapper {
      */
     public void addCarbonToMEMSInput(int index, double carbonStockMgHa, boolean addToHumus) {
         if (addToHumus) {
-            inputAnnualStocksGCm2[index].humus += carbonStockMgHa * CarbonStock.factorMgHaToGCm2;
+            inputAnnualStocksGCm2[index].humus += carbonStockMgHa * InputCarbonStock.FactorMgHaToGCm2;
         } else {
-            inputAnnualStocksGCm2[index].soil += carbonStockMgHa * CarbonStock.factorMgHaToGCm2;
+            inputAnnualStocksGCm2[index].soil += carbonStockMgHa * InputCarbonStock.FactorMgHaToGCm2;
         }
     }
     
@@ -198,8 +253,6 @@ public class MEMSWrapper {
         			false); // false add to soil
         }
     	
-        // TODO: use what input params ?  and what input npps ?
-
         MEMSSite currentSite = sites.get(currentSiteName);
         CATTimeTable timeTable = manager.getTimeTable();
         SoilCarbonPredictorInput inputParameters = currentSite.getInputs();
@@ -212,13 +265,14 @@ public class MEMSWrapper {
             if (deltaYear == 0) {
                 outputAnnualStocksMgHa[i] = outputAnnualStocksMgHa[i - 1];
             } else {
-                CarbonStock inputStock = inputAnnualStocksGCm2[i]; 
+                InputCarbonStock inputStock = inputAnnualStocksGCm2[i]; 
                 inputParameters.setDailyInput(inputStock.humus, inputStock.soil);
+            	compartments.updateTemperature(meanAnnualTemperatureC[i], annualTemperatureRangeC[i]);
                 for (int y = 0; y < deltaYear; y++) {
                     predictor.predictAnnualCStocks(compartments, inputParameters);
                 }
 
-                CarbonStock outputStock = outputAnnualStocksMgHa[i];
+                CarbonStockForReporting outputStock = outputAnnualStocksMgHa[i];
                 outputStock.setCarbon(compartments);
             }
         }
@@ -227,9 +281,27 @@ public class MEMSWrapper {
     /**
      * Provide the carbon stock in the soil for a particular year.
      * @param yearIndex the index of the year as defined in the CATTimeTable instance
-     * @return a CarbonStock instance which contains the stocks in the soil and the humus.
+     * @return a CarbonStockForReporting instance which contains the stocks in the soil and the humus.
      */
-    public CarbonStock getCarbonStockMgHaForThisYear(int yearIndex) {
+    public CarbonStockForReporting getCarbonStockMgHaForThisYear(int yearIndex) {
         return outputAnnualStocksMgHa[yearIndex];
     }
+    
+    /**
+     * Provide the values of soil inputs in the humus and the mineral soil.
+     * @return a Map with SoilCompartmentGroup and Matrix instances as key and values
+     */
+    public Map<SoilCompartmentGroup, Matrix> getSoilInputsMgHa() {
+    	Map<SoilCompartmentGroup, Matrix> outputMap = new HashMap<SoilCompartmentGroup, Matrix>();
+    	Matrix aboveGround = new Matrix(inputAnnualStocksGCm2.length, 1);
+    	Matrix belowGround = new Matrix(inputAnnualStocksGCm2.length, 1);
+    	for (int i = 0; i < inputAnnualStocksGCm2.length; i++) {
+    		aboveGround.setValueAt(i, 0, inputAnnualStocksGCm2[i].humus * CarbonStockForReporting.FactorGCm2ToMgHa);
+    		belowGround.setValueAt(i, 0, inputAnnualStocksGCm2[i].soil * CarbonStockForReporting.FactorGCm2ToMgHa);
+    	}
+    	outputMap.put(SoilCompartmentGroup.Humus, aboveGround);
+    	outputMap.put(SoilCompartmentGroup.MineralSoil, belowGround);
+    	return outputMap;
+    }
+    
 }

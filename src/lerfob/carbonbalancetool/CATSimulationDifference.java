@@ -126,25 +126,16 @@ public class CATSimulationDifference implements CATSimulationResult {
 	}
 
 	@Override
-	public Map<CompartmentInfo, MonteCarloEstimate> getEvolutionMap() {
-		return null;
-	}
+	public Map<CompartmentInfo, MonteCarloEstimate> getEvolutionMap() {return null;}
 
 	@Override
-	public Map<CarbonUnitStatus, UseClassSpeciesMonteCarloEstimateMap> getHWPPerHaByUseClass() {
-		return null;
-	}
-
+	public Map<CarbonUnitStatus, UseClassSpeciesMonteCarloEstimateMap> getHWPPerHaByUseClass() {return null;}
 
 	@Override
-	public Map<String, SpeciesMonteCarloEstimateMap> getLogGradePerHa() {
-		return null;
-	}
+	public Map<String, SpeciesMonteCarloEstimateMap> getLogGradePerHa() {return null;}
 
 	@Override
-	public Map<Integer, UseClassSpeciesMonteCarloEstimateMap> getProductEvolutionPerHa() {
-		return null;
-	}
+	public Map<Integer, UseClassSpeciesMonteCarloEstimateMap> getProductEvolutionPerHa() {return null;}
 
 	@Override
 	public String toString() {
@@ -158,32 +149,31 @@ public class CATSimulationDifference implements CATSimulationResult {
 	@Override
 	public String getResultId() {return resultId;}
 
-
 	@Override
 	public UseClassSpeciesMonteCarloEstimateMap getHWPSummaryPerHa(boolean includeRecycling) {
 		return null;
 	}
 
-
 	@Override
 	public boolean isEvenAged() {return baseline.isEvenAged();}
-
 
 	@Override
 	public MonteCarloEstimate getHeatProductionEvolutionKWhPerHa() {
 		return null;
 	}
 
-
 	@Override
-	public boolean isValid() {
-		return true;
-	}
-
+	public boolean isValid() {return true;}
 
 	@Override
 	public boolean isSoilModuleEnabled() {
 		return baseline.isSoilModuleEnabled() && scenToCompare.isSoilModuleEnabled();
 	}
+
+	@Override
+	public MonteCarloEstimate getMineralSoilCarbonInputMgHa() {return null;}
+
+	@Override
+	public MonteCarloEstimate getHumusCarbonInputMgHa() {return null;}
 
 }

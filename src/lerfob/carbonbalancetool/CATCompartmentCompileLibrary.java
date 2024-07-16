@@ -270,8 +270,7 @@ class CATCompartmentCompileLibrary {
 		case Humus:
 			if (manager.isMEMSEnabled()) {
 				for (int i = 0; i < timeTable.size(); i++) {
-					double humusMgHa = manager.getMEMS().getCarbonStockMgHaForThisYear(i).humus;
-//					System.out.println("i = " + i + "; humusMgHa = " + humusMgHa);
+					double humusMgHa = manager.getMEMS().getCarbonStockMgHaForThisYear(i).getHumusCarbonMgHa();
 					carbonCompartment.setCarbonIntoArray(i, humusMgHa * areaHa);
 				}
 				carbonCompartment.setIntegratedCarbon(integrateCarbonOverHorizon(carbonCompartment) / revolutionPeriod);  // no need to correct for the area because the integration relies on the carbon array which contains area corrected values
@@ -280,8 +279,7 @@ class CATCompartmentCompileLibrary {
 		case MineralSoil:
 			if (manager.isMEMSEnabled()) {
 				for (int i = 0; i < timeTable.size(); i++) {
-					double soilMgHa = manager.getMEMS().getCarbonStockMgHaForThisYear(i).soil;
-//					System.out.println("i = " + i + "; soilMgHa = " + soilMgHa);
+					double soilMgHa = manager.getMEMS().getCarbonStockMgHaForThisYear(i).getMineralSoilCarbonMgHa();
 					carbonCompartment.setCarbonIntoArray(i, soilMgHa* areaHa);
 				}
 				carbonCompartment.setIntegratedCarbon(integrateCarbonOverHorizon(carbonCompartment) / revolutionPeriod);  // no need to correct for the area because the integration relies on the carbon array which contains area corrected values

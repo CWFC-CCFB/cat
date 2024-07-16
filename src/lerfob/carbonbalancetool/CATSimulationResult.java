@@ -123,4 +123,20 @@ public interface CATSimulationResult {
 	 * @return a MonteCarlo estimate
 	 */
 	public MonteCarloEstimate getHeatProductionEvolutionKWhPerHa();
+	
+	/**
+	 * Provide the carbon input in the mineral soil.
+	 * IMPORTANT: The method returns null if the carbon soil module is disabled.
+	 * @return a MonteCarloEstimate instance. Units are Mg/ha of C.
+	 */
+	public MonteCarloEstimate getMineralSoilCarbonInputMgHa();
+
+	/**
+	 * Provide the carbon input in the humus.<p>
+	 * IMPORTANT: The method returns null if the carbon soil module is disabled.
+	 * @return a MonteCarloEstimate instance. Units are Mg/ha of C.
+	 */
+	public MonteCarloEstimate getHumusCarbonInputMgHa();
+	
+	
 }

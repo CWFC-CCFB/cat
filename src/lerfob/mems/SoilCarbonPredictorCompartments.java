@@ -224,6 +224,16 @@ public class SoilCarbonPredictorCompartments implements MonteCarloSimulationComp
             throw new RuntimeException("Could not clone SoilCarbonPredictorCompartments instance");
         }
     }
+
+    /**
+     * Update the temperature parameters.
+     * @param mean the mean annual temperature (C)
+     * @param range the annual temperature range (C)
+     */
+    public void updateTemperature(double mean, double range) {
+    	this.MAT = mean;
+    	this.Trange = range;
+    }
     
     protected double getSumOfDailyChange() {
        	return deltaC1 + deltaC2 + deltaC3 + deltaC4 + deltaC5 + deltaC6 + deltaC7 + deltaC8 + deltaC9 + deltaC10 + deltaC11;
