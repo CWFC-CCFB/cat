@@ -125,6 +125,7 @@ public class MEMSWrapper {
 
     /**
      * Constructor.
+     * @param manager the CATCompartmentManager instance
      */
     public MEMSWrapper(CATCompartmentManager manager) {
     	this.manager = manager;
@@ -142,7 +143,7 @@ public class MEMSWrapper {
     /**
      * Initialize MEMS with appropriate parameters.<p>
      * This method is called as the carbon compartment manager is reset.
-     * @param memsStand a MEMSCompatibleStand instance
+     * @param memsStands a List of MEMSCompatibleStand instances
      */
     public void prepareSimulation(List<MEMSCompatibleStand> memsStands) {
 
