@@ -29,8 +29,12 @@ import lerfob.carbonbalancetool.sensitivityanalysis.CATSensitivityAnalysisSettin
 import repicea.simulation.covariateproviders.plotlevel.StochasticInformationProvider;
 
 /**
- * This class handles the time frame of the simulation and the index related 
- * to the time slot.
+ * A class to handle the time frame of the simulation and the index related 
+ * to the time slot. <p>
+ * 
+ * It also handles the realizations. The access to the realizations of the stands
+ * is granted through the getStandsForThisRealization method.
+ * 
  * @author Mathieu Fortin - November 2020
  */
 public class CATTimeTable {

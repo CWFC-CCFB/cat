@@ -34,6 +34,7 @@ import lerfob.carbonbalancetool.CarbonAccountingToolTest;
 import lerfob.carbonbalancetool.io.CATExportTool;
 import lerfob.carbonbalancetool.io.CATGrowthSimulationCompositeStand;
 import lerfob.carbonbalancetool.io.CATGrowthSimulationPlot;
+import lerfob.carbonbalancetool.io.CATGrowthSimulationPlotSample;
 import lerfob.carbonbalancetool.io.CATGrowthSimulationRecordReader;
 import lerfob.carbonbalancetool.io.CATGrowthSimulationTreeWithDBH;
 import lerfob.carbonbalancetool.memsconnectors.MEMSSite.SiteType;
@@ -66,6 +67,30 @@ public class MEMSConnectorsTest {
 			return new CATGrowthSimulationCompositeStandHacked(dateYr, standIdentification, this, scaleDependentInterventionResult);
 		}
 	}
+	
+	static class CATGrowthSimulationPlotSampleHacked extends CATGrowthSimulationPlotSample implements MEMSCompatibleStand {
+		
+		protected CATGrowthSimulationPlotSampleHacked(CATGrowthSimulationCompositeStandHacked compositeStand) {
+			super(compositeStand);
+		}
+
+		@Override
+		public SiteType getSiteType() {
+			return ((CATGrowthSimulationCompositeStandHacked) compositeStand).getSiteType();
+		}
+
+		@Override
+		public double getMeanAnnualTemperatureCForThisYear(int year) {
+			return ((CATGrowthSimulationCompositeStandHacked) compositeStand).getMeanAnnualTemperatureCForThisYear(year);
+		}
+
+		@Override
+		public double getAnnualTemperatureRangeForThisYear(int year) {
+			return ((CATGrowthSimulationCompositeStandHacked) compositeStand).getAnnualTemperatureRangeForThisYear(year);
+		}
+		
+	}
+	
 	
 	static class CATGrowthSimulationTreeHacked extends CATGrowthSimulationTreeWithDBH implements MEMSCompatibleTree {
 
@@ -131,6 +156,11 @@ public class MEMSConnectorsTest {
 			double minTemp = -9.48;   // between Jan 1 2013 to Dec 31st 2016 at Foret Montmorency
 			double maxTemp = 17.79;   // between Jan 1 2013 to Dec 31st 2016 at Foret Montmorency
 			return maxTemp - minTemp;
+		}
+		
+		@Override
+		protected CATGrowthSimulationPlotSample createPlotSample() {
+			return new CATGrowthSimulationPlotSampleHacked(this);
 		}
 
 	}

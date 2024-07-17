@@ -35,7 +35,10 @@ public interface MEMSCompatibleStand extends CATCompatibleStand {
 	public SiteType getSiteType();
 	
 	/**
-	 * Provide the mean annual temperature for a particular year.
+	 * Provide the mean annual temperature for a particular year.<p>
+	 * A stand instance should be able to provide the mean annual 
+	 * temperature for the interval that goes from the previous stand
+	 * date + 1 to the date of this stand.
 	 * @param year an integer
 	 * @return the mean annual temperature (C)
 	 */
@@ -44,6 +47,9 @@ public interface MEMSCompatibleStand extends CATCompatibleStand {
 	/**
 	 * Provide the range between the min mean temperature and the 
 	 * max mean temperature.<p>
+	 * A stand instance should be able to provide the annual 
+	 * temperature range for the interval that goes from the previous stand
+	 * date + 1 to the date of this stand.
 	 * @param year an integer
 	 * @return the range of temperature (C)
 	 */

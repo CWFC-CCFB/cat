@@ -317,7 +317,7 @@ public class CarbonAccountingTool extends AbstractGenericEngine implements REpic
 	private TreeLoggerCompatibilityCheck getTreeLoggerCompatibilityCheck() {
 		Object treeInstance = null;
 		outerloop:
-		for (CATCompatibleStand stand : carbonCompartmentManager.getStandList()) {
+		for (CATCompatibleStand stand : carbonCompartmentManager.completeStandList) {
 			for (StatusClass status : StatusClass.values()) {
 				Collection coll = stand.getTrees(status);
 				if (coll != null && !coll.isEmpty()) {
@@ -334,7 +334,7 @@ public class CarbonAccountingTool extends AbstractGenericEngine implements REpic
 		finalCutHadToBeCarriedOut = false;
 //		carbonCompartmentManager.clearTreeCollections();
 		carbonCompartmentManager.init(waitingStandList);
-		setReferentForBiomassParameters(carbonCompartmentManager.getStandList());
+		setReferentForBiomassParameters(carbonCompartmentManager.completeStandList);
 		getCarbonToolSettings().setTreeLoggerDescriptions(findMatchingTreeLoggers(getTreeLoggerCompatibilityCheck()));
 		if (isGuiEnabled()) {
 			Runnable doRun = new Runnable() {
