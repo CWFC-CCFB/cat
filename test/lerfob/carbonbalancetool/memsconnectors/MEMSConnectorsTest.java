@@ -20,6 +20,8 @@
 package lerfob.carbonbalancetool.memsconnectors;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,16 +31,19 @@ import lerfob.carbonbalancetool.CATSimulationResult;
 import lerfob.carbonbalancetool.CarbonAccountingTool;
 import lerfob.carbonbalancetool.CarbonAccountingTool.CATMode;
 import lerfob.carbonbalancetool.CarbonAccountingToolTest;
+import lerfob.carbonbalancetool.io.CATExportTool;
 import lerfob.carbonbalancetool.io.CATGrowthSimulationCompositeStand;
 import lerfob.carbonbalancetool.io.CATGrowthSimulationPlot;
 import lerfob.carbonbalancetool.io.CATGrowthSimulationRecordReader;
 import lerfob.carbonbalancetool.io.CATGrowthSimulationTreeWithDBH;
 import lerfob.carbonbalancetool.memsconnectors.MEMSSite.SiteType;
+import repicea.io.javacsv.CSVReader;
 import repicea.io.tools.ImportFieldManager;
 import repicea.math.Matrix;
 import repicea.math.SymmetricMatrix;
 import repicea.simulation.covariateproviders.treelevel.TreeStatusProvider.StatusClass;
 import repicea.stats.estimates.Estimate;
+import repicea.stats.estimates.MonteCarloEstimate;
 import repicea.util.ObjectUtility;
 
 public class MEMSConnectorsTest {
@@ -130,6 +135,7 @@ public class MEMSConnectorsTest {
 
 	}
 
+	@SuppressWarnings({ "rawtypes" })
 	@Test
 	public void testMEMSIntegration01() throws Exception {
 		CATGrowthSimulationRecordReader.TestUnevenAgedInfiniteSequence = true;	// this way we get the application scale set to stand
@@ -178,6 +184,35 @@ public class MEMSConnectorsTest {
 		Assert.assertEquals("Testing nb of entries", 1, evolSoil.m_iRows);
 		Assert.assertEquals("Testing entry", 59.56537843751747, evolSoil.getValueAt(0, 0), 1E-8);
 		CATGrowthSimulationRecordReader.TestUnevenAgedInfiniteSequence = false;	// set the static variable to its original value
+		
+		MonteCarloEstimate mineralSoilInput = simResults.getMineralSoilCarbonInputMgHa();
+		Assert.assertTrue("Mineral soil input not null", mineralSoilInput != null);
+		Matrix mineralSoilInputMean = mineralSoilInput.getMean();
+		Assert.assertEquals("Testing value at slot 10", 2.5501334035, mineralSoilInputMean.getValueAt(10, 0), 1E-8);
+				
+		MonteCarloEstimate humusInput = simResults.getHumusCarbonInputMgHa();
+		Assert.assertTrue("Humus input not null", humusInput != null);
+		Matrix humusInputMean = humusInput.getMean();
+		Assert.assertEquals("Testing value at slot 10", 3.3595302841845043, humusInputMean.getValueAt(10, 0), 1E-8);
+		
+		CATExportTool exportTool = cat.createExportTool();
+		List<Enum> selectedOptions = new ArrayList<Enum>();
+		selectedOptions.add(CATExportTool.ExportOption.SoilCarbonInput);
+		exportTool.setSelectedOptions(selectedOptions);
+		String exportFilename = ObjectUtility.getPackagePath(getClass()) + "soilInputTest.csv"; 
+		exportTool.setFilename(exportFilename);
+		exportTool.exportRecordSets();
+		
+		CSVReader reader = new CSVReader(exportFilename);
+		Object[] record = null;
+		int i = 0;
+		while (i < reader.getRecordCount()) {
+			record = reader.nextRecord();	
+			i++;
+		}
+		reader.close();
+		Assert.assertEquals("Comparing last humus input", 5.4459231510046395, Double.parseDouble(record[2].toString()), 1E-8);
+		Assert.assertEquals("Comparing last mineral soil input", 3.914118550371999, Double.parseDouble(record[3].toString()), 1E-8);
 	}
 	
 }

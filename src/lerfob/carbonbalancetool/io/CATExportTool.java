@@ -127,13 +127,43 @@ public class CATExportTool extends REpiceaExportTool {
 			case HeatProduction:
 				createCumulativeHeatProductionRecordSet();
 				break;
+			case SoilCarbonInput:
+				createSoilCarbonInputRecordSet();
+				break;
 			default:
 				throw new Exception("Unrecognized Export Format");
 			}
 			
 		}
 		
-		
+		private void createSoilCarbonInputRecordSet() throws Exception {
+			GExportRecord r;
+			CATTimeTable timeTable = caller.summary.getTimeTable();			
+			
+			Matrix meanHumus = caller.summary.getHumusCarbonInputMgHa().getMean();
+			Matrix meanMineralSoil = caller.summary.getMineralSoilCarbonInputMgHa().getMean();
+			
+			String standID = caller.summary.getStandID();
+			if (standID == null || standID.isEmpty()) {
+				standID = "Unknown";
+			}
+			
+			GExportFieldDetails standIDField = new GExportFieldDetails("StandID", standID);
+			int lastDateYr = -1;
+			for (int i = 0; i < timeTable.size(); i++) {
+				int currentDateYr = timeTable.getDateYrAtThisIndex(i);
+				if (currentDateYr != lastDateYr) {
+					r = new GExportRecord();
+					r.addField(standIDField);
+					r.addField(new GExportFieldDetails("DateYr", currentDateYr));
+					r.addField(new GExportFieldDetails("HumusCMgHa", meanHumus.getValueAt(i, 0)));
+					r.addField(new GExportFieldDetails("MineralSoilCMgHa", meanMineralSoil.getValueAt(i, 0)));
+					addRecord(r);
+					lastDateYr = currentDateYr;
+				}
+			}
+		}
+
 		
 		private void createCumulativeHeatProductionRecordSet() throws Exception {
 			GExportRecord r;
@@ -506,7 +536,8 @@ public class CATExportTool extends REpiceaExportTool {
 		AnnualVolumeNutrientFluxes("Annual volume and nutrient fluxes", "Flux annuels en volume et min\u00E9ralomasse"),
 		TotalLogVolumeByCategories("Total production of logs by categories", "Production totale de billons par cat\u00E9gories"),
 		HWPEvolution("HWP production by date and categories", "Production des produits bois par dates et cat\u00E9gories"),
-		HeatProduction("Cumulative heat production", "Production cumulative de chaleur");
+		HeatProduction("Cumulative heat production", "Production cumulative de chaleur"),
+		SoilCarbonInput("Soil carbon input", "Apport en carbon du sol");
 
 		ExportOption(String englishText, String frenchText) {
 			setText(englishText, frenchText);
@@ -592,6 +623,9 @@ public class CATExportTool extends REpiceaExportTool {
 			}
 			hackedVector.remove(ExportOption.DifferenceCarbonStocksAndFluxes);
 		}
+		if (summary.getMineralSoilCarbonInputMgHa() == null) { // the soil carbon module was not enabled
+			hackedVector.remove(ExportOption.SoilCarbonInput);
+		}
 		return hackedVector;
 	}
 
@@ -602,7 +636,7 @@ public class CATExportTool extends REpiceaExportTool {
 	}
 
 	/**
-	 * Set the selected exrpot options to all possible options.<p>
+	 * Set the selected export options to all possible options.<p>
 	 * It is typically called by external applications. 
 	 * @return a list of enum constant
 	 * @throws IOException if one of selected options is not available
