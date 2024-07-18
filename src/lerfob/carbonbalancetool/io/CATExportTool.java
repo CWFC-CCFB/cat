@@ -20,6 +20,7 @@ package lerfob.carbonbalancetool.io;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -629,6 +630,26 @@ public class CATExportTool extends REpiceaExportTool {
 		return hackedVector;
 	}
 
+	@Override
+	public void setSelectedOptions(List<Enum> selectedOptions) throws IOException {
+		if (selectedOptions == null) {
+			throw new InvalidParameterException("The selectedOptions argument must be a non-empty List of Enum!");
+		}
+		List<Enum> possibleOptions = getAvailableExportOptions();
+		
+		List<Enum> screenedList = new ArrayList<Enum>();
+		for (Enum e : selectedOptions) {
+			if (possibleOptions.contains(e)) { // we add the selected option only if it is a possible one.
+				screenedList.add(e);
+			} else {
+				REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.WARNING, "CATExportTool", "Export option " + e.name() + " cannot be selected with this CATSimulationResult instance!");
+			}
+		}
+		super.setSelectedOptions(screenedList);
+	}
+	
+	
+	
 	@SuppressWarnings("rawtypes")
 	@Override
 	protected InternalSwingWorkerForRecordSet instantiateInternalSwingWorkerForRecordSet(Enum selectedOption, REpiceaRecordSet recordSet) {
