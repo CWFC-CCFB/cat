@@ -731,13 +731,12 @@ class SoilCarbonPredictorEquation {
 
     /**
      * Calculate the soil temperature
-     * @param carbonModel a SoiCarbonPredictor instance
      * @param julianDay the julian day index to get the temperature for
      * @param MAT Mean Annual Temperature to be used
      * @param Trange Annual Soil Temperature range (Celsius)
      * @return the soil temperature (soilT) for this specific julian day
      */
-    static double Eq49_getSoilTemperature(SoilCarbonPredictor carbonModel, int julianDay, double MAT, double Trange) {
+    static double Eq49_getSoilTemperatureFromMeanAndRange(int julianDay, double MAT, double Trange) {
         return (Trange * .5) * JulianDaySinValuesCache[julianDay - 1] + MAT;
 //        return (Trange * .5) * sin((julianDay * DividedBy365) * 2 * PI - 1.5) + MAT;
     }

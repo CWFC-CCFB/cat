@@ -38,29 +38,37 @@ public class SoilCarbonPredictorMetropolisHastingsModelTest {
 	public static void main(String argv[])  throws Exception {
 		MetropolisHastingsAlgorithm mha;
 		
-		// Read current file;
-//		String refPath = ObjectUtility.getPackagePath(SoilCarbonPredictorMetropolisHastingsModelTest.class) + "data" + File.separator;
-//		XmlDeserializer deser = new XmlDeserializer(refPath + "mcmcMems_Montmorency_NEW.zml");
-//		Object o = deser.readObject();
-//		mha = (MetropolisHastingsAlgorithm) deser.readObject();
-//		System.out.println(mha.getReport());
-		
-		
         double MAT = 3.8;  // between Jan 1 2013 to Dec 31st 2016 at MM
         double MinTemp = -9.48; // between Jan 1 2013 to Dec 31st 2016 at MM
         double MaxTemp = 17.79;  // between Jan 1 2013 to Dec 31st 2016 at MM
         double Trange = MaxTemp - MinTemp;
 
+        double aboveGroundNPPgCm2 = 149d;
+        double depth_cm = 15d;
+        double belowGroundNPPgCm2 = 44d; 
+        
+        
         SoilCarbonPredictorCompartments compartments = new SoilCarbonPredictorCompartments(1.0, MAT, Trange);
         SoilCarbonPredictorInput inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.MontmorencyForest, 
-        		304.0, 
-        		304.0 * 0.5,	// According to Jackson et al. (1997) Fine root productions is approximately 33% of total NPP 
-        		15, 
+        		aboveGroundNPPgCm2, 
+        		belowGroundNPPgCm2,	
+        		depth_cm, 
         		4.22, 
         		0.7918, 
         		66.97, 
         		3.80);
 
+//        String xmlFilename = ObjectUtility.getPackagePath(MEMSSite.class) + 
+//        		"data" + File.separator + 
+//        		"sites" + File.separator +
+//        		"mcmcMems_" + SiteType.MontmorencyBL0_95CO0_10.name() + ".zml";
+//        XmlDeserializer deser = new XmlDeserializer(xmlFilename);
+//        Object o = deser.readObject();
+//        XmlSerializer ser = new XmlSerializer(xmlFilename);
+//        ser.writeObject(new MEMSSite(o, inputs));
+//        int u = 0;
+        
+        
         SoilCarbonPredictorMetropolisHastingsModel model = new SoilCarbonPredictorMetropolisHastingsModel(compartments, inputs);
         String path = ObjectUtility.getPackagePath(SoilCarbonPredictorMetropolisHastingsModelTest.class) + "data" + File.separator;
         File f = new File(path);
@@ -92,6 +100,6 @@ public class SoilCarbonPredictorMetropolisHastingsModelTest {
         mha.exportMetropolisHastingsSample(outputFilename);
         System.out.println(mha.getReport());
         XmlSerializer serializer = new XmlSerializer(mcmcFilename);
-        serializer.writeObject(mha);
+        serializer.writeObject(new MEMSSite(mha, inputs));
 	}
 }

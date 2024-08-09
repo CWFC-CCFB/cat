@@ -38,3 +38,5 @@ out/
 .vscode/
 
 logs/
+.Rproj.user
+/test/lerfob/mems/data/.Rhistory

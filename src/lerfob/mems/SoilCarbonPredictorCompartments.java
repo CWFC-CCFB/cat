@@ -22,7 +22,10 @@ package lerfob.mems;
 import repicea.simulation.HierarchicalLevel;
 import repicea.simulation.MonteCarloSimulationCompliantObject;
 
+import static lerfob.mems.SoilCarbonPredictorEquation.Eq49_getSoilTemperatureFromMeanAndRange;
+
 import java.security.InvalidParameterException;
+import java.util.Arrays;
 
 /**
  * The SoilCarbonPredictorCompartments class contains the carbon stocks of 11 compartments.<p>
@@ -46,8 +49,10 @@ import java.security.InvalidParameterException;
  */
 public class SoilCarbonPredictorCompartments implements MonteCarloSimulationCompliantObject, Cloneable  {
 
-    double MAT;                         // Mean Annual Temperature
-    double Trange;                      // The difference between the maximum daily soil temperature and the minimum daily soil temperature in Celsius
+//    double MAT;                         // Mean Annual Temperature
+//    double Trange;                      // The difference between the maximum daily soil temperature and the minimum daily soil temperature in Celsius
+
+	double[] dailySoilTemperature;
 	
 	public double C1;     // Water soluble litter
     public double C2;     // Acid-soluble litter
@@ -84,24 +89,33 @@ public class SoilCarbonPredictorCompartments implements MonteCarloSimulationComp
      * @param MAT the Mean Annual Temperature
      * @param Trange the annual temperature range
      */
-    public SoilCarbonPredictorCompartments(double[] initialStock, double MAT, double Trange) {
-        if (initialStock.length != 11)
-            throw new InvalidParameterException();
-
-        C1 = initialStock[0];
-        C2 = initialStock[1];
-        C3 = initialStock[2];
-        C4 = initialStock[3];
-        C5 = initialStock[4];
-        C6 = initialStock[5];
-        C7 = initialStock[6];
-        C8 = initialStock[7];
-        C9 = initialStock[8];
-        C10 = initialStock[9];
-        C11 = initialStock[10];
-        this.MAT = MAT;
-        this.Trange = Trange;
+    public SoilCarbonPredictorCompartments(double initialStock, double[] dailyTemperatureC, boolean fromAir) {
+        C1 = initialStock;
+        C2 = initialStock;
+        C3 = initialStock;
+        C4 = initialStock;
+        C5 = initialStock;
+        C6 = initialStock;
+        C7 = initialStock;
+        C8 = initialStock;
+        C9 = initialStock;
+        C10 = initialStock;
+        C11 = initialStock;
+        setSoilTemperature(dailyTemperatureC, fromAir);
     }
+
+	static double[] convertAirTemperatureToSoilTemperatureC(double[] dailyAirTemperatureC) {
+		final double b0 = -3.75681;
+		final double b1 = 24.59919;
+		final double b2 = -1.48684;
+		final double b3 = 0.16038;
+		double output[] = new double[dailyAirTemperatureC.length];
+		for (int i = 0; i < dailyAirTemperatureC.length; i++) {
+			output[i] = b0 + b1 / (1d + Math.exp(-(b2 + b3 * dailyAirTemperatureC[i])));
+		}
+		return output;
+	}
+
 
     /**
      * Constructor 2.<p>
@@ -110,7 +124,7 @@ public class SoilCarbonPredictorCompartments implements MonteCarloSimulationComp
      * @param MAT the Mean Annual Temperature
      * @param Trange the annual temperature range
      */
-    public SoilCarbonPredictorCompartments(double initialValue, double MAT, double Trange) {
+    SoilCarbonPredictorCompartments(double initialValue, double MAT, double Trange) {
         C1 = initialValue;
         C2 = initialValue;
         C3 = initialValue;
@@ -122,8 +136,7 @@ public class SoilCarbonPredictorCompartments implements MonteCarloSimulationComp
         C9 = initialValue;
         C10 = initialValue;
         C11 = initialValue;
-        this.MAT = MAT;
-        this.Trange = Trange;
+        setSoilTemperature(MAT, Trange);
     }
 
 
@@ -219,21 +232,59 @@ public class SoilCarbonPredictorCompartments implements MonteCarloSimulationComp
     @Override
     public SoilCarbonPredictorCompartments clone() {
         try {
-            return (SoilCarbonPredictorCompartments)super.clone();
+        	SoilCarbonPredictorCompartments clone = (SoilCarbonPredictorCompartments) super.clone();
+        	if (clone.dailySoilTemperature != null) {
+        		clone.dailySoilTemperature = Arrays.copyOf(dailySoilTemperature, dailySoilTemperature.length);
+        	}
+            return clone;
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException("Could not clone SoilCarbonPredictorCompartments instance");
         }
     }
 
     /**
-     * Update the temperature parameters.
-     * @param mean the mean annual temperature (C)
-     * @param range the annual temperature range (C)
+     * Set the daily soil temperature over the year.
+     * @param mean the mean annual soil temperature (C)
+     * @param range the annual soil temperature range (C)
      */
-    public void updateTemperature(double mean, double range) {
-    	this.MAT = mean;
-    	this.Trange = range;
+    public void setSoilTemperature(double mean, double range) {
+    	if (dailySoilTemperature == null || dailySoilTemperature.length != 365) {
+    		dailySoilTemperature = createDailyTemperatureFromMeanAndRange(mean, range);
+    	}
     }
+
+    /**
+     * Produce an annual array of daily temperature.
+     * @param mean the mean annual temperature
+     * @param range the range in temperature
+     * @return an array of double
+     */
+    public static double[] createDailyTemperatureFromMeanAndRange(double mean, double range) {
+    	double[] dailyTemp = new double[365];
+    	for (int day = 0; day < dailyTemp.length; day++) {
+    		dailyTemp[day] = Eq49_getSoilTemperatureFromMeanAndRange(day + 1, mean, range);
+    	}
+    	return dailyTemp;
+    }
+      
+    
+    /**
+     * Set the daily soil temperature over the year.
+     * @param dailyTemperatureC an array of double with 365 or 366 slots.
+     * @param fromAir true if the temperature is air temperature. Otherwise,
+     * it is assumed to be soil temperature.
+     */
+    public void setSoilTemperature(double[] dailyTemperatureC, boolean fromAir) {
+		if (dailyTemperatureC != null) {
+			if (dailyTemperatureC.length != 365 && dailyTemperatureC.length != 366) {
+				throw new InvalidParameterException("The dailyTemperatureC array is expected to have either 365 or 366 slots!");
+			} 
+		}
+    	dailySoilTemperature = fromAir ?
+    			convertAirTemperatureToSoilTemperatureC(dailyTemperatureC) :
+    				dailyTemperatureC;
+    }
+    
     
     protected double getSumOfDailyChange() {
        	return deltaC1 + deltaC2 + deltaC3 + deltaC4 + deltaC5 + deltaC6 + deltaC7 + deltaC8 + deltaC9 + deltaC10 + deltaC11;

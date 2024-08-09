@@ -1,6 +1,6 @@
 package lerfob.carbonbalancetool.memsconnectors;
 
-import lerfob.carbonbalancetool.memsconnectors.MEMSSite.SiteType;
+import lerfob.mems.MEMSSite.SiteType;
 
 public class MEMSSiteParametersWrapper {
 

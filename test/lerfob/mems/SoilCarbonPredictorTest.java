@@ -33,7 +33,6 @@ import org.junit.Test;
 import repicea.serial.UnmarshallingException;
 import repicea.serial.xml.XmlDeserializer;
 import repicea.stats.data.DataSet;
-import repicea.stats.estimators.mcmc.MetropolisHastingsAlgorithm;
 import repicea.util.ObjectUtility;
 
 public class SoilCarbonPredictorTest {
@@ -94,7 +93,7 @@ public class SoilCarbonPredictorTest {
         double Trange = 30.0;
         double result = 0.0;
         for (int day = 1; day <= 365; day++)
-            result += SoilCarbonPredictorEquation.Eq49_getSoilTemperature(predictor, day, MAT, Trange);
+            result += SoilCarbonPredictorEquation.Eq49_getSoilTemperatureFromMeanAndRange(day, MAT, Trange);
 
         result = result / 365.0;
 
@@ -110,7 +109,7 @@ public class SoilCarbonPredictorTest {
         double MAT = 1.0;
         double Trange = 30.0;
         for (int day = 1; day <= 365; day++) {
-            double temp = SoilCarbonPredictorEquation.Eq49_getSoilTemperature(predictor, day, MAT, Trange);
+            double temp = SoilCarbonPredictorEquation.Eq49_getSoilTemperatureFromMeanAndRange(day, MAT, Trange);
             double tMod = SoilCarbonPredictorEquation.Weibull_getTemperatureModifier(predictor, temp);
             System.out.println ("SoilTemperatureModifierTest : day = " + day + ", TSoil = " + temp + ", tMOD = " + tMod);
             Assert.assertTrue("TMod should be greater than 0", tMod >= 0.0);
@@ -234,15 +233,17 @@ public class SoilCarbonPredictorTest {
         double MaxTemp = 17.79;  // between Jan 1 2013 to Dec 31st 2016 at MM
         double Trange = MaxTemp - MinTemp;
 
-        String filename = ObjectUtility.getRelativePackagePath(SoilCarbonPredictor.class) + "data" + ObjectUtility.PathSeparator + "mcmcMems_Montmorency.zml";
+        String filename = ObjectUtility.getRelativePackagePath(SoilCarbonPredictor.class) + 
+        		"data" + ObjectUtility.PathSeparator + 
+        		"sites" + ObjectUtility.PathSeparator + "mcmcMems_MontmorencyBL0_95CO0_10.zml";
         System.out.println("loading " + filename);
 
         XmlDeserializer dser = new XmlDeserializer(filename);
 
-        MetropolisHastingsAlgorithm mha = (MetropolisHastingsAlgorithm)dser.readObject();
+        MEMSSite site = (MEMSSite) dser.readObject();
 
         // read the fit params from mha and set them to the Predictor
-        predictor.setParms(mha.getFinalParameterEstimates());
+        predictor.setParms(site.mha.getFinalParameterEstimates());
 
         SoilCarbonPredictorCompartments compartments = new SoilCarbonPredictorCompartments(1.0, MAT, Trange);
 
@@ -458,4 +459,8 @@ public class SoilCarbonPredictorTest {
 
         Assert.assertTrue(ratioPerturbedYearCounter < 10);
     }
+    
+   
+    
+    
 }
