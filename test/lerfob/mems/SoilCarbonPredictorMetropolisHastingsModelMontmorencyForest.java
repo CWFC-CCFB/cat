@@ -33,7 +33,7 @@ import repicea.util.REpiceaLogManager;
  * This class can be used to fit mems to ground observations using
  * the Metropolis-Hastings algorithm.
  */
-public class SoilCarbonPredictorMetropolisHastingsModelTest {
+public class SoilCarbonPredictorMetropolisHastingsModelMontmorencyForest {
 
 	public static void main(String argv[])  throws Exception {
 		MetropolisHastingsAlgorithm mha;
@@ -70,7 +70,7 @@ public class SoilCarbonPredictorMetropolisHastingsModelTest {
         
         
         SoilCarbonPredictorMetropolisHastingsModel model = new SoilCarbonPredictorMetropolisHastingsModel(compartments, inputs);
-        String path = ObjectUtility.getPackagePath(SoilCarbonPredictorMetropolisHastingsModelTest.class) + "data" + File.separator;
+        String path = ObjectUtility.getPackagePath(SoilCarbonPredictorMetropolisHastingsModelMontmorencyForest.class) + "data" + File.separator;
         File f = new File(path);
         boolean folderExists = f.exists() && f.isDirectory();
         if (!folderExists) {

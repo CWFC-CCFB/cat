@@ -1,0 +1,33 @@
+"Study.site","PlotID","StudiedFactors","Factor1","Factor2","SoilDepthCm","annNPPgC_M2Yr","SOCMgC_ha","SandPerc","BDg_cm3","RockPerc","pH","CTgC_m2day","soilTempC","POMC5PlusC10","MineralOMC9","X"
+"Hereford","HER-R1-CTRL","Biomass harvesting","No harvest","Control","0-15",NA,35.955472,52,0.74715982,20.26943329,4.125,NA,NA,15.24047674,28.27847072,NA
+"Hereford","HER-R1-P12","Biomass harvesting","Clearcut + biomass harvest","MaxBio","0-15",NA,33.764807,28,0.54795471,29.23156571,3.825,NA,NA,12.2561038,42.1946566,NA
+"Hereford","HER-R1-P15","Biomass harvesting","Clearcut + biomass harvest","ST","0-15",NA,51.869852,25,0.68186086,8.213987299,4.031667,NA,NA,20.86544765,49.82716609,NA
+"Hereford","HER-R1-P16","Biomass harvesting","Clearcut + biomass harvest","ST + P","0-15",NA,41.638861,40,0.68768129,17.97020595,3.79,NA,NA,14.22682066,32.73760433,NA
+"Hereford","HER-R2-CTRL","Biomass harvesting","No harvest","Control","0-15",NA,34.192413,40,0.51825701,17.29382523,4.056667,NA,NA,9.379825401,24.22707822,NA
+"Hereford","HER-R2-P11","Biomass harvesting","Clearcut + biomass harvest","MaxBio","0-15",NA,37.587299,39,0.54279354,25.80978118,4.28,NA,NA,11.81449354,28.31724098,NA
+"Hereford","HER-R2-P5","Biomass harvesting","Clearcut + biomass harvest","ST","0-15",NA,23.283068,33,0.50124734,25.6266014,3.663333,NA,NA,NA,NA,NA
+"Hereford","HER-R2-P8","Biomass harvesting","Clearcut + biomass harvest","ST + P","0-15",NA,35.158611,33,0.45976988,30.72990558,3.836667,NA,NA,14.10064741,27.08780755,NA
+"Hereford","HER-R3-CTRL","Biomass harvesting","No harvest","Control","0-15",NA,40.416664,40,0.54110064,19.62556879,3.774,NA,NA,NA,NA,NA
+"Hereford","HER-R3-P2","Biomass harvesting","Clearcut + biomass harvest","ST + P","0-15",NA,36.94911,42,0.61470441,26.07402822,4.354,NA,NA,7.094713917,23.58632393,NA
+"Hereford","HER-R3-P3","Biomass harvesting","Clearcut + biomass harvest","ST","0-15",NA,36.082497,37,0.61145089,17.60592549,4.481667,NA,NA,10.07555054,26.50216713,NA
+"Hereford","HER-R3-P4","Biomass harvesting","Clearcut + biomass harvest","MaxBio","0-15",NA,46.809675,23,0.59795834,11.53235028,NA,NA,NA,7.003597282,47.84972997,NA
+"Hereford","HER-R4-CTRL","Biomass harvesting","No harvest","Control","0-15",NA,52.538914,55,0.52156867,18.10350513,4.176667,NA,NA,3.090511347,8.645120521,NA
+"Hereford","HER-R4-P10","Biomass harvesting","Clearcut + biomass harvest","ST","0-15",NA,39.881028,34,0.64329207,21.50727101,4.433333,NA,NA,NA,NA,NA
+"Hereford","HER-R4-P17","Biomass harvesting","Clearcut + biomass harvest","ST + P","0-15",NA,34.466529,27,0.7662524,14.36512703,4.65,NA,NA,8.449337703,40.35061172,NA
+"Hereford","HER-R4-P6","Biomass harvesting","Clearcut + biomass harvest","MaxBio","0-15",NA,28.452723,38,0.53855422,29.52463068,4.663333,NA,NA,7.208474802,29.80035068,NA
+"Hereford","HER-R1-CTRL","Biomass harvesting","No harvest","Control","FH",NA,40.68804716,NA,0.081537591,1.363161912,4.39,NA,NA,NA,NA,NA
+"Hereford","HER-R1-P12","Biomass harvesting","Clearcut + biomass harvest","MaxBio","FH",NA,56.32045972,NA,0.113921891,0.428553892,4.026666667,NA,NA,NA,NA,NA
+"Hereford","HER-R1-P15","Biomass harvesting","Clearcut + biomass harvest","ST","FH",NA,15.58870685,NA,0.070135029,0.040325082,4.2625,NA,NA,NA,NA,NA
+"Hereford","HER-R1-P16","Biomass harvesting","Clearcut + biomass harvest","ST + P","FH",NA,84.27410464,NA,0.119612212,0.429177346,3.961666667,NA,NA,NA,NA,NA
+"Hereford","HER-R2-CTRL","Biomass harvesting","No harvest","Control","FH",NA,10.19876448,NA,0.06026995,0.307683072,4.235,NA,NA,NA,NA,NA
+"Hereford","HER-R2-P11","Biomass harvesting","Clearcut + biomass harvest","MaxBio","FH",NA,34.39270935,NA,0.10012246,0.989385277,4.3,NA,NA,NA,NA,NA
+"Hereford","HER-R2-P5","Biomass harvesting","Clearcut + biomass harvest","ST","FH",NA,27.38823696,NA,0.096114745,1.004984656,4.106666667,NA,NA,NA,NA,NA
+"Hereford","HER-R2-P8","Biomass harvesting","Clearcut + biomass harvest","ST + P","FH",NA,34.74809216,NA,0.127855116,1.301560088,4.151666667,NA,NA,NA,NA,NA
+"Hereford","HER-R3-CTRL","Biomass harvesting","No harvest","Control","FH",NA,34.96856552,NA,0.080089265,1.042107785,4.12,NA,NA,NA,NA,NA
+"Hereford","HER-R3-P2","Biomass harvesting","Clearcut + biomass harvest","ST + P","FH",NA,30.54999032,NA,0.136855497,3.390890618,4.56,NA,NA,NA,NA,NA
+"Hereford","HER-R3-P3","Biomass harvesting","Clearcut + biomass harvest","ST","FH",NA,13.70178438,NA,0.121634598,4.48419285,4.182,NA,NA,NA,NA,NA
+"Hereford","HER-R3-P4","Biomass harvesting","Clearcut + biomass harvest","MaxBio","FH",NA,68.69766939,NA,0.19150831,6.545625491,4.8025,NA,NA,NA,NA,NA
+"Hereford","HER-R4-CTRL","Biomass harvesting","No harvest","Control","FH",NA,8.689599125,NA,0.056741026,3.112180083,4.353333333,NA,NA,NA,NA,NA
+"Hereford","HER-R4-P10","Biomass harvesting","Clearcut + biomass harvest","ST","FH",NA,10.58238522,NA,0.080429744,4.874513675,4.358,NA,NA,NA,NA,NA
+"Hereford","HER-R4-P17","Biomass harvesting","Clearcut + biomass harvest","ST + P","FH",NA,6.843112208,NA,0.052611905,3.173502322,4.761666667,NA,NA,NA,NA,NA
+"Hereford","HER-R4-P6","Biomass harvesting","Clearcut + biomass harvest","MaxBio","FH",NA,27.21683739,NA,0.162211042,2.635125785,4.755,NA,NA,NA,NA,NA
