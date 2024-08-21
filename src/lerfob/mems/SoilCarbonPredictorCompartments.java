@@ -86,8 +86,9 @@ public class SoilCarbonPredictorCompartments implements MonteCarloSimulationComp
      * array is expected to have a length of 11. The stocks are initialized
      * in compartments C1 to C11 by iterating through the array.
      * @param initialStock a 11-slot array that contains the initial carbon stocks
-     * @param MAT the Mean Annual Temperature
-     * @param Trange the annual temperature range
+     * @param dailyTemperatureC an array of double containing the daily temperature
+     * @param fromAir a boolean true if the temperature in the array was the air 
+     * temperature or false if it was the soil temperature
      */
     public SoilCarbonPredictorCompartments(double initialStock, double[] dailyTemperatureC, boolean fromAir) {
         C1 = initialStock;

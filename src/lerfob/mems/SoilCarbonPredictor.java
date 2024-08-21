@@ -538,7 +538,6 @@ public class SoilCarbonPredictor extends REpiceaPredictor  {
 	 * estimate the daily temperature.
 	 * @param compartments a SoilCarbonPredictorCompartments instance that contains the initial carbon stocks
 	 * @param inputs a SoilCarbonPredictorInput instance
-	 * @param dailySoilTemperatureC an array of 365 or 366 slots containing the daily soil temperature.
 	 */
 	public void predictAnnualCStocks(SoilCarbonPredictorCompartments compartments, SoilCarbonPredictorInput inputs) {
 		for (int day = 0; day < compartments.dailySoilTemperature.length; day++) {

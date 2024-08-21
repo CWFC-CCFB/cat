@@ -36,6 +36,18 @@ import repicea.util.REpiceaLogManager;
 public class SoilCarbonPredictorMetropolisHastingsModelMontmorencyForest {
 
 	public static void main(String argv[])  throws Exception {
+		
+		
+//		String path = ObjectUtility.getPackagePath(SoilCarbonPredictor.class) + 
+//				"data" + File.separator + "sites" + File.separator;
+//		String mcmcFilename = path + "mcmcMems_MontmorencyBL0_95CO0_10.zml";
+//		XmlDeserializer deser = new XmlDeserializer(mcmcFilename);
+//		MEMSSite mha = (MEMSSite) deser.readObject();
+//		System.out.println(mha.mha.getReport());
+//		int u = 0;
+		
+		
+		
 		MetropolisHastingsAlgorithm mha;
 		
         double MAT = 3.8;  // between Jan 1 2013 to Dec 31st 2016 at MM

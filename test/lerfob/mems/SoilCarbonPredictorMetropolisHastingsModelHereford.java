@@ -109,8 +109,7 @@ public class SoilCarbonPredictorMetropolisHastingsModelHereford {
 				
 		double[] meanDailyTemperature = getMeanDailyTemperature();
 		
-		/// TODO review two doubles MF20240814
-        double aboveGroundNPPgCm2 = 149d;
+        double aboveGroundNPPgCm2 = 337d;
         double belowGroundNPPgCm2 = 44d; 
 
         double depth_cm = 15d;

@@ -19,20 +19,15 @@
  */
 package lerfob.mems;
 
-import lerfob.mems.SoilCarbonPredictor;
-import lerfob.mems.SoilCarbonPredictorInput;
-import repicea.serial.UnmarshallingException;
-import repicea.serial.xml.XmlDeserializer;
-import repicea.serial.xml.XmlSerializer;
 import repicea.stats.estimators.mcmc.MetropolisHastingsAlgorithm;
-import repicea.util.ObjectUtility;
 import repicea.util.REpiceaTranslator;
 import repicea.util.REpiceaTranslator.TextableEnum;
 
 public class MEMSSite {
 	
     public static enum SiteType implements TextableEnum {
-        MontmorencyBL0_95CO0_10("Montmorency Forest", "Forêt Montmorency");
+        MontmorencyBL0_95CO0_10("Montmorency Forest", "For\u00E8t Montmorency"),
+        Hereford("Hereford Forest", "For\u00E8t de Hereford");
 
         SiteType(String englishText, String frenchText) {
             setText(englishText, frenchText);
