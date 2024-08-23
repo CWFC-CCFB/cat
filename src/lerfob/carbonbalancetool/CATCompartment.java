@@ -117,6 +117,9 @@ public class CATCompartment extends CarbonArray implements Comparable {
 		 * The soil layer (0-15cm)
 		 */
 		MineralSoil("Mineral Soil", "Sol Min/u00E9ral", false, new Color(96,48,48)),
+		/**
+		 * The humus plus the soil layer (0-15cm)
+		 */
 		Soil("Soil", "Sol", true, new Color(96,48,48));
 
 		private static List<CompartmentInfo> naturalOrder;
@@ -141,6 +144,8 @@ public class CATCompartment extends CarbonArray implements Comparable {
 				poolCategoryMap.put(Roots, PoolCategory.Forest);
 				poolCategoryMap.put(DeadBiom, PoolCategory.Forest);
 				poolCategoryMap.put(Soil, PoolCategory.Forest);
+				poolCategoryMap.put(Humus, PoolCategory.Forest);
+				poolCategoryMap.put(MineralSoil, PoolCategory.Forest);
 				
 				poolCategoryMap.put(TotalProducts, PoolCategory.HarvestedWoodProducts);
 				poolCategoryMap.put(Products, PoolCategory.HarvestedWoodProducts);
@@ -179,6 +184,8 @@ public class CATCompartment extends CarbonArray implements Comparable {
 				naturalOrder.add(Roots);
 				naturalOrder.add(DeadBiom);
 				naturalOrder.add(Soil);
+				naturalOrder.add(Humus);
+				naturalOrder.add(MineralSoil);
 				naturalOrder.add(TotalProducts);
 				naturalOrder.add(Products);
 				naturalOrder.add(LfillDeg);
