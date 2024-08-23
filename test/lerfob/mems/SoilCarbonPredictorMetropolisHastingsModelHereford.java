@@ -29,12 +29,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
-import java.util.stream.Stream;
 
 import biosimclient.BioSimClient;
 import biosimclient.BioSimDataSet;
 import biosimclient.BioSimEnums.ClimateModel;
-import biosimclient.BioSimEnums.Period;
 import biosimclient.BioSimEnums.RCP;
 import biosimclient.BioSimPlot;
 import biosimclient.BioSimPlotImpl;
@@ -44,8 +42,9 @@ import repicea.util.ObjectUtility;
 import repicea.util.REpiceaLogManager;
 
 /**
- * This class can be used to fit mems to ground observations using
- * the Metropolis-Hastings algorithm.
+ * This class is used to fit MEMS to ground observations from
+ * Hereford forest using the Metropolis-Hastings algorithm.<p>
+ * @author Mathieu Fortin - August 2024
  */
 public class SoilCarbonPredictorMetropolisHastingsModelHereford {
 
@@ -105,15 +104,23 @@ public class SoilCarbonPredictorMetropolisHastingsModelHereford {
 	
 	
 	public static void main(String argv[])  throws Exception {
-		MetropolisHastingsAlgorithm mha;
-				
-		double[] meanDailyTemperature = getMeanDailyTemperature();
-		
+        Level l = Level.FINE;
+        ConsoleHandler ch = new ConsoleHandler();
+        ch.setLevel(l);
+        REpiceaLogManager.getLogger("mh.log").setLevel(Level.FINE);
+        REpiceaLogManager.getLogger("mh.log").addHandler(ch);   // TODO some lines are repeated twice if this line is uncommented MF20240822
+        REpiceaLogManager.logMessage("mh.log", Level.INFO, "From main", "Starting MEMS calibration...");
+
+        MetropolisHastingsAlgorithm mha;
+
+        REpiceaLogManager.logMessage("mh.log", Level.INFO, "From main", "Retrieving average climate from BioSIM Web API...");
+		double[] meanDailyTemperature = getMeanDailyTemperature(); 
+
+        REpiceaLogManager.logMessage("mh.log", Level.INFO, "From main", "Preparing soil input...");
+
         double aboveGroundNPPgCm2 = 337d;
         double belowGroundNPPgCm2 = 44d; 
-
         double depth_cm = 15d;
-        
         SoilCarbonPredictorCompartments compartments = new SoilCarbonPredictorCompartments(1.0, meanDailyTemperature, true); // true: air temperature 
         SoilCarbonPredictorInput inputs = new SoilCarbonPredictorInput(SoilCarbonPredictorInput.LandType.MontmorencyForest, 
         		aboveGroundNPPgCm2, 
@@ -125,35 +132,34 @@ public class SoilCarbonPredictorMetropolisHastingsModelHereford {
         		20.84); // the last four doubles have been validated MF20240814
 
         SoilCarbonPredictorMetropolisHastingsModel model = new SoilCarbonPredictorMetropolisHastingsModel(compartments, inputs);
+        
         String path = ObjectUtility.getPackagePath(SoilCarbonPredictorMetropolisHastingsModelHereford.class) + "data" + File.separator;
         File f = new File(path);
+        String filename = path + "HerefordFormatted.csv";
+        REpiceaLogManager.logMessage("mh.log", Level.INFO, "From main", "Loading file " + filename);
         boolean folderExists = f.exists() && f.isDirectory();
         if (!folderExists) {
         	throw new InvalidParameterException("Destination folder does not exist:" + path);
         }
-        String filename = path + "ChronosequenceFOMFormatted.csv";
         model.readFile(filename);
         
         mha = new MetropolisHastingsAlgorithm(model, "mh.log", "MH");
         
-        Level l = Level.FINE;
-        ConsoleHandler ch = new ConsoleHandler();
-        ch.setLevel(l);
-        REpiceaLogManager.getLogger("mh.log").setLevel(Level.FINE);
-        REpiceaLogManager.getLogger("mh.log").addHandler(ch);
-        REpiceaLogManager.getLogger("mh.log").log(Level.FINE, "Starting MEMS calibration...");
         mha.getSimulationParameters().nbInitialGrid = 10000;
         mha.getSimulationParameters().nbInternalIter = 200000;
         mha.getSimulationParameters().nbBurnIn = 20000;
         mha.getSimulationParameters().nbAcceptedRealizations = 500000 + mha.getSimulationParameters().nbBurnIn;
+        REpiceaLogManager.logMessage("mh.log", Level.INFO, "main", "Running MCMC simulation...");
         mha.doEstimation();
         
         String mcmcFilename = path + "mcmcMems_Hereford.zml";
 //        XmlDeserializer deser = new XmlDeserializer(mcmcFilename);
 //        mha = (MetropolisHastingsAlgorithm) deser.readObject();
         String outputFilename = path + "parameterEstimatesSet_Hereford.csv";
+        REpiceaLogManager.logMessage("mh.log", Level.INFO, "From main", "Exporting parameter sets to " + outputFilename);
         mha.exportMetropolisHastingsSample(outputFilename);
         System.out.println(mha.getReport());
+        REpiceaLogManager.logMessage("mh.log", Level.INFO, "From main", "Serializing MEMSSite in " + mcmcFilename);
         XmlSerializer serializer = new XmlSerializer(mcmcFilename);
         serializer.writeObject(new MEMSSite(mha, inputs));
 	}

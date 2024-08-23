@@ -141,7 +141,7 @@ public class MEMSConnectorsTest {
 		}
 
 		@Override
-		public SiteType getSiteType() {return SiteType.MontmorencyBL0_95CO0_10;}
+		public SiteType getSiteType() {return SiteType.Montmorency;}
 
 		private double getMeanAnnualTemperatureC() {
 			return 3.8; // between Jan 1 2013 to Dec 31st 2016 at Foret Montmorency 

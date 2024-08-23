@@ -9,13 +9,13 @@ data <- data[which(data$SoilDepthCm %in% c("0-15", "FH")),]
 write.csv(data, file = "HerefordFormatted.csv", row.names = F)
 
 
-mean(data[which(data$SoilDepthCm == "FH"), "SOCMgC_ha"])
-var(data[which(data$SoilDepthCm == "FH"), "SOCMgC_ha"])
-hist(data[which(data$SoilDepthCm == "FH"), "SOCMgC_ha"])
+mean(data[which(data$SoilDepthCm == "FH"), "SocMgC_ha"])
+var(data[which(data$SoilDepthCm == "FH"), "SocMgC_ha"])
+hist(data[which(data$SoilDepthCm == "FH"), "SocMgC_ha"])
 
-mean(data[which(data$SoilDepthCm == "0-15"), "SOCMgC_ha"])
-var(data[which(data$SoilDepthCm == "0-15"), "SOCMgC_ha"])
-hist(data[which(data$SoilDepthCm == "0-15"), "SOCMgC_ha"])
+mean(data[which(data$SoilDepthCm == "0-15"), "SocMgC_ha"])
+var(data[which(data$SoilDepthCm == "0-15"), "SocMgC_ha"])
+hist(data[which(data$SoilDepthCm == "0-15"), "SocMgC_ha"])
 
 message("Mean pH is ", mean(data$pH, na.rm = T))
 message("Mean bulk density is ", mean(data[which(data$SoilDepthCm == "0-15"), "BDg_cm3"], na.rm = T))

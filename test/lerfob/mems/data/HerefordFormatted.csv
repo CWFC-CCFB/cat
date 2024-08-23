@@ -1,4 +1,4 @@
-"Study.site","PlotID","StudiedFactors","Factor1","Factor2","SoilDepthCm","annNPPgC_M2Yr","SOCMgC_ha","SandPerc","BDg_cm3","RockPerc","pH","CTgC_m2day","soilTempC","POMC5PlusC10","MineralOMC9","X"
+"Study.site","PlotID","StudiedFactors","Factor1","Factor2","SoilDepthCm","annNPPgC_M2Yr","SocMgC_ha","SandPerc","BDg_cm3","RockPerc","pH","CTgC_m2day","soilTempC","POMC5PlusC10","MineralOMC9","X"
 "Hereford","HER-R1-CTRL","Biomass harvesting","No harvest","Control","0-15",NA,35.955472,52,0.74715982,20.26943329,4.125,NA,NA,15.24047674,28.27847072,NA
 "Hereford","HER-R1-P12","Biomass harvesting","Clearcut + biomass harvest","MaxBio","0-15",NA,33.764807,28,0.54795471,29.23156571,3.825,NA,NA,12.2561038,42.1946566,NA
 "Hereford","HER-R1-P15","Biomass harvesting","Clearcut + biomass harvest","ST","0-15",NA,51.869852,25,0.68186086,8.213987299,4.031667,NA,NA,20.86544765,49.82716609,NA

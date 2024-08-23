@@ -235,7 +235,7 @@ public class SoilCarbonPredictorTest {
 
         String filename = ObjectUtility.getRelativePackagePath(SoilCarbonPredictor.class) + 
         		"data" + ObjectUtility.PathSeparator + 
-        		"sites" + ObjectUtility.PathSeparator + "mcmcMems_MontmorencyBL0_95CO0_10.zml";
+        		"sites" + ObjectUtility.PathSeparator + "mcmcMems_Montmorency.zml";
         System.out.println("loading " + filename);
 
         XmlDeserializer dser = new XmlDeserializer(filename);

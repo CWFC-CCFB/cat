@@ -104,8 +104,8 @@ public class SoilCarbonPredictor extends REpiceaPredictor  {
 		parmK10(2.96E-4, 1e-4, 1e-3),
 		la_2(0.19, 0.022, 0.42),
 		la_3(0.038, 0.014, 0.05),
-		sigma2Litter(400.0, 0.0, 10000.0),
-		sigma2Soil(400.0, 0.0, 10000.0);
+		sigma2Litter(400.0, 0.0, 2000.0),
+		sigma2Soil(400.0, 0.0, 2000.0);
 
 		MCParam(double initValue, double rangeMin, double rangeMax) {
 			if (initValue < rangeMin || initValue > rangeMax)

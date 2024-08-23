@@ -1,4 +1,4 @@
-Study site,PlotID,StudiedFactors,Factor1,Factor2,SoilDepthCm,annNPPgC_M2Yr,SOCMgC_ha,SandPerc,BDg_cm3,RockPerc,pH,CTgC_m2day,soilTempC,POMC5PlusC10,MineralOMC9,
+Study site,PlotID,StudiedFactors,Factor1,Factor2,SoilDepthCm,annNPPgC_M2Yr,SocMgC_ha,SandPerc,BDg_cm3,RockPerc,pH,CTgC_m2day,soilTempC,POMC5PlusC10,MineralOMC9,
 Hereford,HER-R1-CTRL,Biomass harvesting,No harvest,Control,0-15,,35.955472,52,0.74715982,20.26943329,4.125,,,15.24047674,28.27847072,
 Hereford,HER-R1-CTRL,Biomass harvesting,No harvest,Control,15-35,,70.946133,41,0.62488011,25.79634902,3.985,,,15.94364773,62.65120115,
 Hereford,HER-R1-CTRL,Biomass harvesting,No harvest,Control,35-55,,44.117358,,0.1999776,11.79415855,3.47,,,27.78472431,21.8127181,
