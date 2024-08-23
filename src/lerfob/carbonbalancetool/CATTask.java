@@ -262,7 +262,7 @@ public class CATTask extends AbstractGenericTask {
 	@SuppressWarnings({ "unchecked", "rawtypes"})
 	private void createEndUseWoodProductsFromWoodPieces() throws Exception {
 		CATCompartmentManager manager = caller.getCarbonCompartmentManager();
-		ApplicationScale applicationScale = manager.getStandList().get(0).getApplicationScale();
+		ApplicationScale applicationScale = manager.getApplicationScale();
 
 		REpiceaLogManager.logMessage(CarbonAccountingTool.LOGGER_NAME, Level.FINEST, null, "Creating HWP from wood pieces...");
 		
@@ -507,7 +507,7 @@ public class CATTask extends AbstractGenericTask {
 							carbonMg = biomassParameters.getBelowGroundCarbonMg(t, manager);
 							break;
 						}
-						processUnaccountedCarbon(t, carbonMg, dateIndex, samplingUnitID, type, manager.getStandList().get(0).getApplicationScale());
+						processUnaccountedCarbon(t, carbonMg, dateIndex, samplingUnitID, type, manager.getApplicationScale());
 					}
 				}				
 			}

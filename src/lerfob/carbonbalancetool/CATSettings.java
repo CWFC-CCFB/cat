@@ -29,12 +29,11 @@ import lerfob.carbonbalancetool.CATUtility.BiomassParametersWrapper;
 import lerfob.carbonbalancetool.CATUtility.ProductionManagerName;
 import lerfob.carbonbalancetool.CATUtility.ProductionProcessorManagerWrapper;
 import lerfob.carbonbalancetool.biomassparameters.BiomassParameters;
-import lerfob.carbonbalancetool.memsconnectors.MEMSSite.SiteType;
-import lerfob.carbonbalancetool.memsconnectors.MEMSSiteParametersWrapper;
 import lerfob.carbonbalancetool.productionlines.ProductionLineManager;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManagerException;
 import lerfob.carbonbalancetool.woodpiecedispatcher.WoodPieceDispatcher;
+import lerfob.mems.MEMSSite.SiteType;
 import lerfob.treelogger.basictreelogger.BasicTreeLogger;
 import lerfob.treelogger.basictreelogger.BasicTreeLoggerParameters;
 import repicea.app.SettingMemory;
@@ -214,7 +213,6 @@ public final class CATSettings {
 
 	protected final Map<ProductionManagerName, ProductionProcessorManagerWrapper> productionManagerMap = new LinkedHashMap<ProductionManagerName, ProductionProcessorManagerWrapper>();
 	protected final Map<BiomassParametersName, BiomassParametersWrapper> biomassParametersMap = new LinkedHashMap<BiomassParametersName, BiomassParametersWrapper>();
-	protected final Map<SiteType, MEMSSiteParametersWrapper> memsParametersMap = new LinkedHashMap<SiteType, MEMSSiteParametersWrapper>();
 	
 	private ProductionManagerName currentProcessorManager = ProductionManagerName.values()[0];
 	private BiomassParametersName currentBiomassParameters = BiomassParametersName.values()[0]; 

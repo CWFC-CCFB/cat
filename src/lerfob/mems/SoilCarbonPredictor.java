@@ -65,7 +65,6 @@ import static lerfob.mems.SoilCarbonPredictorEquation.Eq43_getDailyCarbonStockTr
 import static lerfob.mems.SoilCarbonPredictorEquation.Eq44_getDailyCarbonStockTransferFromC9ToC7;
 import static lerfob.mems.SoilCarbonPredictorEquation.Eq45_getDailyCarbonStockTransferFromC10ToC7;
 import static lerfob.mems.SoilCarbonPredictorEquation.Eq46_getK3Estimate;
-import static lerfob.mems.SoilCarbonPredictorEquation.Eq49_getSoilTemperature;
 import static lerfob.mems.SoilCarbonPredictorEquation.Weibull_getTemperatureModifier;
 
 import java.security.InvalidParameterException;
@@ -105,8 +104,8 @@ public class SoilCarbonPredictor extends REpiceaPredictor  {
 		parmK10(2.96E-4, 1e-4, 1e-3),
 		la_2(0.19, 0.022, 0.42),
 		la_3(0.038, 0.014, 0.05),
-		sigma2Litter(400.0, 0.0, 10000.0),
-		sigma2Soil(400.0, 0.0, 10000.0);
+		sigma2Litter(400.0, 0.0, 2000.0),
+		sigma2Soil(400.0, 0.0, 2000.0);
 
 		MCParam(double initValue, double rangeMin, double rangeMax) {
 			if (initValue < rangeMin || initValue > rangeMax)
@@ -534,28 +533,25 @@ public class SoilCarbonPredictor extends REpiceaPredictor  {
 	}
 	
 	/**
-	 * Predict the stocks on an annual basis
+	 * Predict the stocks on an annual basis. <p>
+	 * If the dailySoilTemperatureC is null, the method relies on the mean temperature and range to
+	 * estimate the daily temperature.
 	 * @param compartments a SoilCarbonPredictorCompartments instance that contains the initial carbon stocks
 	 * @param inputs a SoilCarbonPredictorInput instance
 	 */
 	public void predictAnnualCStocks(SoilCarbonPredictorCompartments compartments, SoilCarbonPredictorInput inputs) {
-		for (int day = 1; day <= 365; day++) {
+		for (int day = 0; day < compartments.dailySoilTemperature.length; day++) {
 			double TmodLocal = 0.0;
 			long initTime = System.currentTimeMillis();
-			if (compartments.MAT > -100.0) {
-				// compute the temperature modifier as per Eq. 48
-				double soilT = Eq49_getSoilTemperature(this, day, compartments.MAT, compartments.Trange);
-				//TmodLocal = Mems2_Eq26_getTemperatureModifier(this, soilT);
-				TmodLocal = Weibull_getTemperatureModifier(this, soilT);
-			}
+			TmodLocal = Weibull_getTemperatureModifier(this, compartments.dailySoilTemperature[day]);
 			elapsedTimes[2] += (System.currentTimeMillis() - initTime);
 
 			initTime = System.currentTimeMillis();
 			if (TmodLocal > 0.0) {
-//				compartments.add(predictCStockChanges(compartments, inputs, TmodLocal));
 				predictDailyCStocks(compartments, inputs, TmodLocal);
 			}
 			elapsedTimes[3] += (System.currentTimeMillis() - initTime);
 		}
 	}
+
 }

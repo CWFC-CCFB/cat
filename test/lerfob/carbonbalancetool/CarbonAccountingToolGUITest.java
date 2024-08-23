@@ -178,7 +178,7 @@ public class CarbonAccountingToolGUITest {
 		ROBOT.clickThisButton("Ok", ImportFieldManagerDialog.class);
 		ROBOT.clickThisButton("Ok", CATAWTProperty.StandListProperlySet);
 		
-		List<CATCompatibleStand> stands = CAT.getCarbonCompartmentManager().getStandList();
+		List<CATCompatibleStand> stands = CAT.getCarbonCompartmentManager().completeStandList;
 		Assert.assertEquals("Testing the number of CATCompatibleStand instances imported", 46, stands.size());
 		
 		int tabCountBefore = CAT.getUI().graphicPanel.tabbedPane.getTabCount();
@@ -234,7 +234,7 @@ public class CarbonAccountingToolGUITest {
 		ROBOT.letDispatchThreadProcess();
 		ROBOT.clickThisButton("Ok", CATAWTProperty.StandListProperlySet);
 		
-		List<CATCompatibleStand> stands = CAT.getCarbonCompartmentManager().getStandList();
+		List<CATCompatibleStand> stands = CAT.getCarbonCompartmentManager().completeStandList;
 		Assert.assertEquals("Testing the number of CATCompatibleStand instances imported", 8, stands.size());
 		
 		int tabCountBefore = CAT.getUI().graphicPanel.tabbedPane.getTabCount();
@@ -302,7 +302,7 @@ public class CarbonAccountingToolGUITest {
 
 		ROBOT.letDispatchThreadProcess();
 
-		List<CATCompatibleStand> stands = CAT.getCarbonCompartmentManager().getStandList();
+		List<CATCompatibleStand> stands = CAT.getCarbonCompartmentManager().completeStandList;
 		Assert.assertEquals("Testing the number of CATCompatibleStand instances imported", 5, stands.size());
 		
 		int tabCountBefore = CAT.getUI().graphicPanel.tabbedPane.getTabCount();

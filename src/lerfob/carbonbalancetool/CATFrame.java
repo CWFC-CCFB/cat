@@ -555,7 +555,7 @@ public class CATFrame extends REpiceaFrame implements PropertyChangeListener,
 
 	
 	protected void setCalculateCarbonButtonsEnabled(boolean bool) {
-		boolean isStandListSet = caller.getCarbonCompartmentManager().getLastStand() != null;
+		boolean isStandListSet = caller.getCarbonCompartmentManager().completeStandList != null;
 		calculateCarbonMenuItem.setEnabled(bool && !vetoEnabled && isStandListSet );
 		calculateCarbonButton.setEnabled(bool && !vetoEnabled && isStandListSet);
 	}
@@ -723,8 +723,8 @@ public class CATFrame extends REpiceaFrame implements PropertyChangeListener,
 	@Override
 	public void refreshInterface() {
 		String suffix = "";
-		if (caller.getCarbonCompartmentManager().getLastStand() != null) {
-			suffix = " - " + caller.getCarbonCompartmentManager().getLastStand().getStandIdentification();
+		if (caller.getCarbonCompartmentManager().getLastCompleteStand() != null) {
+			suffix = " - " + caller.getCarbonCompartmentManager().getLastCompleteStand().getStandIdentification();
 		}
 		setTitle(UIControlManager.getTitle(getClass()) + suffix);
 	}

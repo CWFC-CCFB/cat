@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import lerfob.carbonbalancetool.CATCompartmentManager;
 import lerfob.carbonbalancetool.CATTimeTable;
 import lerfob.carbonbalancetool.CarbonArray;
+import lerfob.mems.MEMSSite;
 import lerfob.mems.SoilCarbonPredictor;
 import lerfob.mems.SoilCarbonPredictorCompartments;
 import lerfob.mems.SoilCarbonPredictorInput;
@@ -111,8 +112,8 @@ public class MEMSWrapper {
     private CarbonArray inputFromLivingTreesAboveGroundMgHa;
     private CarbonArray inputFromLivingTreesBelowGroundMgHa;
     
-    private double[] meanAnnualTemperatureC;
-    private double[] annualTemperatureRangeC;
+    private double[][] dailyTemperatureAcrossSimulation;
+    private boolean isFromAir;
     
     SoilCarbonPredictor predictor;
     SoilCarbonPredictorCompartments compartments;
@@ -155,13 +156,13 @@ public class MEMSWrapper {
         // prepare the carbon stock array
         inputAnnualStocksGCm2 = new InputCarbonStock[nbYears];
         outputAnnualStocksMgHa = new CarbonStockForReporting[nbYears];
-        meanAnnualTemperatureC = new double[nbYears];
-        annualTemperatureRangeC = new double[nbYears];
+        dailyTemperatureAcrossSimulation = new double[nbYears][];
         inputFromLivingTreesAboveGroundMgHa = new CarbonArray(nbYears);
         inputFromLivingTreesBelowGroundMgHa = new CarbonArray(nbYears);
 
         int j = 0;
         MEMSCompatibleStand memsStand = memsStands.get(j);
+        isFromAir = memsStand.isInterventionResult();
         for (int i = 0; i < nbYears; i++) {
             inputAnnualStocksGCm2[i] = new InputCarbonStock();
             outputAnnualStocksMgHa[i] = new CarbonStockForReporting();
@@ -172,8 +173,7 @@ public class MEMSWrapper {
             		memsStand = memsStands.get(j);
             	} 
             }
-            meanAnnualTemperatureC[i] = memsStand.getMeanAnnualTemperatureCForThisYear(dateYr);
-            annualTemperatureRangeC[i] = memsStand.getAnnualTemperatureRangeForThisYear(nbYears);
+            dailyTemperatureAcrossSimulation[i] = memsStand.getMeanDailyTemperatureCForThisYear(dateYr);
         }
 
         for (MEMSCompatibleStand s : memsStands) {
@@ -195,7 +195,7 @@ public class MEMSWrapper {
             String sitesPath = ObjectUtility.getRelativePackagePath(SoilCarbonPredictor.class) + "data" + ObjectUtility.PathSeparator + "sites" + ObjectUtility.PathSeparator;
 
             // load the site params
-            String filename = sitesPath + currentSiteName.name() + ".site.zml";
+            String filename = sitesPath + "mcmcMems_" + currentSiteName.name() + ".zml";
             XmlDeserializer dser = new XmlDeserializer(filename);
 
             try {
@@ -206,11 +206,11 @@ public class MEMSWrapper {
         }
 
         MEMSSite currentSite = sites.get(currentSiteName);
-        currentSite.inputs.reset();
+        currentSite.getInputs().reset();
         
         compartments = new SoilCarbonPredictorCompartments(1.0, 
-        		stand.getMeanAnnualTemperatureCForThisYear(stand.getDateYr()), 
-        		stand.getAnnualTemperatureRangeForThisYear(stand.getDateYr()));
+        		stand.getMeanDailyTemperatureCForThisYear(stand.getDateYr()),
+        		stand.isTemperatureFromAir());
 
         predictor = new SoilCarbonPredictor(false);
         // read the fit params from mha and set them to the Predictor
@@ -267,7 +267,7 @@ public class MEMSWrapper {
             } else {
                 InputCarbonStock inputStock = inputAnnualStocksGCm2[i]; 
                 inputParameters.setDailyInput(inputStock.humus, inputStock.soil);
-            	compartments.updateTemperature(meanAnnualTemperatureC[i], annualTemperatureRangeC[i]);
+            	compartments.setSoilTemperature(dailyTemperatureAcrossSimulation[i], isFromAir);
                 for (int y = 0; y < deltaYear; y++) {
                     predictor.predictAnnualCStocks(compartments, inputParameters);
                 }

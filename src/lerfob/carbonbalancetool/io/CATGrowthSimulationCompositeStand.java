@@ -88,8 +88,12 @@ public class CATGrowthSimulationCompositeStand implements CATCompatibleStand, St
 
 	void createRealizationIfNeeded(int realization) {	
 		if (!realizationMap.containsKey(realization)) {
-			realizationMap.put(realization, new CATGrowthSimulationPlotSample(this));
+			realizationMap.put(realization, createPlotSample());
 		}
+	}
+	
+	protected CATGrowthSimulationPlotSample createPlotSample() {
+		return new CATGrowthSimulationPlotSample(this);
 	}
 
 	@Override

@@ -20,7 +20,7 @@
 package lerfob.carbonbalancetool.memsconnectors;
 
 import lerfob.carbonbalancetool.CATCompatibleStand;
-import lerfob.carbonbalancetool.memsconnectors.MEMSSite.SiteType;
+import lerfob.mems.MEMSSite.SiteType;
 
 /**
  * Ensures the stand instance is compatible with MEMS.
@@ -35,18 +35,23 @@ public interface MEMSCompatibleStand extends CATCompatibleStand {
 	public SiteType getSiteType();
 	
 	/**
-	 * Provide the mean annual temperature for a particular year.
+	 * Provide the mean daily temperature for a particular year.<p>
+	 * A stand instance should be able to provide these temperatures
+	 * for the interval that goes from the previous stand
+	 * date + 1 to the date of this stand.
 	 * @param year an integer
-	 * @return the mean annual temperature (C)
+	 * @return an array of double. The array is expected to have 365 or 366 slots.
 	 */
-	public double getMeanAnnualTemperatureCForThisYear(int year);
-	
+	public double[] getMeanDailyTemperatureCForThisYear(int year);
+
 	/**
-	 * Provide the range between the min mean temperature and the 
-	 * max mean temperature.<p>
-	 * @param year an integer
-	 * @return the range of temperature (C)
+	 * Inform on the nature of the temperature.<p>
+	 * The default implementation returns true.
+	 * @return a boolean true if this is the air temperature. Otherwise,
+	 * if is assumed to be the soil temperature.
 	 */
-	public double getAnnualTemperatureRangeForThisYear(int year);
-	
+	public default boolean isTemperatureFromAir() {
+		return true;
+	}
+
 }

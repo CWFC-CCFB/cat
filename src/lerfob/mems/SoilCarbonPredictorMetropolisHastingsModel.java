@@ -65,7 +65,7 @@ public class SoilCarbonPredictorMetropolisHastingsModel implements MetropolisHas
 
         SoilCarbonPredictorCompartments localCompartments = compartments.clone();
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 500; i++) {
             predictor.predictAnnualCStocks(localCompartments, input);
         }
 

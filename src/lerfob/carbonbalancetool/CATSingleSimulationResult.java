@@ -105,7 +105,7 @@ class CATSingleSimulationResult implements CATSimulationResult {
 		setup = new ParameterSetup(manager.getCarbonToolSettings());
 		
 		rotationLength = manager.getRotationLength();
-		standID = manager.getLastStand().getStandIdentification();
+		standID = manager.getLastCompleteStand().getStandIdentification();
 		
 		timeTable = manager.getTimeTable();
 		

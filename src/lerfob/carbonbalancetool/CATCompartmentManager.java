@@ -99,7 +99,11 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	 */
 	private final List<String> speciesList;
 
-	private List<CATCompatibleStand> stands;
+	/**
+	 * This member includes all the realizations and should not be used within the realization.
+	 */
+	List<CATCompatibleStand> completeStandList;
+	
 	private CATSettings carbonAccountingToolSettings;		// reference to the extractor settings
 	
 	private Map<CompartmentInfo, CATCompartment> carbonCompartments;
@@ -261,7 +265,7 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	 */
 	@SuppressWarnings("unchecked")
 	public void init(List<CATCompatibleStand> stands) {
-		this.stands = stands;
+		this.completeStandList = stands;
 		if (stands != null) {
 			CATCompatibleStand lastStand = stands.get(stands.size() - 1);
 			managementType = lastStand.getManagementType();
@@ -373,10 +377,6 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	protected void resetManager() {
 		clearTreeCollections();
 		resetCompartments();
-
-		if (isMEMSEnabled()) {
-			memsWrapper.prepareSimulation((List) stands);
-		}
 
 		if (getCarbonToolSettings().formerImplementation) {
 			ProductionLineManager productionLines = carbonAccountingToolSettings.getProductionLines();
@@ -516,23 +516,30 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	 * This method returns the last stand from the list of stands. 
 	 * @return a CarbonToolCompatibleStand or null if the list is null or empty
 	 */
-	public CATCompatibleStand getLastStand() {
-		if (getStandList() != null && !getStandList().isEmpty()) {
-			return getStandList().get(getStandList().size() - 1);
+	public CATCompatibleStand getLastCompleteStand() {
+		if (completeStandList != null && !completeStandList.isEmpty()) {
+			return completeStandList.get(completeStandList.size() - 1);
 		} else {
 			return null;
 		}
 	}
-
+		
+	ApplicationScale getApplicationScale() {
+		if (completeStandList != null && !completeStandList.isEmpty()) {
+			return completeStandList.get(0).getApplicationScale();
+		} else {
+			return null;
+		}
+	}
 	
-	/**
-	 * Return the list of stands as set by the init method. This method should not be called within
-	 * the realization because the stands refer to wrappers that contain all the realizations. 
-	 * Within the realization, the method CATTimeTable.getStandsForThisRealization should be called 
-	 * instead.
-	 * @return a List of CATCompatibleStand instances
-	 */
-	protected List<CATCompatibleStand> getStandList() {return stands;}
+//	/**
+//	 * Return the list of stands as set by the init method. This method should not be called within
+//	 * the realization because the stands refer to wrappers that contain all the realizations. 
+//	 * Within the realization, the method CATTimeTable.getStandsForThisRealization should be called 
+//	 * instead.
+//	 * @return a List of CATCompatibleStand instances
+//	 */
+//	protected List<CATCompatibleStand> getStandList() {return stands;}
 	
 	
 	/**
@@ -586,8 +593,18 @@ public class CATCompartmentManager implements MonteCarloSimulationCompliantObjec
 	protected boolean isInfiniteSequenceAllowed() {return isInfiniteSequenceAllowed;}
 	protected ManagementType getManagementType() {return managementType;}
 
+	/**
+	 * Set the proper realization in the CATTimeTable instance and
+	 * prepare the simulation with the soil carbon module if it is
+	 * enables.
+	 * @param realizationId the index of the realization
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected void setRealization(int realizationId) {
 		getTimeTable().setMonteCarloRealization(realizationId);
+		if (isMEMSEnabled()) {
+			memsWrapper.prepareSimulation((List) getTimeTable().getStandsForThisRealization());
+		}
 	}
 
 	@Override
