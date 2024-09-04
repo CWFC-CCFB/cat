@@ -70,7 +70,7 @@ dependencies {
     implementation 'org.jfree:jcommon:1.0.23'
     implementation 'org.jfree:jfreechart:1.0.17'
     implementation 'jfree:jfreechart-swt:1.0.17'
-    implementation 'net.sf.py4j:py4j:0.10.9.2' 
+    implementation 'net.sf.py4j:py4j:[0.10.9,)' 
     implementation 'com.cedarsoftware:json-io:4.13.0'
        
   	implementation group: 'io.github.cwfc-ccfb', name: 'repicea', version: '[1.10.4,)'    
