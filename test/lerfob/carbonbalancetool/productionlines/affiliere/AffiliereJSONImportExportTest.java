@@ -21,18 +21,15 @@ package lerfob.carbonbalancetool.productionlines.affiliere;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager.ExportFormat;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager.ImportFormat;
 import repicea.serial.MemorizerPackage;
-import repicea.simulation.processsystem.Processor;
 import repicea.util.ObjectUtility;
 
 public class AffiliereJSONImportExportTest {
@@ -64,20 +61,20 @@ public class AffiliereJSONImportExportTest {
 	}
 	
 	
-	@SuppressWarnings("rawtypes")
-	@Ignore
-	@Test
-	public void testAffiliereReaderFromURL() throws IOException {
-		URL url = new URL("https://open-sankey.fr/fm/userfiles/Fili%C3%A8res/ForetBois/EtudeCarbone4/sankey/Fili%C3%A8re%20bois%20-%20Exports%20Sankeys_v25_layout.json");
-		AffiliereJSONImportReader reader = new AffiliereJSONImportReader(url);
-		ProductionProcessorManager manager = new ProductionProcessorManager();
-		for (Processor p : reader.processors.values()) {
-			manager.registerObject(p);
-		}
-//		manager.showUI(null);
-		MemorizerPackage mp = manager.getMemorizerPackage();
-		Assert.assertEquals("Testing nb of processors", 88, ((List) mp.get(1)).size());
-	}
+//	@SuppressWarnings("rawtypes")
+//	@Ignore
+//	@Test
+//	public void testAffiliereReaderFromURL() throws IOException {
+//		URL url = new URL("https://open-sankey.fr/fm/userfiles/Fili%C3%A8res/ForetBois/EtudeCarbone4/sankey/Fili%C3%A8re%20bois%20-%20Exports%20Sankeys_v25_layout.json");
+//		AffiliereJSONImportReader reader = new AffiliereJSONImportReader(url);
+//		ProductionProcessorManager manager = new ProductionProcessorManager();
+//		for (Processor p : reader.processors.values()) {
+//			manager.registerObject(p);
+//		}
+////		manager.showUI(null);
+//		MemorizerPackage mp = manager.getMemorizerPackage();
+//		Assert.assertEquals("Testing nb of processors", 88, ((List) mp.get(1)).size());
+//	}
 	
 	
 	public static void main(String[] args) throws IOException {

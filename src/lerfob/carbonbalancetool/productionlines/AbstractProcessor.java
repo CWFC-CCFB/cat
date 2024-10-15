@@ -126,10 +126,12 @@ public abstract class AbstractProcessor extends Processor {
 //		} else { // likely imported from AFFiliere
 			ProductionLineProcessor p = new ProductionLineProcessor();
 			String name = (String) oMap.get(AffiliereJSONFormat.NODE_NAME_PROPERTY);
-			int x = ((Number) oMap.get(AffiliereJSONFormat.NODE_X_COORD_PROPERTY)).intValue(); // + OFFSET;
-			int y = ((Number) oMap.get(AffiliereJSONFormat.NODE_Y_COORD_PROPERTY)).intValue();
 			p.setName(name);
-			p.setOriginalLocation(new Point(x,y));
+			if (oMap.containsKey(AffiliereJSONFormat.NODE_X_COORD_PROPERTY) & oMap.containsKey(AffiliereJSONFormat.NODE_Y_COORD_PROPERTY)) {
+				int x = ((Number) oMap.get(AffiliereJSONFormat.NODE_X_COORD_PROPERTY)).intValue(); // + OFFSET;
+				int y = ((Number) oMap.get(AffiliereJSONFormat.NODE_Y_COORD_PROPERTY)).intValue();
+				p.setOriginalLocation(new Point(x,y));
+			}
 			return p;
 //		}
 	}

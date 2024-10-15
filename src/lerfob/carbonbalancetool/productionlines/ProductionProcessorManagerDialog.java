@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
@@ -37,6 +38,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 import lerfob.carbonbalancetool.CATAWTProperty;
+import lerfob.carbonbalancetool.CATFrame;
 import lerfob.carbonbalancetool.productionlines.LandfillProcessor.LandfillProcessorButton;
 import lerfob.carbonbalancetool.productionlines.LeftInForestProcessor.LeftInForestProcessorButton;
 import lerfob.carbonbalancetool.productionlines.LogCategoryProcessor.LogCategoryProcessorButton;
@@ -47,6 +49,7 @@ import lerfob.carbonbalancetool.productionlines.ProductionProcessorToolPanel.Cre
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorToolPanel.CreateLeftInForestProcessorButton;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorToolPanel.CreateProductionLineProcessorButton;
 import lerfob.carbonbalancetool.productionlines.WoodyDebrisProcessor.WoodyDebrisProcessorButton;
+import repicea.app.SettingMemory;
 import repicea.gui.AutomatedHelper;
 import repicea.gui.CommonGuiUtility;
 import repicea.gui.CommonGuiUtility.FileChooserOutput;
@@ -112,9 +115,10 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 		IncompatibleTreeLogger("The tree logger is incompatible and will be replaced by the default tree logger!", "Le module de billonnage est incompatible et sera remplac\u00E9 par le module de billonnage par d\u00E9faut!"),
 		ExamplesOfFluxConfigurations("Examples of flux configurations", "Exemples de configurations de flux"),
 		ImportFromOtherSources("Import", "Importer"),
-		ImportFromAFFiliere("From AFFiliere (.json)", "A partir d'AFFili\u00E8ere (.json)"),
+		ImportFromAFFiliere("From AFFiliere (.xlsx)", "A partir d'AFFili\u00E8ere (.xlsx)"),
 		ErrorImportFromAffiliere("An error occurred while importing data from AFFiliere", "Une erreur est survenue lors de l'importation des donn\u00E9es depuis AFFili\u00E8re"),
-		ExportToAFFiliere("To AFFiliere (.json)", "Vers AFFili\u00E8ere (.json)");
+		ErrorExportFromAffiliere("An error occurred while exporting data to AFFiliere", "Une erreur est survenue lors de l'exportation des donn\u00E9es vers AFFili\u00E8re"),
+		ExportToAFFiliere("To AFFiliere (.xlsx)", "Vers AFFili\u00E8ere (.xlsx)");
 		
 		MessageID(String englishText, String frenchText) {
 			setText(englishText, frenchText);
@@ -290,38 +294,63 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 		if (evt.getSource().equals(downloadExamplesMenuItem)) {
 			downloadExamplesAction();
 		} else if (evt.getSource().equals(importFromAFFiliere)) {
+			SettingMemory sm = getSettingMemory();
+			String importFilename = sm != null ?
+					sm.getProperty("importToAffiliere.filename", "") :
+						"";
 			FileChooserOutput fileChooserOutput = CommonGuiUtility.browseAction(this,
 					JFileChooser.FILES_ONLY,
-					"", // TODO find a way to add memorizer here
-					new REpiceaFileFilterList(REpiceaFileFilter.JSON),
+					importFilename,
+					new REpiceaFileFilterList(REpiceaFileFilter.XLSX),
 					JFileChooser.OPEN_DIALOG);
 			if (fileChooserOutput.isValid()) {
+				if (sm != null) {
+					sm.setProperty("importToAffiliere.filename", fileChooserOutput.getFilename());
+				}
 				try {
 					getCaller().importFrom(fileChooserOutput.getFilename(), ImportFormat.AFFILIERE);
 					REpiceaAWTEvent.fireEvent(new REpiceaAWTEvent(this, CATAWTProperty.AffiliereImportSuccessful));
 					synchronizeUIWithOwner();
 				} catch (Exception e) {
-					CommonGuiUtility.showErrorMessage(MessageID.ErrorImportFromAffiliere.toString() + System.lineSeparator() + e.getMessage(), this);
+					String message = MessageID.ErrorImportFromAffiliere.toString() + System.lineSeparator() + e.getMessage();
+					ProductionProcessorManager.getLogger().log(Level.SEVERE, message, e);
+					CommonGuiUtility.showErrorMessage(message, this);
 				}
 			}
 		} else if (evt.getSource().equals(exportToAFFiliere)) {
+			SettingMemory sm = getSettingMemory();
+			String exportFilename = sm != null ?
+					sm.getProperty("exportToAffiliere.filename", "") :
+						"";
 			FileChooserOutput fileChooserOutput = CommonGuiUtility.browseAction(this,
 					JFileChooser.FILES_ONLY,
-					"", // TODO find a way to add memorizer here
-					new REpiceaFileFilterList(REpiceaFileFilter.JSON),
+					exportFilename, 
+					new REpiceaFileFilterList(REpiceaFileFilter.XLSX),
 					JFileChooser.SAVE_DIALOG);
 			if (fileChooserOutput.isValid()) {
+				if (sm != null) {
+					sm.setProperty("exportToAffiliere.filename", fileChooserOutput.getFilename());
+				}
 				try {
 					getCaller().exportTo(fileChooserOutput.getFilename(), ExportFormat.AFFILIERE);
 					REpiceaAWTEvent.fireEvent(new REpiceaAWTEvent(this, CATAWTProperty.AffiliereExportSuccessful));
 				} catch (Exception e) {
-					CommonGuiUtility.showErrorMessage(MessageID.ErrorImportFromAffiliere.toString() + System.lineSeparator() + e.getMessage(), this);
+					String message = MessageID.ErrorExportFromAffiliere.toString() + System.lineSeparator() + e.getMessage();
+					ProductionProcessorManager.getLogger().log(Level.SEVERE, message, e);
+					CommonGuiUtility.showErrorMessage(message, this);
 				}
 			}
 			
 		} else {
 			super.actionPerformed(evt);
 		} 
+	}
+	
+	private SettingMemory getSettingMemory() {
+		CATFrame mainFrame = (CATFrame) this.getOwner();
+		return mainFrame != null ? 
+			mainFrame.getSettingMemory() :
+				null;
 	}
 	
 	private void downloadExamplesAction() {
@@ -332,10 +361,14 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 	@Override
 	public void synchronizeUIWithOwner() {
 		super.synchronizeUIWithOwner();
-		doNotListenToAnymore();
+		if (isVisible()) {
+			doNotListenToAnymore();
+		}
 		initTreeLoggerComboBox();
 		treeLoggerComboBox.setSelectedItem(getCaller().getSelectedTreeLoggerParameters());
-		listenTo();
+		if (isVisible()) {
+			listenTo();
+		}
 	}
 	
 	

@@ -31,7 +31,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
@@ -91,7 +93,7 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		protected TreeLoggerInstanceCompatibilityException() {
 		}
 	}
-
+	
 	static {
 		SerializerChangeMonitor.registerClassNameChange(
 				"lerfob.carbonbalancetool.productionlines.DebarkingProcessor",
@@ -144,6 +146,10 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 				"lerfob.treelogger.maritimepine.MaritimePineBasicTreeLoggerParameters$Grade");
 	}
 
+	protected static Logger getLogger() {
+		return REpiceaLogManager.getLogger(ProductionProcessorManager.class.getSimpleName());
+	}
+ 	
 	/**
 	 * This class is the file filter for loading and saving production lines.
 	 * 
@@ -347,9 +353,9 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 			}
 		}
 		LinkedHashMap<String, Object> outputMap = new LinkedHashMap<String, Object>();
-		outputMap.put(AffiliereJSONFormat.VERSION_PROPERTY, "0.8");
-		outputMap.put(AffiliereJSONFormat.NODES_PROPERTY, nodeMap);
-		outputMap.put(AffiliereJSONFormat.LINKS_PROPERTY, linkMap);
+		outputMap.put(AffiliereJSONFormat.L1_VERSION_PROPERTY, "0.8");
+		outputMap.put(AffiliereJSONFormat.L1_NODES_PROPERTY, nodeMap);
+		outputMap.put(AffiliereJSONFormat.L1_LINKS_PROPERTY, linkMap);
 		return outputMap;
 	}
 
@@ -764,6 +770,10 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 
 	public static void main(String[] args) {
 		REpiceaTranslator.setCurrentLanguage(Language.English);
+		ConsoleHandler ch = new ConsoleHandler();
+		ch.setLevel(Level.FINE);
+		ProductionProcessorManager.getLogger().addHandler(ch);
+		ProductionProcessorManager.getLogger().setLevel(Level.FINE);
 //		REpiceaTranslator.setCurrentLanguage(Language.French);
 //		ProductionProcessorManager ppm = new ProductionProcessorManager(new DefaultREpiceaGUIPermission(false));
 		ProductionProcessorManager ppm = new ProductionProcessorManager();
