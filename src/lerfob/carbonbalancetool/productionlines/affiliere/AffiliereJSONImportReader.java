@@ -21,6 +21,7 @@ package lerfob.carbonbalancetool.productionlines.affiliere;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -208,7 +209,7 @@ public class AffiliereJSONImportReader {
 	 * @throws FileNotFoundException if the file cannot be found.
 	 */
 	@SuppressWarnings("unchecked")
-	public AffiliereJSONImportReader(File file, AFFiliereStudy study, AFFiliereUnit unit) throws FileNotFoundException {
+	public AffiliereJSONImportReader(File file, AFFiliereStudy study, AFFiliereUnit unit) throws IOException {
 		this.study = study == null ? AFFiliereStudy.AFFiliere : study;
 		this.unit = unit == null ? AFFiliereUnit.DryBiomassMg : unit;
 		mappedJSON = AffiliereJSONImportReader.getJSONRepresentationThroughoutOpenSankey(file);
@@ -274,12 +275,12 @@ public class AffiliereJSONImportReader {
 		}
 	}
 
-	private static String getProperFilenameForPython(String originalFilename) {
+	protected static String getProperFilenameForPython(String originalFilename) {
 		return originalFilename.startsWith("/") ? originalFilename.substring(1) : originalFilename;
 	}
 
 	
-	private synchronized static LinkedHashMap<?,?> getJSONRepresentationThroughoutOpenSankey(File f) {
+	private synchronized static LinkedHashMap<?,?> getJSONRepresentationThroughoutOpenSankey(File f) throws AffiliereJSONException {
 		if (Server == null) {
 			GatewayServer.turnLoggingOff();
 			Server = new GatewayServer();
@@ -289,10 +290,14 @@ public class AffiliereJSONImportReader {
 		String path = getProperFilenameForPython(f.getAbsolutePath());
 		long initialTime = System.currentTimeMillis();
 		String message = sankeyProxy.readFromExcel(path);
-		System.out.println("Reading file took " + (System.currentTimeMillis() - initialTime));
-		LinkedHashMap<?,?> oMap = (LinkedHashMap<?,?>) JsonReader.jsonToMaps(message);
-		sankeyProxy.clear();
-		return oMap;
+		if (message.toLowerCase().contains("error")) {
+			throw new AffiliereJSONException(message);
+		} else {
+			System.out.println("Reading file took " + (System.currentTimeMillis() - initialTime));
+			LinkedHashMap<?,?> oMap = (LinkedHashMap<?,?>) JsonReader.jsonToMaps(message);
+			sankeyProxy.clear();
+			return oMap;
+		}
 	}
 	
 //	static LinkedHashMap<?,?> readJSONMap(InputStream is) {

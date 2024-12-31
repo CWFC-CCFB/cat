@@ -291,7 +291,7 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	 * @param iFormat an ImportFormat enum that defines the expected format
 	 * @throws FileNotFoundException if the file can be found
 	 */
-	public void importFrom(String filename, ImportFormat iFormat) throws FileNotFoundException {
+	public void importFrom(String filename, ImportFormat iFormat) throws IOException {
 		if (iFormat == null || filename == null) {
 			throw new InvalidParameterException("The filename and iFormat arguments must be non null!");
 		}
