@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONImportReader.SankeyProxy;
@@ -21,6 +22,7 @@ public class SankeyPy4JTests {
 	/*
 	 * This test still needs to start the Python server on its own.
 	 */
+	@Ignore
 	@Test
 	public void simpleReadWriteTest() throws IOException {
 		GatewayServer.turnLoggingOff();

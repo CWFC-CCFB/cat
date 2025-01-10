@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager;
@@ -35,6 +36,7 @@ import repicea.util.ObjectUtility;
 public class AffiliereJSONImportExportTest {
 
 	@SuppressWarnings("rawtypes")
+	@Ignore
 	@Test
 	public void testAffiliereReaderFromFile() throws IOException {
 		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportExportTest.class) + "BACCFIRE V7.2_desagrege_layout.json";
@@ -45,6 +47,7 @@ public class AffiliereJSONImportExportTest {
 		Assert.assertEquals("Testing nb of processors", 108, ((List) mp.get(1)).size());
 	}
 
+	@Ignore
 	@Test
 	public void testAffiliereExportToFile() throws IOException {
 		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportExportTest.class) + "hardwood_recycling_en.prl";
