@@ -69,7 +69,7 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 	@Deprecated
 	private List<AbstractExtractionProcessor> extractionProcessors;
 
-	protected Processor disposedToProcessor;
+	private Processor disposedToProcessor;
 		
 	private AbstractExtractionProcessor extractionProcessor;
 	
@@ -123,6 +123,23 @@ public final class ProductionLineProcessor extends AbstractProductionLineProcess
 		this.fatherProcessor = fatherProcessor;
 	}
 
+	/**
+	 * Set the processor to which the carbon units are sent 
+	 * once they've reached the end of their useful lifetime.
+	 * @param p a Processor instance
+	 */
+	public void setDisposedToProcessor(Processor p) {
+		disposedToProcessor = p;
+	}
+
+	/**
+	 * Provide the processor to which the carbon units are sent 
+	 * once they've reached the end of their useful lifetime.
+	 * @return a Processor instance (null if the processor has not been set)
+	 */
+	public Processor getDisposedToProcess() {
+		return disposedToProcessor;
+	}
 	
 	AbstractExtractionProcessor getExtractionProcessor() {
 		return extractionProcessor;

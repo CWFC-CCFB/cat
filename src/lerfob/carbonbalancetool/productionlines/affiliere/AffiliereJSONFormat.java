@@ -43,6 +43,7 @@ public class AffiliereJSONFormat {
 
 	// Third level properties for nodes/tags
 	public static final String NODE_TAGS_NODETYPE_PROPERTY = "Type de noeud";
+	public static final String NODE_TAGS_WOODTYPE_PROPERTY = "Type de bois";
 	
 	// Second level properties for links
 	public static final String LINK_IDLINK_PROPERTY = "idLink";

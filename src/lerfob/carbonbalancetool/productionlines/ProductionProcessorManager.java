@@ -344,10 +344,10 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 				linkMap.put(idLink, getAffiliereJSONFormatLinkRepresentation(idLink, false, source, target, processorToIdMap)); // false: a typical production processor (not end of life)
 			}
 			if (source instanceof ProductionLineProcessor) {
-				if (((ProductionLineProcessor) source).disposedToProcessor != null) {
+				if (((ProductionLineProcessor) source).getDisposedToProcess() != null) {
 					String idLink = "link" + idDispenser++;
 					linkMap.put(idLink, getAffiliereJSONFormatLinkRepresentation(idLink, true, source,
-							((ProductionLineProcessor) source).disposedToProcessor, processorToIdMap)); // end of life
+							((ProductionLineProcessor) source).getDisposedToProcess(), processorToIdMap)); // end of life
 																										// processor
 				}
 			}

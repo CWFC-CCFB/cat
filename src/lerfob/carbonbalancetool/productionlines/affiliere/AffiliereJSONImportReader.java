@@ -33,6 +33,7 @@ import java.util.Map;
 import com.cedarsoftware.util.io.JsonReader;
 
 import lerfob.carbonbalancetool.productionlines.AbstractProcessor;
+import lerfob.carbonbalancetool.productionlines.ProductionLineProcessor;
 import py4j.GatewayServer;
 import repicea.simulation.processsystem.Processor;
 
@@ -102,17 +103,22 @@ public class AffiliereJSONImportReader {
 		}
 	}
 	
+	/**
+	 * A transition class to AbstractProcessorLinkLine in the processor manager.
+	 */
 	private static class FutureLink {
 		final Processor fatherProcessor;
 		final Processor childProcessor;
 		final double value;
 		final boolean isPercent;
+		final boolean mightBeEndOfLifeLink;
 		
-		FutureLink(Processor fatherProcessor, Processor childProcessor, double value, boolean isPercent) {
+		FutureLink(Processor fatherProcessor, Processor childProcessor, double value, boolean isPercent, boolean mightBeEndOfLifeLink) {
 			this.fatherProcessor = fatherProcessor;
 			this.childProcessor = childProcessor;
 			this.value = value;
 			this.isPercent = isPercent;
+			this.mightBeEndOfLifeLink = mightBeEndOfLifeLink;
 		}
 	}
 		
@@ -129,6 +135,7 @@ public class AffiliereJSONImportReader {
 	private static GatewayServer Server;
 	
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private boolean matchesTags(Map<String, Object> tagMapFromNode) {
 		for (String tag : tagMapFromNode.keySet()) {
 			if (!nodeTags.containsKey(tag)) {
@@ -137,7 +144,8 @@ public class AffiliereJSONImportReader {
 				if (!tag.equals("Diagramme")) {
 					Map<String, Object> innerTagMap = (Map) ((Map) nodeTags.get(tag));
 					Object[] array  = (Object[]) tagMapFromNode.get(tag);
-					if (tag.equals(AffiliereJSONFormat.NODE_TAGS_NODETYPE_PROPERTY) && Arrays.asList(array).contains("echange")) { // we remove Import/Export nodes
+					boolean canBeProcessed = checkIfCanBeProcessed(tag, array);
+					if (!canBeProcessed) {
 						return false;
 					}
 					if (!isThereAtLeastOneTagEnabled(array, innerTagMap)) {
@@ -149,26 +157,35 @@ public class AffiliereJSONImportReader {
 		return true;
 	}
 	
+	
+	private boolean checkIfCanBeProcessed(String tag, Object[] array) {
+		if (tag.equals(AffiliereJSONFormat.NODE_TAGS_NODETYPE_PROPERTY) && Arrays.asList(array).contains("echange")) { // we remove Import/Export nodes
+			return false;
+		} else if (tag.equals(AffiliereJSONFormat.NODE_TAGS_WOODTYPE_PROPERTY) && Arrays.asList(array).contains("Sylviculture")) {
+			return false;
+		}
+		return true;
+	}
+	
+
+	
 	private boolean isTrue(Object o) {
 		return o != null && o instanceof Boolean && (Boolean) o;
 	}
 	
 	
+	@SuppressWarnings({ "rawtypes" })
 	private boolean isThereAtLeastOneTagEnabled(Object[] tagArrayFromNode, Map<String, Object> innerTagMap) {
-//		if (isTrue(innerTagMap.get(AffiliereJSONFormat.ACTIVATED))) {
-			for (Object tagVal : tagArrayFromNode) {
-				String tagValue = (String) tagVal;
-				Map inner2TagMap = (Map) innerTagMap.get(AffiliereJSONFormat.NODE_TAGS_PROPERTY);
-				if (inner2TagMap.containsKey(tagValue)) {
-					if (isTrue(((Map) inner2TagMap.get(tagValue)).get(AffiliereJSONFormat.SELECTED))) {
-						return true;
-					}
+		for (Object tagVal : tagArrayFromNode) {
+			String tagValue = (String) tagVal;
+			Map inner2TagMap = (Map) innerTagMap.get(AffiliereJSONFormat.NODE_TAGS_PROPERTY);
+			if (inner2TagMap.containsKey(tagValue)) {
+				if (isTrue(((Map) inner2TagMap.get(tagValue)).get(AffiliereJSONFormat.SELECTED))) {
+					return true;
 				}
 			}
-			return false;  // activated but no selection
-//		} else { // not activated
-//			return true;
-//		}
+		}
+		return false;  // activated but no selection
 	}
 
 	@SuppressWarnings("unchecked")
@@ -208,13 +225,12 @@ public class AffiliereJSONImportReader {
 	 * @param unit an AFFiliereUnit enum
 	 * @throws FileNotFoundException if the file cannot be found.
 	 */
-	@SuppressWarnings("unchecked")
 	public AffiliereJSONImportReader(File file, AFFiliereStudy study, AFFiliereUnit unit) throws IOException {
 		this.study = study == null ? AFFiliereStudy.AFFiliere : study;
 		this.unit = unit == null ? AFFiliereUnit.DryBiomassMg : unit;
 		mappedJSON = AffiliereJSONImportReader.getJSONRepresentationThroughoutOpenSankey(file);
 		nodeTags = (LinkedHashMap<?,?>) mappedJSON.get(AffiliereJSONFormat.L1_NODETAGS_PROPERTY);
-		((Map) nodeTags.get("Diagramme")).put("activated", false);	// disabled diagram selection
+//		((Map) nodeTags.get("Diagramme")).put("activated", false);	// disabled diagram selection
 		processors = new HashMap<String, Processor>();
 		endProductProcessors = new ArrayList<Processor>();
 		ioProcessors = new ArrayList<Processor>();
@@ -230,6 +246,9 @@ public class AffiliereJSONImportReader {
 			Processor fatherProcessor = processors.get(idSource);
 			String idTarget = (String) innerLinkMap.get(AffiliereJSONFormat.LINK_IDTARGET_PROPERTY);
 			Processor childProcessor = processors.get(idTarget);
+			
+			boolean mightBeEndOfLifeLink = idTarget.toLowerCase().startsWith("eol") && idTarget.contains(idSource.toLowerCase());
+			
 			LinkedHashMap<?, ?> valueMap = (LinkedHashMap<?,?>) innerLinkMap.get(AffiliereJSONFormat.LINK_VALUE_PROPERTY); 
 			boolean isPercent = false;
 			double value;
@@ -247,7 +266,7 @@ public class AffiliereJSONImportReader {
 			if (!linkMap.containsKey(fatherProcessor)) {
 				linkMap.put(fatherProcessor, new ArrayList<FutureLink>());
 			}
-			linkMap.get(fatherProcessor).add(new FutureLink(fatherProcessor, childProcessor, value, isPercent));
+			linkMap.get(fatherProcessor).add(new FutureLink(fatherProcessor, childProcessor, value, isPercent, mightBeEndOfLifeLink));
 		}
 		
 		
@@ -265,11 +284,18 @@ public class AffiliereJSONImportReader {
 				}
 				sumValues += fLink.value;
 			}
-			
-			if (!lastIsPercent) {
-				for (FutureLink fLink : futureLinks) {
-					fLink.fatherProcessor.addSubProcessor(fLink.childProcessor);
-					fLink.fatherProcessor.getSubProcessorIntakes().put(fLink.childProcessor, fLink.value / sumValues * 100);
+
+			for (FutureLink fLink : futureLinks) {
+				if (futureLinks.size() == 1 &&
+						fLink.mightBeEndOfLifeLink && 
+						fLink.fatherProcessor instanceof ProductionLineProcessor) {
+					((ProductionLineProcessor) fLink.fatherProcessor).setDisposedToProcessor(fLink.childProcessor);  // add end of life link here
+				} else {
+	 				fLink.fatherProcessor.addSubProcessor(fLink.childProcessor);
+					fLink.fatherProcessor.getSubProcessorIntakes().put(fLink.childProcessor, 
+							lastIsPercent ? 
+									fLink.value : 
+										fLink.value / sumValues * 100);
 				}
 			}
 		}

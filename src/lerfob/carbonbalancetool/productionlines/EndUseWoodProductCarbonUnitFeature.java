@@ -184,7 +184,7 @@ public class EndUseWoodProductCarbonUnitFeature extends CarbonUnitFeature implem
 	 */
 	protected boolean isDisposed() {
 		boolean isDisposed = disposable || // former implementation
-				((ProductionLineProcessor) getProcessor()).disposedToProcessor != null; // new implementation
+				((ProductionLineProcessor) getProcessor()).getDisposedToProcess() != null; // new implementation
 		return isDisposed;
 	}
 	
@@ -193,7 +193,7 @@ public class EndUseWoodProductCarbonUnitFeature extends CarbonUnitFeature implem
 	
 	@Deprecated
 	protected double getDisposableProportion() {
-		if (((ProductionLineProcessor) getProcessor()).disposedToProcessor != null) {		// new implementation
+		if (((ProductionLineProcessor) getProcessor()).getDisposedToProcess() != null) {		// new implementation
 			return 1;
 		} else {
 			return disposableProportion;		// former implementation

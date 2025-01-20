@@ -63,6 +63,17 @@ public class AffiliereJSONImportExportTest {
 		Assert.assertTrue("Testing if file exists", f.exists());
 	}
 	
+	@SuppressWarnings("rawtypes")
+	@Test
+	public void test01AffiliereReaderFromFile() throws IOException {
+		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportExportTest.class) + "resultat_reconciled.xlsx";
+		ProductionProcessorManager manager = new ProductionProcessorManager();
+		manager.importFrom(filename, ImportFormat.AFFILIERE);
+//		manager.showUI(null);
+		MemorizerPackage mp = manager.getMemorizerPackage();
+		Assert.assertEquals("Testing nb of processors", 30, ((List) mp.get(1)).size());
+	}
+
 	
 //	@SuppressWarnings("rawtypes")
 //	@Ignore
@@ -80,12 +91,16 @@ public class AffiliereJSONImportExportTest {
 //	}
 	
 	
-	public static void main(String[] args) throws IOException {
-		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportExportTest.class) + "EtudesAvecEtiquette4.json";
+	public static void main(String[] args) throws Exception {
+		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportExportTest.class) + "resultat_reconciled_mod.xlsx";
 		ProductionProcessorManager manager = new ProductionProcessorManager();
 		manager.importFrom(filename, ImportFormat.AFFILIERE);
 		manager.showUI(null);
-		
+		Thread.sleep(5000);
+		while (manager.getUI(null).isVisible()) {
+			Thread.sleep(5000);
+		}
+		System.exit(0);
 	}
 	
 }

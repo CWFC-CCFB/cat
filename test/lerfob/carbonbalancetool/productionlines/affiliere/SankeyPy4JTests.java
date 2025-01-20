@@ -16,9 +16,6 @@ import repicea.util.ObjectUtility;
 public class SankeyPy4JTests {
 
 	
-	
-	
-	
 	/*
 	 * This test still needs to start the Python server on its own.
 	 */
@@ -28,7 +25,7 @@ public class SankeyPy4JTests {
 		GatewayServer.turnLoggingOff();
 		ClientServer server = new ClientServer(null);
 		SankeyProxy sankey = (SankeyProxy) server.getPythonServerEntryPoint(new Class[] { SankeyProxy.class });
-		String inputFilename = AffiliereJSONImportReader.getProperFilenameForPython(ObjectUtility.getPackagePath(SankeyPy4JTests.class) + "GE_bois_reconciled vu JLM.xlsx");
+		String inputFilename = AffiliereJSONImportReader.getProperFilenameForPython(ObjectUtility.getPackagePath(SankeyPy4JTests.class) + "resultat_reconciled.xlsx");
 		String outputFilename = AffiliereJSONImportReader.getProperFilenameForPython(ObjectUtility.getPackagePath(SankeyPy4JTests.class) + "example_Copy.xlsx");
 		File outputFile = new File(outputFilename);
 		if (outputFile.exists()) {
