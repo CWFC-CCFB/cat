@@ -66,10 +66,11 @@ public class AffiliereImportExportTest {
 	@SuppressWarnings("rawtypes")
 	@Test
 	public void test01AffiliereReaderFromJSONFile() throws IOException  {
+		AffiliereImportReader.enableGUI = false;
 		String filename = ObjectUtility.getPackagePath(AffiliereImportExportTest.class) + "BACCFIRE V6.7_reconciled.json";
 		ProductionProcessorManager manager = new ProductionProcessorManager();
 		manager.importFrom(filename, ImportFormat.AFFILIERE);
-//		manager.showUI(null);
+		AffiliereImportReader.enableGUI = true;
 		MemorizerPackage mp = manager.getMemorizerPackage();
 		Assert.assertEquals("Testing nb of processors", 30, ((List) mp.get(1)).size());
 	}
@@ -77,7 +78,7 @@ public class AffiliereImportExportTest {
 	
 	public static void main(String[] args) throws Exception {
 //		String filename = ObjectUtility.getPackagePath(AffiliereJSONImportExportTest.class) + "resultat_reconciled_mod.xlsx";
-		String filename = ObjectUtility.getPackagePath(AffiliereImportExportTest.class) + "BACCFIRE V6.7_reconciled_mod.json";
+		String filename = ObjectUtility.getPackagePath(AffiliereImportExportTest.class) + "BACCFIRE V6.7_reconciled.json";
 		ProductionProcessorManager manager = new ProductionProcessorManager();
 		manager.importFrom(filename, ImportFormat.AFFILIERE);
 		manager.showUI(null);

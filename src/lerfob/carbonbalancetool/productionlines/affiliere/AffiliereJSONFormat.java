@@ -61,4 +61,6 @@ public class AffiliereJSONFormat {
 
 	public static final String SELECTED = "selected";
 
+	public static final String LEVEL = "niveau";
+
 }

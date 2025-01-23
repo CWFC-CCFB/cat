@@ -1,7 +1,7 @@
 /*
  * This file is part of the CAT library.
  *
- * Copyright (C) 2023 His Majesty the King in Right of Canada
+ * Copyright (C) 2023-25 His Majesty the King in Right of Canada
  * Author: Mathieu Fortin, Canadian Forest Service, Canadian Wood Fibre Centre
  *
  * This library is free software; you can redistribute it and/or
@@ -19,6 +19,8 @@
  */
 package lerfob.carbonbalancetool.productionlines.affiliere;
 
+import java.awt.Container;
+import java.awt.Window;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -36,6 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lerfob.carbonbalancetool.productionlines.AbstractProcessor;
 import lerfob.carbonbalancetool.productionlines.ProductionLineProcessor;
 import py4j.GatewayServer;
+import repicea.gui.REpiceaShowableUIWithParent;
 import repicea.io.REpiceaFileFilter;
 import repicea.simulation.processsystem.Processor;
 
@@ -44,13 +47,13 @@ import repicea.simulation.processsystem.Processor;
  * converts it into a flux configuration file for CAT.
  * @author Mathieu Fortin - October 2023
  */
-public class AffiliereImportReader {
+public class AffiliereImportReader implements REpiceaShowableUIWithParent {
 
 	/**
 	 * An interface to provide access to methods on Python's end.
 	 */
 	public interface SankeyProxy {
-		
+
 		/**
 		 * Read the content of an excel file and convert it
 		 * into Sankey objects on Python's end.<p>
@@ -67,26 +70,26 @@ public class AffiliereImportReader {
 		 * @return null
 		 */
 		public String writeToExcel(String filename, String mode);
-		
+
 		public boolean clear();
-		
+
 		public String requestShutdown();
 
 	}
 
-	
-	
+
+
 	private static final List<String> NodeTypesToBeDiscarded = new ArrayList<String>();
 	static {
 		NodeTypesToBeDiscarded.add("echange");		// we do not want import / export processors MF2024-03-01
 	}
-	
+
 	public enum AFFiliereUnit {
 		VolumeM3("1000m3"), 
 		DryBiomassMg("1000t");
-	
+
 		final String suffix;
-		
+
 		AFFiliereUnit(String suffix) {
 			this.suffix = suffix;
 		}
@@ -97,14 +100,14 @@ public class AffiliereImportReader {
 		Carbone4("Carbone 4"),
 		BACCFIRE("BACCFIRE"),
 		MFAB("MFAB");
-		
+
 		final String prefix;
-		
+
 		AFFiliereStudy(String prefix) {
 			this.prefix = prefix;
 		}
 	}
-	
+
 	/**
 	 * A transition class to AbstractProcessorLinkLine in the processor manager.
 	 */
@@ -114,7 +117,7 @@ public class AffiliereImportReader {
 		final double value;
 		final boolean isPercent;
 		final boolean mightBeEndOfLifeLink;
-		
+
 		FutureLink(Processor fatherProcessor, Processor childProcessor, double value, boolean isPercent, boolean mightBeEndOfLifeLink) {
 			this.fatherProcessor = fatherProcessor;
 			this.childProcessor = childProcessor;
@@ -123,37 +126,40 @@ public class AffiliereImportReader {
 			this.mightBeEndOfLifeLink = mightBeEndOfLifeLink;
 		}
 	}
+	
+	@SuppressWarnings("serial")
+	static class TagLevels extends LinkedHashMap<String, Boolean> {
 		
+		boolean isExclusive;
+		
+	}
+	protected static boolean enableGUI = true;
 	protected static int OFFSET = 150;
+
+	private transient AffiliereImportReaderDialog guiInterface;
 	
 	protected final LinkedHashMap<?,?> mappedJSON;
 	protected final Map<String, Processor> processors;
 	protected final List<Processor> endProductProcessors;
-//	protected final List<Processor> ioProcessors;
+	protected final LinkedHashMap<String, Processor> potentialEOLProcessors;
 	protected final AFFiliereStudy study;
 	protected final AFFiliereUnit unit;
-	protected final Map<?,?> nodeTags;
-	protected final String endOfLifePrefix;
-	
+	protected final Map<String, TagLevels> nodeTags;
+//	protected final String endOfLifePrefix;
+
 	private static GatewayServer Server;
 	
-	public AffiliereImportReader(File file, AFFiliereStudy study, AFFiliereUnit unit) throws AffiliereException {
-		this(file, study, unit, "Collecte");
-	}
 
 	/**
-	 * Constructor.
+	 * General constructor.
 	 * @param file the File instance to be read.
 	 * @param study an AFFiliereStudy enum
 	 * @param unit an AFFiliereUnit enum
-	 * @param endOfLifePrefix a String that stands for the prefix that identifies end-of-life nodes
+	 * @param parent the parent window which can be null
 	 * @throws AffiliereException if the file cannot be found or read.
 	 */
-	public AffiliereImportReader(File file, AFFiliereStudy study, AFFiliereUnit unit, String endOfLifePrefix) throws AffiliereException {
-		if (endOfLifePrefix == null) {
-			throw new InvalidParameterException("The endofLifePrefix argument cannot be null!");
-		}
-		this.endOfLifePrefix = endOfLifePrefix;
+	@SuppressWarnings("unchecked")
+	public AffiliereImportReader(File file, AFFiliereStudy study, AFFiliereUnit unit, Window parent) throws AffiliereException {
 		this.study = study == null ? AFFiliereStudy.AFFiliere : study;
 		this.unit = unit == null ? AFFiliereUnit.DryBiomassMg : unit;
 		if (REpiceaFileFilter.JSON.accept(file)) {
@@ -163,20 +169,58 @@ public class AffiliereImportReader {
 		} else {
 			throw new InvalidParameterException("The extension of the input file should be either json or xlsx!");
 		}
-		nodeTags = (LinkedHashMap<?,?>) mappedJSON.get(AffiliereJSONFormat.L1_NODETAGS_PROPERTY);
-//		((Map) nodeTags.get("Diagramme")).put("activated", false);	// disabled diagram selection
+		nodeTags = formatNodeTagsMap((LinkedHashMap<String,?>) mappedJSON.get(AffiliereJSONFormat.L1_NODETAGS_PROPERTY));
 		processors = new HashMap<String, Processor>();
 		endProductProcessors = new ArrayList<Processor>();
-//		ioProcessors = new ArrayList<Processor>();
-		LinkedHashMap<String, Processor> potentialEOLProcessors = new LinkedHashMap<String, Processor>();
-		screenNodeMap((LinkedHashMap<?,?>) mappedJSON.get(AffiliereJSONFormat.L1_NODES_PROPERTY), potentialEOLProcessors);
+		potentialEOLProcessors = new LinkedHashMap<String, Processor>();
+		screenNodeMap();
+		if (enableGUI) {
+			showUI(parent);
+			if (isCancelled()) {
+				return;
+			}
+		}
 		LinkedHashMap<String, LinkedHashMap<String, Object>> screenedLinkJSONMap = screenLinkMap((LinkedHashMap<?,?>) mappedJSON.get(AffiliereJSONFormat.L1_LINKS_PROPERTY));
-		
+
 		List<Processor> childProcessors = new ArrayList<Processor>();
-		
+
 		Map<Processor, List<FutureLink>> linkMap = constructLinkMap(screenedLinkJSONMap, childProcessors);
 		addPotentialEndOfLifeLinkToLinkMap(linkMap, potentialEOLProcessors, childProcessors);
 		setLinks(linkMap);
+	}
+	
+	
+	public boolean isCancelled() {
+		return guiInterface != null && guiInterface.isCancelled;
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private Map<String, TagLevels> formatNodeTagsMap(LinkedHashMap<String, ?> incomingNodeTagMap) throws AffiliereException {
+		Map<String, TagLevels> outputMap = new LinkedHashMap<String, TagLevels>();
+		for (String tagName : incomingNodeTagMap.keySet()) {
+			outputMap.put(tagName, new TagLevels());
+			Map<String, ?> innerIncomingMap = (Map) ((Map) incomingNodeTagMap.get(tagName)).get(AffiliereJSONFormat.NODE_TAGS_PROPERTY);
+			for (String level : innerIncomingMap.keySet()) {
+				String boolStr = ((Map) innerIncomingMap.get(level)).get(AffiliereJSONFormat.SELECTED).toString(); 
+				outputMap.get(tagName).put(level, Boolean.parseBoolean(boolStr));
+			}
+		}
+		for (String tagName : outputMap.keySet()) {
+			if (tagName.toLowerCase().startsWith(AffiliereJSONFormat.LEVEL)) {
+				TagLevels tagLevels = outputMap.get(tagName);
+				tagLevels.isExclusive = true;
+				int nbTrueCases = 0;
+				for (Boolean b : tagLevels.values()) {
+					if (b) {
+						nbTrueCases++;
+					}
+				}
+				if (nbTrueCases != 1) {
+					throw new AffiliereException("This tag should have a single level enabled: " + tagName);
+				}
+			}
+		}
+		return outputMap;
 	}
 
 	private void setLinks(Map<Processor, List<FutureLink>> linkMap) {
@@ -200,7 +244,7 @@ public class AffiliereImportReader {
 						fLink.fatherProcessor instanceof ProductionLineProcessor) {
 					((ProductionLineProcessor) fLink.fatherProcessor).setDisposedToProcessor(fLink.childProcessor);  // add end of life link here
 				} else {
-	 				fLink.fatherProcessor.addSubProcessor(fLink.childProcessor);
+					fLink.fatherProcessor.addSubProcessor(fLink.childProcessor);
 					fLink.fatherProcessor.getSubProcessorIntakes().put(fLink.childProcessor, 
 							lastIsPercent ? 
 									fLink.value : 
@@ -227,7 +271,7 @@ public class AffiliereImportReader {
 						}
 					}
 				}
-				
+
 				if (fatherProcessor != null && !linkMap.containsKey(fatherProcessor)) { // if the father processor is already in the linkMap object, this means there are some links already and it cannot be EOL link
 					linkMap.put(fatherProcessor, new ArrayList<FutureLink>());
 					linkMap.get(fatherProcessor).add(new FutureLink(fatherProcessor, childProcessor, 100, false, true));
@@ -235,7 +279,7 @@ public class AffiliereImportReader {
 			}
 		}
 	}
-	
+
 	private Map<Processor, List<FutureLink>> constructLinkMap(LinkedHashMap<String, LinkedHashMap<String, Object>> screenedLinkJSONMap,
 			List<Processor> childProcessors) {
 		Map<Processor, List<FutureLink>> linkMap = new HashMap<Processor, List<FutureLink>>();
@@ -244,11 +288,11 @@ public class AffiliereImportReader {
 			Processor fatherProcessor = processors.get(idSource);
 			String idTarget = (String) innerLinkMap.get(AffiliereJSONFormat.LINK_IDTARGET_PROPERTY);
 			Processor childProcessor = processors.get(idTarget);
-			
+
 			LinkedHashMap<?, ?> valueMap = (LinkedHashMap<?,?>) innerLinkMap.get(AffiliereJSONFormat.LINK_VALUE_PROPERTY); 
 			String key = study.prefix.trim() + " " + unit.suffix.trim();
 			LinkedHashMap<?, ?> studySpecificValueMap = (LinkedHashMap<?,?>) valueMap.get(key);
-			
+
 			boolean isPercent = false;
 			double value;
 			if (studySpecificValueMap.containsKey(AffiliereJSONFormat.LINK_VALUE_PERCENT_PROPERTY)) {
@@ -272,24 +316,21 @@ public class AffiliereImportReader {
 		}
 		return linkMap;
 	}
-	
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private boolean matchesTags(Map<String, Object> tagMapFromNode) {
 		for (String tag : tagMapFromNode.keySet()) {
 			if (!nodeTags.containsKey(tag)) {
-				return false; // Should this throw an Exception MF20241009
+				throw new UnsupportedOperationException("This tag cannot be found into the nodeTags map: " + tag); // Should this throw an Exception MF20241009
 			} else {
-				if (!tag.equals("Diagramme")) {
-					Map<String, Object> innerTagMap = (Map) ((Map) nodeTags.get(tag));
+				if (!tag.equals("Diagramme") && !tag.equals("Primaire")) {
+					Map<String, Boolean> levelMap = nodeTags.get(tag);
 					List array  = (List) tagMapFromNode.get(tag);
-					if (tag.equals("Primaire")) {
-						int u = 0;
-					}
 					boolean canBeProcessed = checkIfCanBeProcessed(tag, array);
 					if (!canBeProcessed) {
 						return false;
 					}
-					if (!isThereAtLeastOneTagEnabled(array, innerTagMap)) {
+					if (!isThereAtLeastOneTagEnabled(array, levelMap)) {
 						return false;
 					}
 				}
@@ -297,8 +338,8 @@ public class AffiliereImportReader {
 		}
 		return true;
 	}
-	
-	
+
+
 	@SuppressWarnings("rawtypes")
 	private boolean isEndOfLifeNode(LinkedHashMap<String, Object> oMap) {
 		if (oMap.containsKey(AffiliereJSONFormat.NODE_TAGS_WOODTYPE_PROPERTY)) {
@@ -307,7 +348,7 @@ public class AffiliereImportReader {
 		}
 		return false;
 	}
-	
+
 	@SuppressWarnings("rawtypes")
 	private boolean checkIfCanBeProcessed(String tag, List values) {
 		if (tag.equals(AffiliereJSONFormat.NODE_TAGS_NODETYPE_PROPERTY) && values.contains("echange")) { // we remove Import/Export nodes
@@ -317,28 +358,23 @@ public class AffiliereImportReader {
 		}
 		return true;
 	}
-	
-	
-	private boolean isTrue(Object o) {
-		return o != null && o instanceof Boolean && (Boolean) o;
-	}
-		
-	@SuppressWarnings({ "rawtypes" })
-	private boolean isThereAtLeastOneTagEnabled(List tagArrayFromNode, Map<String, Object> innerTagMap) {
-		for (Object tagVal : tagArrayFromNode) {
-			String tagValue = (String) tagVal;
-			Map inner2TagMap = (Map) innerTagMap.get(AffiliereJSONFormat.NODE_TAGS_PROPERTY);
-			if (inner2TagMap.containsKey(tagValue)) {
-				if (isTrue(((Map) inner2TagMap.get(tagValue)).get(AffiliereJSONFormat.SELECTED))) {
-					return true;
-				}
+
+	private boolean isThereAtLeastOneTagEnabled(List<String> tagArrayFromNode, Map<String, Boolean> levelMap) {
+		for (String tagValue : tagArrayFromNode) {
+			if (levelMap.containsKey(tagValue) && levelMap.get(tagValue)) {
+				return true;
 			}
 		}
 		return false;  // activated but no selection
 	}
 
 	@SuppressWarnings("unchecked")
-	private void screenNodeMap(LinkedHashMap<?,?> nodeMap, LinkedHashMap<String, Processor> potentialEndOfLifeProcessors) {
+	protected void screenNodeMap() {
+		potentialEOLProcessors.clear();
+		processors.clear();
+		
+		LinkedHashMap<?,?> nodeMap = (LinkedHashMap<?,?>) mappedJSON.get(AffiliereJSONFormat.L1_NODES_PROPERTY);
+		
 		for (Object o : nodeMap.values()) {
 			LinkedHashMap<String, Object> oMap = (LinkedHashMap<String, Object>) o;
 			LinkedHashMap<String, Object> tagMap = (LinkedHashMap<String, Object>) oMap.get(AffiliereJSONFormat.NODE_TAGS_PROPERTY);
@@ -347,7 +383,7 @@ public class AffiliereImportReader {
 				String id = oMap.get(AffiliereJSONFormat.NODE_IDNODE_PROPERTY).toString();
 				Processor p = AbstractProcessor.createProcessor(oMap);
 				if (isEndOfLifeNode(tagMap)) {
-					potentialEndOfLifeProcessors.put(oMap.get("name").toString(), p);
+					potentialEOLProcessors.put(oMap.get("name").toString(), p);
 				}
 				processors.put(id, p);
 			}
@@ -368,14 +404,14 @@ public class AffiliereImportReader {
 		}
 		return screenedMap;
 	}
-	
-	
+
+
 
 	protected static String getProperFilenameForPython(String originalFilename) {
 		return originalFilename.startsWith("/") ? originalFilename.substring(1) : originalFilename;
 	}
 
-	
+
 	private synchronized static LinkedHashMap<?,?> getJSONRepresentationThroughoutOpenSankey(File f) throws AffiliereException {
 		if (Server == null) {
 			GatewayServer.turnLoggingOff();
@@ -392,9 +428,9 @@ public class AffiliereImportReader {
 		} else {
 			System.out.println("Reading file took " + (System.currentTimeMillis() - initialTime));
 			try {
-			LinkedHashMap<?,?> oMap = mapper.readValue(message, LinkedHashMap.class);
-			sankeyProxy.clear();
-			return oMap;
+				LinkedHashMap<?,?> oMap = mapper.readValue(message, LinkedHashMap.class);
+				sankeyProxy.clear();
+				return oMap;
 			} catch (JsonMappingException e1) {
 				throw new AffiliereException(e1.getMessage());
 			} catch (JsonProcessingException e2) {
@@ -403,7 +439,6 @@ public class AffiliereImportReader {
 		}
 	}
 
-	@SuppressWarnings("resource")
 	private synchronized static LinkedHashMap<?,?> getJSONRepresentation(File f) throws AffiliereException {
 		try {
 			ObjectMapper mapper = new ObjectMapper();
@@ -414,30 +449,30 @@ public class AffiliereImportReader {
 		} 
 	}
 
-//	static LinkedHashMap<?,?> readJSONMap(InputStream is) {
-//		JsonReader reader = new JsonReader(is);
-//		LinkedHashMap<?,?> mappedJSON = (LinkedHashMap<?,?>) reader.readObject();
-//		reader.close();
-//		return mappedJSON;
-//	}
-	
-//	private void addToListIfRelevant(Processor p, LinkedHashMap<String, Object> oMap, String key, String expression, List<Processor> outputList) {
-//		if (oMap.containsKey(key) ) {
-//			Object o = oMap.get(key);
-//			String str = ((Object[]) o)[0].toString();
-//			if (str.startsWith(expression)) {
-//				outputList.add(p);
-//			}
-//		}
-//	}
-//	
-//	private static boolean containsUndesiredNodeTypeTag(Object[] tags) {
-//		for (Object o : tags) {
-//			if (NodeTypesToBeDiscarded.contains(o.toString()))
-//				return true;
-//		}
-//		return false;
-//	}
+	//	static LinkedHashMap<?,?> readJSONMap(InputStream is) {
+	//		JsonReader reader = new JsonReader(is);
+	//		LinkedHashMap<?,?> mappedJSON = (LinkedHashMap<?,?>) reader.readObject();
+	//		reader.close();
+	//		return mappedJSON;
+	//	}
+
+	//	private void addToListIfRelevant(Processor p, LinkedHashMap<String, Object> oMap, String key, String expression, List<Processor> outputList) {
+	//		if (oMap.containsKey(key) ) {
+	//			Object o = oMap.get(key);
+	//			String str = ((Object[]) o)[0].toString();
+	//			if (str.startsWith(expression)) {
+	//				outputList.add(p);
+	//			}
+	//		}
+	//	}
+	//	
+	//	private static boolean containsUndesiredNodeTypeTag(Object[] tags) {
+	//		for (Object o : tags) {
+	//			if (NodeTypesToBeDiscarded.contains(o.toString()))
+	//				return true;
+	//		}
+	//		return false;
+	//	}
 
 
 	/**
@@ -449,4 +484,25 @@ public class AffiliereImportReader {
 	public Map<String, Processor> getProcessors() {
 		return processors;
 	}
+
+	@Override
+	public AffiliereImportReaderDialog getUI(Container parent) {
+		if (guiInterface == null) {
+			guiInterface = new AffiliereImportReaderDialog(this, (Window) parent);
+		}
+		return guiInterface;
+	}
+
+	@Override
+	public boolean isVisible() {
+		return guiInterface != null && guiInterface.isVisible();
+	}
+
+	@Override
+	public void showUI(Window parent) {
+		if (!isVisible()) {
+			getUI(parent).setVisible(true);
+		}
+	}
+	
 }

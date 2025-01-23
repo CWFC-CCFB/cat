@@ -297,7 +297,13 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		}
 		switch(iFormat) {
 		case AFFILIERE:
-			AffiliereImportReader reader = new AffiliereImportReader(new File(filename), AFFiliereStudy.BACCFIRE, AFFiliereUnit.DryBiomassMg);
+			AffiliereImportReader reader = new AffiliereImportReader(new File(filename), 
+					AFFiliereStudy.BACCFIRE, 
+					AFFiliereUnit.DryBiomassMg,
+					isVisible() ? getUI(null) : null);
+			if (reader.isCancelled()) {
+				return;
+			}
 			reset();
 			for (Processor p : reader.getProcessors().values()) {
 				registerObject(p);
