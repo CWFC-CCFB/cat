@@ -66,11 +66,11 @@ public class AffiliereImportExportTest {
 	@SuppressWarnings("rawtypes")
 	@Test
 	public void test01AffiliereReaderFromJSONFile() throws IOException  {
-		AffiliereImportReader.enableGUI = false;
+		AffiliereImportReader.ENABLE_GUI = false;
 		String filename = ObjectUtility.getPackagePath(AffiliereImportExportTest.class) + "BACCFIRE V6.7_reconciled.json";
 		ProductionProcessorManager manager = new ProductionProcessorManager();
 		manager.importFrom(filename, ImportFormat.AFFILIERE);
-		AffiliereImportReader.enableGUI = true;
+		AffiliereImportReader.ENABLE_GUI = true;
 		MemorizerPackage mp = manager.getMemorizerPackage();
 		Assert.assertEquals("Testing nb of processors", 30, ((List) mp.get(1)).size());
 	}

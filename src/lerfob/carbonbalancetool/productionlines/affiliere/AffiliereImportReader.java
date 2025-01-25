@@ -133,14 +133,15 @@ public class AffiliereImportReader implements REpiceaShowableUIWithParent {
 		boolean isExclusive;
 		
 	}
-	protected static boolean enableGUI = true;
-	protected static int OFFSET = 150;
+	
+	protected static boolean ENABLE_GUI = true;
+//	protected static int OFFSET = 150;
 
 	private transient AffiliereImportReaderDialog guiInterface;
 	
 	protected final LinkedHashMap<?,?> mappedJSON;
 	protected final Map<String, Processor> processors;
-	protected final List<Processor> endProductProcessors;
+//	protected final List<Processor> endProductProcessors;
 	protected final LinkedHashMap<String, Processor> potentialEOLProcessors;
 	protected final AFFiliereStudy study;
 	protected final AFFiliereUnit unit;
@@ -171,10 +172,9 @@ public class AffiliereImportReader implements REpiceaShowableUIWithParent {
 		}
 		nodeTags = formatNodeTagsMap((LinkedHashMap<String,?>) mappedJSON.get(AffiliereJSONFormat.L1_NODETAGS_PROPERTY));
 		processors = new HashMap<String, Processor>();
-		endProductProcessors = new ArrayList<Processor>();
 		potentialEOLProcessors = new LinkedHashMap<String, Processor>();
 		screenNodeMap();
-		if (enableGUI) {
+		if (ENABLE_GUI) {
 			showUI(parent);
 			if (isCancelled()) {
 				return;
@@ -187,9 +187,52 @@ public class AffiliereImportReader implements REpiceaShowableUIWithParent {
 		Map<Processor, List<FutureLink>> linkMap = constructLinkMap(screenedLinkJSONMap, childProcessors);
 		addPotentialEndOfLifeLinkToLinkMap(linkMap, potentialEOLProcessors, childProcessors);
 		setLinks(linkMap);
+		List<Processor> processorsWithNoChildren = getProcessorsWithNoChildren();
+		Map<String, List<Processor>> entryProcessors = getEntryProcessors();
+		
+		AffiliereLocationPointer lp = new AffiliereLocationPointer(4,1, 100, 150);
+		lp.setLayout(entryProcessors, processorsWithNoChildren);
 	}
 	
-	
+	private Map<String, List<Processor>> getEntryProcessors() {
+		Map<String, List<Processor>> entryProcessors = new HashMap<String, List<Processor>>();
+		entryProcessors.put("EOL", new ArrayList<Processor>());
+		entryProcessors.put("default", new ArrayList<Processor>());
+		
+		for (Processor p : processors.values()) {
+			boolean isTheChildOfSomeOtherProcessor = false;
+			for (Processor otherP : processors.values()) {
+				if (!p.equals(otherP)) {
+					if (otherP.getSubProcessors().contains(p)) {
+						isTheChildOfSomeOtherProcessor = true;
+						break;
+					}
+				}
+			}
+			if (!isTheChildOfSomeOtherProcessor) {
+				List<Processor> list = potentialEOLProcessors.containsValue(p) ?
+						entryProcessors.get("EOL") :
+								entryProcessors.get("default");
+				list.add(p);
+			}
+		}
+		return entryProcessors;
+	}
+
+	private List<Processor> getProcessorsWithNoChildren() {
+		List<Processor> processorsWithNoChildren = new ArrayList<Processor>();
+		for (Processor p : processors.values()) {
+			if (!p.hasSubProcessors()) {
+				processorsWithNoChildren.add(p);
+			}
+		}
+		return processorsWithNoChildren;
+	}
+
+	/**
+	 * Return true if the import was cancelled through the UI.
+	 * @return a boolean
+	 */
 	public boolean isCancelled() {
 		return guiInterface != null && guiInterface.isCancelled;
 	}
@@ -265,7 +308,7 @@ public class AffiliereImportReader implements REpiceaShowableUIWithParent {
 			if (!childProcessors.contains(childProcessor)) {
 				for (Processor p : processors.values()) {
 					if (!p.equals(childProcessor)) {
-						if (name.contains(p.getName())) {
+						if (name.toLowerCase().contains(p.getName().toLowerCase())) {
 							fatherProcessor = p;
 							break;
 						}
