@@ -388,12 +388,16 @@ public class SystemManagerDialog extends REpiceaFrame implements ActionListener,
 
 	@Override
 	public void synchronizeUIWithOwner() {
-		doNotListenToAnymore();
+		if (isVisible()) {
+			doNotListenToAnymore();
+		}
 		systemPanel.initUI();
 		systemPanel.refreshInterface();
 		systemPanel.setMode(toolPanel.getSelectedButton().getMode());
 		refreshTitle();
-		listenTo();
+		if (isVisible()) {
+			listenTo();
+		}
 	}
 
 	@Override

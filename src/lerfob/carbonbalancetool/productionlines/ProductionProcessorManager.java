@@ -31,7 +31,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
@@ -45,11 +47,11 @@ import lerfob.carbonbalancetool.productionlines.CarbonUnit.CarbonUnitStatus;
 import lerfob.carbonbalancetool.productionlines.CarbonUnit.Element;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManagerDialog.MessageID;
 import lerfob.carbonbalancetool.productionlines.WoodyDebrisProcessor.WoodyDebrisProcessorID;
-import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONExportWriter;
+import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereExportWriter;
 import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONFormat;
-import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONImportReader;
-import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONImportReader.AFFiliereStudy;
-import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereJSONImportReader.AFFiliereUnit;
+import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereImportReader;
+import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereImportReader.AFFiliereStudy;
+import lerfob.carbonbalancetool.productionlines.affiliere.AffiliereImportReader.AFFiliereUnit;
 import lerfob.treelogger.basictreelogger.BasicTreeLogger;
 import lerfob.treelogger.europeanbeech.EuropeanBeechBasicTreeLogger;
 import lerfob.treelogger.maritimepine.MaritimePineBasicTreeLogger;
@@ -91,7 +93,7 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		protected TreeLoggerInstanceCompatibilityException() {
 		}
 	}
-
+	
 	static {
 		SerializerChangeMonitor.registerClassNameChange(
 				"lerfob.carbonbalancetool.productionlines.DebarkingProcessor",
@@ -144,6 +146,10 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 				"lerfob.treelogger.maritimepine.MaritimePineBasicTreeLoggerParameters$Grade");
 	}
 
+	protected static Logger getLogger() {
+		return REpiceaLogManager.getLogger(ProductionProcessorManager.class.getSimpleName());
+	}
+ 	
 	/**
 	 * This class is the file filter for loading and saving production lines.
 	 * 
@@ -285,13 +291,19 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 	 * @param iFormat an ImportFormat enum that defines the expected format
 	 * @throws FileNotFoundException if the file can be found
 	 */
-	public void importFrom(String filename, ImportFormat iFormat) throws FileNotFoundException {
+	public void importFrom(String filename, ImportFormat iFormat) throws IOException {
 		if (iFormat == null || filename == null) {
 			throw new InvalidParameterException("The filename and iFormat arguments must be non null!");
 		}
 		switch(iFormat) {
 		case AFFILIERE:
-			AffiliereJSONImportReader reader = new AffiliereJSONImportReader(new File(filename), AFFiliereStudy.BACCFIRE, AFFiliereUnit.DryBiomassMg);
+			AffiliereImportReader reader = new AffiliereImportReader(new File(filename), 
+					AFFiliereStudy.BACCFIRE, 
+					AFFiliereUnit.DryBiomassMg,
+					isVisible() ? getUI(null) : null);
+			if (reader.isCancelled()) {
+				return;
+			}
 			reset();
 			for (Processor p : reader.getProcessors().values()) {
 				registerObject(p);
@@ -314,7 +326,7 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 		}
 		switch(eFormat) {
 		case AFFILIERE:
-			new AffiliereJSONExportWriter(getAffiliereJSONFormatRepresentation(), filename);
+			new AffiliereExportWriter(getAffiliereJSONFormatRepresentation(), filename);
 			break;
 		default:
 			throw new InvalidParameterException("The export format " + eFormat.name() + " is not implemented yet!");
@@ -338,18 +350,18 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 				linkMap.put(idLink, getAffiliereJSONFormatLinkRepresentation(idLink, false, source, target, processorToIdMap)); // false: a typical production processor (not end of life)
 			}
 			if (source instanceof ProductionLineProcessor) {
-				if (((ProductionLineProcessor) source).disposedToProcessor != null) {
+				if (((ProductionLineProcessor) source).getDisposedToProcess() != null) {
 					String idLink = "link" + idDispenser++;
 					linkMap.put(idLink, getAffiliereJSONFormatLinkRepresentation(idLink, true, source,
-							((ProductionLineProcessor) source).disposedToProcessor, processorToIdMap)); // end of life
+							((ProductionLineProcessor) source).getDisposedToProcess(), processorToIdMap)); // end of life
 																										// processor
 				}
 			}
 		}
 		LinkedHashMap<String, Object> outputMap = new LinkedHashMap<String, Object>();
-		outputMap.put(AffiliereJSONFormat.VERSION_PROPERTY, "0.8");
-		outputMap.put(AffiliereJSONFormat.NODES_PROPERTY, nodeMap);
-		outputMap.put(AffiliereJSONFormat.LINKS_PROPERTY, linkMap);
+		outputMap.put(AffiliereJSONFormat.L1_VERSION_PROPERTY, "0.8");
+		outputMap.put(AffiliereJSONFormat.L1_NODES_PROPERTY, nodeMap);
+		outputMap.put(AffiliereJSONFormat.L1_LINKS_PROPERTY, linkMap);
 		return outputMap;
 	}
 
@@ -764,6 +776,10 @@ public class ProductionProcessorManager extends SystemManager implements Memoriz
 
 	public static void main(String[] args) {
 		REpiceaTranslator.setCurrentLanguage(Language.English);
+		ConsoleHandler ch = new ConsoleHandler();
+		ch.setLevel(Level.FINE);
+		ProductionProcessorManager.getLogger().addHandler(ch);
+		ProductionProcessorManager.getLogger().setLevel(Level.FINE);
 //		REpiceaTranslator.setCurrentLanguage(Language.French);
 //		ProductionProcessorManager ppm = new ProductionProcessorManager(new DefaultREpiceaGUIPermission(false));
 		ProductionProcessorManager ppm = new ProductionProcessorManager();
