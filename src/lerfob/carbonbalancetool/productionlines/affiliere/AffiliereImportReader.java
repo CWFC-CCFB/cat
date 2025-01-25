@@ -135,18 +135,15 @@ public class AffiliereImportReader implements REpiceaShowableUIWithParent {
 	}
 	
 	protected static boolean ENABLE_GUI = true;
-//	protected static int OFFSET = 150;
 
 	private transient AffiliereImportReaderDialog guiInterface;
 	
 	protected final LinkedHashMap<?,?> mappedJSON;
 	protected final Map<String, Processor> processors;
-//	protected final List<Processor> endProductProcessors;
 	protected final LinkedHashMap<String, Processor> potentialEOLProcessors;
 	protected final AFFiliereStudy study;
 	protected final AFFiliereUnit unit;
 	protected final Map<String, TagLevels> nodeTags;
-//	protected final String endOfLifePrefix;
 
 	private static GatewayServer Server;
 	
@@ -491,33 +488,8 @@ public class AffiliereImportReader implements REpiceaShowableUIWithParent {
 			throw new AffiliereException(e.getMessage());
 		} 
 	}
-
-	//	static LinkedHashMap<?,?> readJSONMap(InputStream is) {
-	//		JsonReader reader = new JsonReader(is);
-	//		LinkedHashMap<?,?> mappedJSON = (LinkedHashMap<?,?>) reader.readObject();
-	//		reader.close();
-	//		return mappedJSON;
-	//	}
-
-	//	private void addToListIfRelevant(Processor p, LinkedHashMap<String, Object> oMap, String key, String expression, List<Processor> outputList) {
-	//		if (oMap.containsKey(key) ) {
-	//			Object o = oMap.get(key);
-	//			String str = ((Object[]) o)[0].toString();
-	//			if (str.startsWith(expression)) {
-	//				outputList.add(p);
-	//			}
-	//		}
-	//	}
-	//	
-	//	private static boolean containsUndesiredNodeTypeTag(Object[] tags) {
-	//		for (Object o : tags) {
-	//			if (NodeTypesToBeDiscarded.contains(o.toString()))
-	//				return true;
-	//		}
-	//		return false;
-	//	}
-
-
+	
+	
 	/**
 	 * Provide a map of the processors read by this AffiliereJSONReader instance.<p>
 	 * Map keys are the names of the processors whereas the values are the ProductionLineProcessors

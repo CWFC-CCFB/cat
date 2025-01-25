@@ -42,7 +42,6 @@ import lerfob.carbonbalancetool.CATFrame;
 import lerfob.carbonbalancetool.productionlines.LandfillProcessor.LandfillProcessorButton;
 import lerfob.carbonbalancetool.productionlines.LeftInForestProcessor.LeftInForestProcessorButton;
 import lerfob.carbonbalancetool.productionlines.LogCategoryProcessor.LogCategoryProcessorButton;
-import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager.ExportFormat;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorManager.ImportFormat;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorToolPanel.CreateEndOfLifeLinkButton;
 import lerfob.carbonbalancetool.productionlines.ProductionProcessorToolPanel.CreateLandfillProcessorButton;
@@ -115,7 +114,7 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 		IncompatibleTreeLogger("The tree logger is incompatible and will be replaced by the default tree logger!", "Le module de billonnage est incompatible et sera remplac\u00E9 par le module de billonnage par d\u00E9faut!"),
 		ExamplesOfFluxConfigurations("Examples of flux configurations", "Exemples de configurations de flux"),
 		ImportFromOtherSources("Import", "Importer"),
-		ImportFromAFFiliere("From AFFiliere (.xlsx)", "A partir d'AFFili\u00E8ere (.xlsx)"),
+		ImportFromAFFiliere("From AFFiliere (.json)", "A partir d'AFFili\u00E8ere (.json)"),
 		ErrorImportFromAffiliere("An error occurred while importing data from AFFiliere", "Une erreur est survenue lors de l'importation des donn\u00E9es depuis AFFili\u00E8re"),
 		ErrorExportFromAffiliere("An error occurred while exporting data to AFFiliere", "Une erreur est survenue lors de l'exportation des donn\u00E9es vers AFFili\u00E8re"),
 		ExportToAFFiliere("To AFFiliere (.xlsx)", "Vers AFFili\u00E8ere (.xlsx)");
@@ -169,7 +168,7 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 	protected JMenuItem downloadExamplesMenuItem;
 	protected JMenu importFromOtherSourcesMenu;
 	protected JMenuItem importFromAFFiliere;
-	protected JMenuItem exportToAFFiliere;
+//	protected JMenuItem exportToAFFiliere;
 	
 	
 	/**
@@ -195,7 +194,7 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 		downloadExamplesMenuItem = new JMenuItem(MessageID.ExamplesOfFluxConfigurations.toString());
 		importFromOtherSourcesMenu = UIControlManager.createCommonMenu(MessageID.ImportFromOtherSources);
 		importFromAFFiliere = UIControlManager.createCommonMenuItem(MessageID.ImportFromAFFiliere);
-		exportToAFFiliere = UIControlManager.createCommonMenuItem(MessageID.ExportToAFFiliere);
+//		exportToAFFiliere = UIControlManager.createCommonMenuItem(MessageID.ExportToAFFiliere);
 	}
 
 	@Override
@@ -226,7 +225,7 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 	@Override
 	protected JMenu createFileMenu() {
 		JMenu fileMenu = super.createFileMenu();
-		export.add(this.exportToAFFiliere);
+//		export.add(this.exportToAFFiliere);
 		importFromOtherSourcesMenu.add(importFromAFFiliere);
 		fileMenu.insert(importFromOtherSourcesMenu, 4);
 		return fileMenu;
@@ -267,7 +266,7 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 		comboBoxPanel.addComboBoxEntryPropertyListener(this);
 		downloadExamplesMenuItem.addActionListener(this);
 		importFromAFFiliere.addActionListener(this);
-		exportToAFFiliere.addActionListener(this);
+//		exportToAFFiliere.addActionListener(this);
 	}
 	
 	@Override
@@ -277,7 +276,7 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 		comboBoxPanel.removeComboBoxEntryPropertyListener(this);
 		downloadExamplesMenuItem.removeActionListener(this);
 		importFromAFFiliere.removeActionListener(this);
-		exportToAFFiliere.removeActionListener(this);
+//		exportToAFFiliere.removeActionListener(this);
 	}
 
 	@Override
@@ -301,7 +300,7 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 			FileChooserOutput fileChooserOutput = CommonGuiUtility.browseAction(this,
 					JFileChooser.FILES_ONLY,
 					importFilename,
-					new REpiceaFileFilterList(REpiceaFileFilter.XLSX),
+					new REpiceaFileFilterList(REpiceaFileFilter.JSON),
 					JFileChooser.OPEN_DIALOG);
 			if (fileChooserOutput.isValid()) {
 				if (sm != null) {
@@ -317,30 +316,30 @@ public class ProductionProcessorManagerDialog extends SystemManagerDialog implem
 					CommonGuiUtility.showErrorMessage(message, this);
 				}
 			}
-		} else if (evt.getSource().equals(exportToAFFiliere)) {
-			SettingMemory sm = getSettingMemory();
-			String exportFilename = sm != null ?
-					sm.getProperty("exportToAffiliere.filename", "") :
-						"";
-			FileChooserOutput fileChooserOutput = CommonGuiUtility.browseAction(this,
-					JFileChooser.FILES_ONLY,
-					exportFilename, 
-					new REpiceaFileFilterList(REpiceaFileFilter.XLSX),
-					JFileChooser.SAVE_DIALOG);
-			if (fileChooserOutput.isValid()) {
-				if (sm != null) {
-					sm.setProperty("exportToAffiliere.filename", fileChooserOutput.getFilename());
-				}
-				try {
-					getCaller().exportTo(fileChooserOutput.getFilename(), ExportFormat.AFFILIERE);
-					REpiceaAWTEvent.fireEvent(new REpiceaAWTEvent(this, CATAWTProperty.AffiliereExportSuccessful));
-				} catch (Exception e) {
-					String message = MessageID.ErrorExportFromAffiliere.toString() + System.lineSeparator() + e.getMessage();
-					ProductionProcessorManager.getLogger().log(Level.SEVERE, message, e);
-					CommonGuiUtility.showErrorMessage(message, this);
-				}
-			}
-			
+//		} else if (evt.getSource().equals(exportToAFFiliere)) {
+//			SettingMemory sm = getSettingMemory();
+//			String exportFilename = sm != null ?
+//					sm.getProperty("exportToAffiliere.filename", "") :
+//						"";
+//			FileChooserOutput fileChooserOutput = CommonGuiUtility.browseAction(this,
+//					JFileChooser.FILES_ONLY,
+//					exportFilename, 
+//					new REpiceaFileFilterList(REpiceaFileFilter.XLSX),
+//					JFileChooser.SAVE_DIALOG);
+//			if (fileChooserOutput.isValid()) {
+//				if (sm != null) {
+//					sm.setProperty("exportToAffiliere.filename", fileChooserOutput.getFilename());
+//				}
+//				try {
+//					getCaller().exportTo(fileChooserOutput.getFilename(), ExportFormat.AFFILIERE);
+//					REpiceaAWTEvent.fireEvent(new REpiceaAWTEvent(this, CATAWTProperty.AffiliereExportSuccessful));
+//				} catch (Exception e) {
+//					String message = MessageID.ErrorExportFromAffiliere.toString() + System.lineSeparator() + e.getMessage();
+//					ProductionProcessorManager.getLogger().log(Level.SEVERE, message, e);
+//					CommonGuiUtility.showErrorMessage(message, this);
+//				}
+//			}
+//			
 		} else {
 			super.actionPerformed(evt);
 		} 
